@@ -1,44 +1,65 @@
 import { isNewPoll, parseRoute } from './detector';
-import type { NewPollMessage } from '../shared/messages';
 import { isNavigationChangedMessage } from '../shared/messages';
-import { logger, safeError } from '../shared/logging';
+import { logger } from '../shared/logging';
+import { createPipController, documentPip, type MonitoringStatus } from './pip-controller';
+import { createMonitoringControl } from './monitoring-control';
 
 const log = logger('content');
 log('loaded');
 
 // Startup on /poll is only a baseline, including after refresh.
 let previous = parseRoute(window.location.hash);
+let status: MonitoringStatus = { state: 'UNMONITORED', opening: false };
+let suspended = false;
+const control = createMonitoringControl(document, () => {
+  if (suspended || previous.state === 'UNSUPPORTED') return;
+  if (status.state !== 'UNMONITORED') controller.stop();
+  else void controller.start();
+});
+const controller = createPipController(documentPip(window), (next) => {
+  status = next;
+  control.render(status);
+});
+control.render(status);
 log('baseline state', { state: previous.state });
 
+function syncControl() {
+  if (suspended || previous.state === 'UNSUPPORTED') control.hide();
+  else if (document.body) control.show();
+}
+// document_start can precede body creation; no DOM observer or polling is needed.
+document.addEventListener('DOMContentLoaded', syncControl, { once: true });
+syncControl();
+
 function evaluateHash(hash: string, source: 'hashchange' | 'webNavigation') {
+  if (suspended) return;
   const next = parseRoute(hash);
   const notify = isNewPoll(previous, next);
   log('navigation update received', { source, previous: previous.state, next: next.state, eligibleNewPoll: notify });
-  previous = next;
-  if (!notify) return;
-
-  const message: NewPollMessage = { type: 'NEW_POLL', detectedAt: Date.now() };
-  log('sending NEW_POLL');
-  try {
-    chrome.runtime.sendMessage(message, (response: unknown) => {
-      const error = chrome.runtime.lastError;
-      if (error || !response || typeof response !== 'object'
-        || !('ok' in response) || response.ok !== true) {
-        log('NEW_POLL delivery failed', { reason: error ? safeError(error) : 'worker rejected event or failed to create alert' });
-        return;
-      }
-      log('NEW_POLL acknowledged by worker');
-    });
-  } catch (error) {
-    // An extension reload can invalidate this content script before sendMessage.
-    log('NEW_POLL delivery failed', { reason: safeError(error) });
+  if (next.state === 'UNSUPPORTED' || (previous.state !== 'UNSUPPORTED' && previous.classId !== next.classId)) {
+    controller.stop();
   }
-  // No retry: without question identity, retrying could duplicate an alert.
+  previous = next;
+  syncControl();
+  if (next.state !== 'QUESTION_ACTIVE') controller.idle();
+  else if (notify) controller.question(Date.now());
 }
 
 window.addEventListener('hashchange', (event) => {
   // Event URLs preserve the order of rapid, queued route changes.
   evaluateHash(new URL(event.newURL).hash, 'hashchange');
+});
+window.addEventListener('pagehide', () => {
+  suspended = true;
+  controller.stop();
+  control.hide();
+});
+window.addEventListener('pageshow', () => {
+  // A BFCache restore must also establish a fresh baseline and require a click.
+  if (!suspended) return;
+  suspended = false;
+  previous = parseRoute(window.location.hash);
+  syncControl();
 });
 
 chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {

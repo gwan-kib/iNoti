@@ -1,22 +1,28 @@
 import { afterEach, expect, it, vi } from 'vitest';
+import { DocumentFake } from './dom-fake';
 
 const base = '#/class/11111111-1111-4111-8111-111111111111';
 const closed = `${base}/question/22222222-2222-4222-8222-222222222222`;
-
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
-async function start(hash: string) {
+async function start(hash: string, supported = true) {
   vi.resetModules();
-  const page = Object.assign(new EventTarget(), { location: { hash } });
-  const sendMessage = vi.fn((_message, callback: (response: unknown) => void) => callback({ ok: true }));
+  const document = new DocumentFake();
+  const pipDocument = new DocumentFake();
+  const pip = Object.assign(new EventTarget(), { document: pipDocument, closed: false, close: vi.fn() });
+  pip.close.mockImplementation(() => { pip.closed = true; pip.dispatchEvent(new Event('pagehide')); });
+  const requestWindow = vi.fn().mockResolvedValue(pip);
+  const page = Object.assign(new EventTarget(), { location: { hash }, documentPictureInPicture: supported ? { requestWindow } : undefined });
   const addListener = vi.fn();
+  vi.stubGlobal('document', document);
   vi.stubGlobal('window', page);
-  vi.stubGlobal('chrome', { runtime: { id: 'test-extension', sendMessage, onMessage: { addListener } } });
+  vi.stubGlobal('chrome', { runtime: { id: 'test-extension', onMessage: { addListener } } });
   await import('../src/content/monitor');
-  const navigate = (next: string) => {
-    // The location may already reflect a later queued event.
-    const event = Object.assign(new Event('hashchange'), { newURL: `https://student.iclicker.com/${next}` });
-    page.dispatchEvent(event);
+  const host = document.elements.find(el => el.id === 'inoti-monitoring-control')!;
+  const button = host.shadow!.children[1]!;
+  const navigate = (hash: string) => {
+    page.location.hash = hash;
+    page.dispatchEvent(Object.assign(new Event('hashchange'), { newURL: `https://student.iclicker.com/${hash}` }));
   };
   const receive = (message: unknown, sender: unknown = { id: 'test-extension' }) => {
     const respond = vi.fn();
@@ -24,113 +30,130 @@ async function start(hash: string) {
     return respond;
   };
   const navigation = (hash: string) => receive({ type: 'NAVIGATION_CHANGED', hash });
-  return { sendMessage, navigate, navigation, receive };
+  const click = () => button.dispatchEvent(new Event('click'));
+  const open = async () => { click(); await Promise.resolve(); };
+  const active = () => pipDocument.body.children[0]?.children[1]?.hidden === false;
+  return { host, button, navigate, navigation, receive, click, open, active, requestWindow, pip, pipDocument, page, document };
 }
 
-it('emits once for each supported poll transition through a normal sequence', async () => {
-  const { sendMessage, navigate } = await start(base);
-  expect(sendMessage).not.toHaveBeenCalled();
-  navigate(`${base}/poll`);
-  navigate(`${base}/poll`);
-  navigate(closed);
-  expect(sendMessage).toHaveBeenCalledTimes(1);
-  navigate(`${base}/poll`);
-  expect(sendMessage).toHaveBeenCalledTimes(2);
-  expect(sendMessage.mock.calls[0]?.[0]).toEqual({ type: 'NEW_POLL', detectedAt: expect.any(Number) });
+it('shows an isolated Start Monitoring control only on supported routes', async () => {
+  const app = await start('#/home');
+  expect(app.host.isConnected).toBe(false);
+  app.navigation(base);
+  expect(app.host.isConnected).toBe(true);
+  expect(app.button.textContent).toBe('\u25cf Start Monitoring');
+  app.navigation('');
+  expect(app.host.isConnected).toBe(false);
 });
-
-it('does not notify on initial poll or after refresh', async () => {
-  for (let refresh = 0; refresh < 2; refresh++) {
-    const { sendMessage, navigate } = await start(`${base}/poll`);
-    navigate(`${base}/poll`);
-    navigate(closed);
-    expect(sendMessage).not.toHaveBeenCalled();
+it('calls requestWindow synchronously once per user action, suppressing duplicate pending clicks', async () => {
+  const app = await start(base);
+  app.click();
+  expect(app.requestWindow).toHaveBeenCalledExactlyOnceWith({ width: 300, height: 160 });
+  app.click();
+  expect(app.requestWindow).toHaveBeenCalledTimes(1);
+  await Promise.resolve();
+  expect(app.active()).toBe(false);
+  expect(app.button.textContent).toBe('\u25cf Monitoring');
+});
+it.each([base, closed])('returns the same PiP to idle on question end: %s', async end => {
+  const app = await start(base);
+  await app.open();
+  app.navigate(`${base}/poll`);
+  expect(app.active()).toBe(true);
+  const time = app.pipDocument.body.children[0]!.children[2]!.textContent;
+  app.navigate(`${base}/poll`);
+  expect(app.pipDocument.body.children[0]!.children[2]!.textContent).toBe(time);
+  app.navigate(end);
+  expect(app.active()).toBe(false);
+  app.navigate(`${base}/poll`);
+  expect(app.active()).toBe(true);
+  expect(app.requestWindow).toHaveBeenCalledTimes(1);
+  expect(app.pip.close).not.toHaveBeenCalled();
+});
+it.each(['worker-first', 'hashchange-first'])('suppresses duplicate source reports: %s', async order => {
+  const log = vi.spyOn(console, 'info').mockImplementation(() => {});
+  const app = await start(base);
+  await app.open();
+  for (const source of order === 'worker-first' ? [app.navigation, app.navigate] : [app.navigate, app.navigation]) source(`${base}/poll`);
+  expect(log.mock.calls.filter(call => call[0] === '[iNoti][pip] PiP -> question active')).toHaveLength(1);
+  expect(JSON.stringify(log.mock.calls)).not.toMatch(/11111111|student.iclicker.com/);
+});
+it('never opens or alerts from question events before a click or after PiP closes', async () => {
+  const app = await start(base);
+  app.navigation(`${base}/poll`);
+  expect(app.requestWindow).not.toHaveBeenCalled();
+  await app.open();
+  expect(app.active()).toBe(false);
+  app.pip.close();
+  expect(app.button.textContent).toBe('\u25cf Start Monitoring');
+  app.navigation(base); app.navigation(`${base}/poll`);
+  expect(app.active()).toBe(false);
+  expect(app.requestWindow).toHaveBeenCalledTimes(1);
+});
+it('suppresses initial active baselines across reloads and unsupported-to-active', async () => {
+  for (const initial of ['', `${base}/poll`, `${base}/poll`]) {
+    const app = await start(initial);
+    app.navigation(`${base}/poll`);
+    await app.open();
+    app.navigation(`${base}/poll`);
+    expect(app.active()).toBe(false);
   }
 });
-
-it('requires a supported baseline after unrelated and quiz routes', async () => {
-  const { sendMessage, navigate } = await start('#/home');
-  navigate(`${base}/poll`);
-  navigate(`${base}/quiz/22222222-2222-4222-8222-222222222222`);
-  navigate(`${base}/poll`);
-  expect(sendMessage).not.toHaveBeenCalled();
-  navigate(base);
-  navigate(`${base}/poll`);
-  expect(sendMessage).toHaveBeenCalledTimes(1);
+it.each(['', '#/class/22222222-2222-4222-8222-222222222222/poll'])('stops on leaving the monitored class: %s', async next => {
+  const app = await start(base); await app.open();
+  app.navigation(next);
+  expect(app.pip.close).toHaveBeenCalledTimes(1);
+  expect(app.button.textContent).toBe('\u25cf Start Monitoring');
 });
-
-it('logs the detection and acknowledgement path without route identifiers', async () => {
-  const output = vi.spyOn(console, 'info').mockImplementation(() => {});
-  const { navigate } = await start(base);
-  navigate(`${base}/poll`);
-  const text = JSON.stringify(output.mock.calls);
-  expect(text).toContain('loaded');
-  expect(text).toContain('baseline state');
-  expect(text).toContain('navigation update received');
-  expect(text).toContain('sending NEW_POLL');
-  expect(text).toContain('NEW_POLL acknowledged by worker');
-  expect(text).not.toContain('11111111');
-  expect(text).not.toContain('student.iclicker.com');
+it('requires a fresh click after opener pagehide and BFCache restore', async () => {
+  const app = await start(base); await app.open();
+  app.page.dispatchEvent(new Event('pagehide'));
+  expect(app.pip.close).toHaveBeenCalledTimes(1);
+  expect(app.host.isConnected).toBe(false);
+  app.page.location.hash = `${base}/poll`;
+  app.page.dispatchEvent(new Event('pageshow'));
+  expect(app.button.textContent).toBe('\u25cf Start Monitoring');
+  app.navigation(`${base}/poll`);
+  expect(app.requestWindow).toHaveBeenCalledTimes(1);
 });
-
-it('learns waiting from an unsupported startup then detects a History API poll', async () => {
-  const { navigation, sendMessage } = await start('');
-  expect(navigation(base)).toHaveBeenCalledWith({ ok: true });
-  expect(sendMessage).not.toHaveBeenCalled();
-  navigation(`${base}/poll`);
-  expect(sendMessage).toHaveBeenCalledTimes(1);
+it('handles unavailable Document PiP without changing iClicker or opening a fallback', async () => {
+  const app = await start(base, false); await app.open();
+  expect(app.button.textContent).toContain('Document PiP unavailable');
+  expect(app.button.disabled).toBe(true);
+  expect(app.requestWindow).not.toHaveBeenCalled();
+  expect(app.page.location.hash).toBe(base);
 });
-
-it('does not alert for unsupported directly to active or an initially active page', async () => {
-  for (const initial of ['', `${base}/poll`]) {
-    const { navigation, sendMessage } = await start(initial);
-    navigation(`${base}/poll`);
-    expect(sendMessage).not.toHaveBeenCalled();
-  }
-});
-
-it.each(['worker-first', 'hashchange-first'])('suppresses duplicate event sources: %s', async (order) => {
-  const { navigation, navigate, sendMessage } = await start(base);
-  const sources = order === 'worker-first' ? [navigation, navigate] : [navigate, navigation];
-  for (const source of sources) source(`${base}/poll`);
-  expect(sendMessage).toHaveBeenCalledTimes(1);
-});
-
-it('resets the baseline on sanitized unsupported routes', async () => {
-  const { navigation, sendMessage } = await start(base);
-  navigation('');
-  navigation(`${base}/poll`);
-  expect(sendMessage).not.toHaveBeenCalled();
-  navigation(closed);
-  navigation(`${base}/poll`);
-  expect(sendMessage).toHaveBeenCalledTimes(1);
-});
-
 it.each([
   null, { type: 'NEW_POLL', detectedAt: 0 }, { type: 'NAVIGATION_CHANGED', hash: 7 },
   { type: 'NAVIGATION_CHANGED', hash: `https://student.iclicker.com/${base}/poll` },
   { type: 'NAVIGATION_CHANGED', hash: `${base}/poll`, extra: 'private' },
   { type: 'NAVIGATION_CHANGED', hash: '#/' + 'a'.repeat(300) },
   { type: 'NAVIGATION_CHANGED', hash: '#/class/\n' },
-])('ignores malformed or wrong-direction message %j', async (message) => {
-  const { receive, sendMessage } = await start(base);
-  expect(receive(message)).not.toHaveBeenCalled();
-  expect(sendMessage).not.toHaveBeenCalled();
+])('rejects malformed/wrong-direction message %j', async message => {
+  const app = await start(base); await app.open();
+  expect(app.receive(message)).not.toHaveBeenCalled();
+  expect(app.active()).toBe(false);
 });
-
-it.each([{ id: 'other-extension' }, { id: 'test-extension', tab: { id: 1 } }])('rejects untrusted navigation sender %j', async (sender) => {
-  const { receive, sendMessage } = await start(base);
-  receive({ type: 'NAVIGATION_CHANGED', hash: `${base}/poll` }, sender);
-  expect(sendMessage).not.toHaveBeenCalled();
+it.each([{ id: 'other-extension' }, { id: 'test-extension', tab: { id: 1 } }])('rejects untrusted navigation sender %j', async sender => {
+  const app = await start(base); await app.open();
+  expect(app.receive({ type: 'NAVIGATION_CHANGED', hash: `${base}/poll` }, sender)).not.toHaveBeenCalled();
+  expect(app.active()).toBe(false);
 });
-
-it('logs synchronous send failures without retrying or leaking the error payload', async () => {
-  const output = vi.spyOn(console, 'info').mockImplementation(() => {});
-  const { navigate, sendMessage } = await start(base);
-  sendMessage.mockImplementation(() => { throw new Error('Extension context invalidated: private data'); });
-  navigate(`${base}/poll`);
-  navigate(`${base}/poll`);
-  expect(sendMessage).toHaveBeenCalledTimes(1);
-  expect(JSON.stringify(output.mock.calls)).toContain('NEW_POLL delivery failed');
-  expect(JSON.stringify(output.mock.calls)).not.toContain('private data');
+it('active control stops monitoring and later transitions remain silent', async () => {
+  const app = await start(base); await app.open();
+  app.click();
+  expect(app.pip.close).toHaveBeenCalledOnce();
+  expect(app.button.textContent).toBe('\u25cf Start Monitoring');
+  app.navigation(`${base}/poll`);
+  expect(app.active()).toBe(false);
+  expect(app.requestWindow).toHaveBeenCalledOnce();
+});
+it('shows an opening failure and permits explicit retry', async () => {
+  const app = await start(base);
+  app.requestWindow.mockRejectedValueOnce(new Error('private route'));
+  await app.open();
+  expect(app.button.textContent).toContain('PiP failed');
+  expect(app.button.disabled).toBe(false);
+  await app.open();
+  expect(app.button.textContent).toBe('\u25cf Monitoring');
 });

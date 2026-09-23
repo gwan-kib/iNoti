@@ -1,51 +1,49 @@
-﻿# Architecture
+# Architecture
 
 ## Implemented Phase 1
 
-iNoti is a minimal Manifest V3 extension built with TypeScript and Vite, without a UI framework or runtime dependency.
+A TypeScript/Vite MV3 extension with no framework or runtime dependencies. Route parsing is unchanged. Monitoring is page-owned and requires a user click; a supported route alone does not enable monitoring.
 
 | Component | Responsibility |
 | --- | --- |
-| `manifest.json` | Exact student-site static content-script match, webNavigation permission, classic worker, local icon; no action popup |
-| `src/content/detector.ts` | Unchanged pure hash-route parser and same-class transition decision |
-| `src/content/monitor.ts` | Per-page baseline, shared evaluation for hashchange/worker updates, diagnostic logs, one message per eligible transition |
-| `src/shared/messages.ts` | Distinct validated `NEW_POLL` and `NAVIGATION_CHANGED` contracts |
-| `src/shared/logging.ts` | Scope prefixes, development logging switch, safe API error categories |
-| `src/background/service-worker.ts` | Filtered navigation forwarding, sender validation, popup creation, completion response |
-| `src/alert/` | Local HTML/CSS, timestamp validation/rendering, own-window close button |
+| `manifest.json` | Chrome 116 minimum, exact student-site match, webNavigation permission, classic worker, local icon |
+| `src/content/detector.ts` | Pure route parser and same-class transition decision |
+| `src/content/monitor.ts` | Per-page baseline, shared hashchange/navigation evaluation, monitoring coordination, opener lifecycle |
+| `src/content/monitoring-control.ts` | Namespaced floating button in a closed shadow root, status and accessible stop/retry controls |
+| `src/content/pip-controller.ts` | API detection, user-gesture request, pending-open guard, PiP reference, state, close and cleanup |
+| `src/content/pip-view.ts` | Dependency-free generic idle/alert DOM and local time rendering |
+| `src/shared/messages.ts` | Validated NAVIGATION_CHANGED contract |
+| `src/shared/logging.ts` | Privacy-safe content/worker/pip diagnostics |
+| `src/background/service-worker.ts` | Filtered navigation forwarding only; no session state or alert creation |
 
-## Event flow
+## Event flow and lifecycle
 
-1. The top-frame content script starts at `document_start` on `https://student.iclicker.com/*`. It logs startup and the normalized baseline.
-2. The worker registers `onHistoryStateUpdated` and `onReferenceFragmentUpdated` with a student-host filter. Before any event logging/forwarding, it requires frame 0, a valid tab target, and exact `https://student.iclicker.com` origin. It sends `{ type: 'NAVIGATION_CHANGED', hash }` to that top-frame content script, targeting the event's document ID when available to avoid delivery to a later reload. Unsupported routes become an empty hash marker; full URLs and arbitrary route data are not forwarded.
-3. The content script validates the navigation contract and worker sender, then evaluates the hash through the same function used by `hashchange`. It logs source, previous/next states, and eligibility. Initial active and unsupported-to-active observations never alert. Unsupported-to-waiting establishes the baseline; only same-class waiting/closed to active sends `{ type: 'NEW_POLL', detectedAt }`. The first report advances state before sending, so an immediate duplicate from either source is active-to-active and emits nothing.
-4. The worker validates NEW_POLL and Chrome sender (same extension, top frame, tab ID, exact origin). NAVIGATION_CHANGED is never a poll event, preventing feedback loops.
-5. The worker calls `chrome.windows.create` with local `alert.html?detectedAt=<timestamp>`, `type: 'popup'`, width 400, height 180, and `focused: true`.
-6. The worker logs success/window ID or safe failure and responds with `{ ok: true }` or `{ ok: false }`. Returning `true` keeps the response channel open. Forwarding has its own delivery acknowledgement/failure logs; failed delivery is not retried.
-7. The unchanged alert validates its timestamp, renders local time using `textContent`, and closes only itself on the close button.
+1. At document_start the content script reads a baseline. Initial active routes never alert. The control mounts after body exists (DOMContentLoaded if needed), only on supported class routes.
+2. The worker synchronously registers history/fragment listeners with a student-host filter. Before logging or forwarding it checks top frame, tab target, and exact HTTPS student origin. It forwards a supported hash or an empty unsupported marker to the originating document when available. No full URLs, arbitrary route content, or history are retained.
+3. The content receiver validates the contract and worker sender. It shares one evaluation function with hashchange event URLs. Previous state advances before rendering, preserving consecutive duplicate suppression in either source order.
+4. The button directly calls the controller's start method, which calls requestWindow before its first await. Only this user action opens PiP. An in-flight guard suppresses repeated clicks. Successful initialization always begins idle; events before completion are not replayed.
+5. Same-class WAITING/QUESTION_CLOSED to QUESTION_ACTIVE changes an already-open idle PiP to the alert with Date.now(). Repeated active events do nothing. Closed/results/waiting returns the same window to idle.
+6. PiP pagehide, the active button, leaving supported routes, changing class, or opener pagehide stops monitoring and clears references. A generation token closes stale pending opens after session exit. A late old-window close cannot stop a newer session. BFCache restoration establishes a fresh baseline without reopening PiP.
+7. Unsupported API or opening failure leaves monitoring inactive with a clear control state. Failure can be retried only by another click. No worker NEW_POLL contract or notification fallback remains.
 
-The worker registers listeners synchronously and stores no session state. Its acknowledgement means the window API completed, not that HTML rendered; alert-page logs diagnose rendering separately. Content state advances before sending, preserving duplicate suppression even on delivery failure.
+Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE -> MONITORING_IDLE, with any session-ending event returning to UNMONITORED. Opening is a transient guard, not active monitoring. Detection continues while unmonitored so enabling monitoring does not invent a question transition.
 
-## Alert surface and build
+## PiP and build
 
-The card has iNoti branding, title, time, and a close button. It stays open until closed. Focus is requested for visibility and can interrupt another app. This is a Chrome popup window, not a toolbar popup or OS always-on-top overlay. It does not depend on OS notification permission, banners, or Do Not Disturb. There is no positioning policy, stacking, auto-dismiss, sound, drag behavior, or settings.
+Request 300 by 160 pixels once. Chrome controls placement, chrome, and size clamping. Idle content is a dot and iNoti; active content adds the question title and local time. No resize calls, screen coordinates, history, auto-dismiss, sound, or stacking. PiP cannot outlive its opener. It is same-origin with the student page, not a separate extension-origin security boundary, so it contains no sensitive data.
 
-`npm run build` performs two standalone IIFE builds for content/worker, then a Vite HTML build for the alert. Only the first stage clears output. All assets stay in `dist/`; the HTML references its generated local JS/CSS. MV3 uses external scripts, with no inline JavaScript/event handlers or external resources.
+Two standalone Vite IIFE builds emit content and worker code. The first clears dist and copies assets; the second preserves that output. PiP DOM/CSS is bundled into content.js; it does not load an HTML entry, external resource, or script.
 
 ```text
 dist/
   manifest.json
   content.js
   background.js
-  alert.html
-  assets/
-    icon-128.png
-    alert-<hash>.js
-    alert-<hash>.css
+  assets/icon-128.png
 ```
 
-## Diagnostics and deferred work
+## Diagnostics and limits
 
-Logging is enabled through `DEBUG` in the shared logger. Logs contain normalized states, eligibility, event names, safe error categories, and optionally the created window ID. They never dump hashes, identifiers, sender objects, payloads, arbitrary error objects, or query strings.
+DEBUG enables `[iNoti][content]`, `[iNoti][worker]`, and `[iNoti][pip]` logs. Only event names, normalized states, boolean decisions, and safe error categories are logged. No raw routes, IDs, payloads, arbitrary exceptions, or page content.
 
-Owner-supplied Chrome evidence showed injection working, an initial UNSUPPORTED baseline, and visible navigation without hashchange logs. History API use is the likely explanation, not a directly observed implementation detail. Chrome webNavigation events now supplement hashchange; page History API methods are not patched. No DOM inspection, polling, or network interception is used. Live alert delivery must be re-tested. Settings, sound, click focus, identity, cross-tab coordination, storage, and recovery remain deferred. See [testing](TESTING.md), [privacy](PRIVACY.md), and [decisions](DECISIONS.md).
+The worker remains disposable. Failed navigation delivery is not replayed; no DOM observation, polling, history patching, or network interception is added. Always-on-top is an API property, not evidence of tested background detection or this build's UI compatibility. See [testing](TESTING.md), [privacy](PRIVACY.md), and D013 in [decisions](DECISIONS.md).

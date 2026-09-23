@@ -35,9 +35,9 @@ Use `npm ci` for reproducible installation from `package-lock.json`. Use `npm in
 
 Lint and type-checking cover configuration, source, and tests. Strict TypeScript includes DOM and Chrome API types. Chrome APIs are mocked at component boundaries in tests; no runtime dependency or UI framework is needed.
 
-Vite builds an unpacked MV3 extension into `dist/`: `manifest.json`, `content.js`, `background.js`, `alert.html`, hashed alert JS/CSS in `assets/`, and `assets/icon-128.png`. Two library builds produce standalone IIFEs; the first clears output and copies the manifest/icon, the second adds the classic worker. A third HTML build adds the local alert page and its assets without clearing earlier output. Run the full build command. Generated output and dependencies are ignored by Git. No minimum Chrome version is claimed from the ES2022 target alone.
+Vite builds an unpacked MV3 extension into `dist/`: `manifest.json`, `content.js`, `background.js`, and `assets/icon-128.png`. Two library builds produce standalone IIFEs; the first clears output and copies manifest/icon, the second adds the classic worker. PiP DOM and styles are bundled into content.js. No alert HTML build or alert assets remain. Generated output and dependencies are ignored by Git. The manifest requires desktop Chrome 116 for Document PiP, with runtime feature detection; this minimum is not inferred from ES2022.
 
-Vitest has real application tests with no no-tests allowance. Synthetic tests establish route policy, mocked window creation, timestamp rendering, and safe logging; they do not establish authenticated iClicker or Chrome window behavior.
+Vitest has real application tests with no no-tests allowance. Synthetic checks establish route policy, monitoring lifecycle, mocked PiP opening, DOM rendering, and safe logging; they do not establish authenticated iClicker compatibility or always-on-top visibility. Test discovery is scoped to tests/ and lint excludes the local .kilo worktree directory so unrelated nested checkouts are not validated as this package.
 
 CI uses the same Node line, `npm ci`, and the four individual validation scripts with npm caching. Hosted CI results must be checked after pushing; local success does not establish a successful GitHub Actions run.
 
@@ -47,14 +47,14 @@ CI uses the same Node line, `npm ci`, and the four individual validation scripts
 2. Open `chrome://extensions` in Chrome and enable **Developer mode**.
 3. Choose **Load unpacked** and select this checkout's `dist/` directory.
 4. Confirm the updated build has `webNavigation` permission enabled, check the iNoti card for errors, and inspect the service worker for startup errors.
-5. Open or refresh `https://student.iclicker.com/` so the static content script starts. Use a single tab. OS notification settings are irrelevant to this alert window.
+5. Open or refresh `https://student.iclicker.com/` so the static content script starts. Use a single tab and click Start Monitoring on a supported class page. PiP starts idle; OS notification settings are not involved.
 6. After code changes, rebuild, reload iNoti on the extensions page, and refresh the student page. Loading while already on a poll intentionally produces no alert.
 
 Follow the manual scenarios in docs/TESTING.md and record browser/OS versions and actual results. This development build is not a Web Store release; no live-session verification is implied by a successful build. For documentation-only changes, inspect text, relative links, required files, consistency, and whitespace.
 
-For diagnosis, open the student page's DevTools console and the extension service-worker console before starting an instructor poll. Enable Info-level console messages and filter by `[iNoti]`. Inspect the alert page's own console for render/close events. `src/shared/logging.ts` has a single `DEBUG` constant, currently enabled for this testing phase; set it to false and rebuild to silence diagnostic output. Logs deliberately omit raw URLs, UUIDs, payloads, and unrecognized error text. See docs/TESTING.md for expected log stages.
+For diagnosis, open the student page's DevTools console and the extension service-worker console before starting an instructor poll. Enable Info-level console messages and filter by `[iNoti]`. Look for [iNoti][pip] open, state, close, and failure events in the content context. `src/shared/logging.ts` has a single `DEBUG` constant, currently enabled for this testing phase; set it to false and rebuild to silence diagnostic output. Logs deliberately omit raw URLs, UUIDs, payloads, and unrecognized error text. See docs/TESTING.md for expected log stages.
 
-Join a class after the page refresh: initial `UNSUPPORTED` is expected before SPA initialization. Look for worker `webNavigation history update observed` or `webNavigation fragment update observed`, forwarding/delivery logs, and content `navigation update received` with source `webNavigation` or `hashchange`. `UNSUPPORTED` to `WAITING` sets the baseline; a later same-class `QUESTION_ACTIVE` should send one `NEW_POLL`. Injection was verified in the owner's Chrome test; this updated end-to-end flow still needs live verification.
+Join a class after the page refresh: initial `UNSUPPORTED` is expected before SPA initialization. Look for worker `webNavigation history update observed` or `webNavigation fragment update observed`, forwarding/delivery logs, and content `navigation update received` with source `webNavigation` or `hashchange`. `UNSUPPORTED` to `WAITING` sets the baseline; a later same-class `QUESTION_ACTIVE` should change the already-open PiP to its alert state once. Injection was verified in the owner's Chrome test; this updated end-to-end flow still needs live verification.
 
 See [testing](docs/TESTING.md) for fixture requirements, browser scenarios, and release evidence.
 

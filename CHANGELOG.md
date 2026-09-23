@@ -1,16 +1,20 @@
 # Changelog
 
-No version has been released. This file is initialized early as part of the requested documentation set; the source roadmap requires release entries when the first version approaches release.
+No version has been released. The development manifest version 0.1.0 is for unpacked loading.
 
 ## Unreleased
 
+### Changed
+
+- Replaced the focused Chrome popup alert with user-started Document PiP monitoring. One window switches between minimal idle status and a new-question alert with local detection time.
+- Closing PiP, leaving the class, or destroying the opener stops monitoring. Refresh requires a new click. Unsupported API and opening failures are shown on the page.
+- Removed the standalone alert page/assets, third build, NEW_POLL delivery contract, and obsolete popup tests. Added monitoring/PiP lifecycle coverage and a real-browser manual matrix.
+- Declared desktop Chrome 116 minimum; retained only webNavigation permission and exact student-site access.
+
 ### Added
 
-- Filtered Chrome webNavigation history/fragment events forwarded to per-page detection, addressing owner-reported missed SPA navigation. Adds only webNavigation permission, preserves hashchange and custom alerts, and suppresses consecutive duplicate reports from both sources. Live delivery of the fix remains unverified.
+- Route-based detection with initial-active baseline and consecutive duplicate suppression across hashchange and filtered webNavigation history/fragment events.
+- Privacy-safe content, worker, and PiP diagnostics; no question/answer content, telemetry, or persistent state.
+- Project documentation, local checks, and CI configuration.
 
-- Minimal MV3 development extension: same-class hash-route transitions into a poll open a focused, extension-owned HTML alert window with local detection time and a close button. Initial active routes establish a baseline. Native notification delivery and its permission have been removed.
-- Privacy-safe content, worker, and alert console diagnostics; timestamp/rendering and popup-window tests. Browser validation remains pending.
-
-- Initial project documentation covering MVP scope, architecture, detection research, testing, privacy, decisions, contribution rules, and pull request review.
-
-The development manifest uses version 0.1.0 for unpacked loading; this is not a published release. Sound, settings, click focus, quiz support, cross-tab deduplication, and recovery remain deferred. Browser validation is pending.
+Real Chrome/iClicker validation of PiP remains pending. Sound, settings, click focus, quiz support, cross-tab deduplication, and recovery remain deferred.

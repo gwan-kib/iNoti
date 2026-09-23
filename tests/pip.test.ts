@@ -1,0 +1,84 @@
+import { afterEach, expect, it, vi } from 'vitest';
+import { createPipController, documentPip } from '../src/content/pip-controller';
+import { createPipView } from '../src/content/pip-view';
+import { DocumentFake } from './dom-fake';
+
+afterEach(() => vi.restoreAllMocks());
+function fixture() {
+  const pip = Object.assign(new EventTarget(), { document: {} as Document, closed: false, close: vi.fn() });
+  const requestWindow = vi.fn<() => Promise<Window>>();
+  const changed = vi.fn();
+  const view = { idle: vi.fn(), question: vi.fn() };
+  const controller = createPipController({ requestWindow }, changed, () => view);
+  return { pip, requestWindow, changed, view, controller };
+}
+it('discards pending opens after stop without claiming monitoring started', async () => {
+  const f = fixture();
+  let resolve!: (pip: Window) => void;
+  f.requestWindow.mockReturnValue(new Promise(done => { resolve = done; }));
+  const pending = f.controller.start();
+  f.controller.stop();
+  resolve(f.pip as unknown as Window);
+  await pending;
+  expect(f.pip.close).toHaveBeenCalledOnce();
+  expect(f.view.idle).not.toHaveBeenCalled();
+  expect(f.changed).toHaveBeenLastCalledWith({ state: 'UNMONITORED', opening: false });
+});
+it.each(['sync', 'async'])('handles %s request failures privately and permits explicit retry', async kind => {
+  const log = vi.spyOn(console, 'info').mockImplementation(() => {});
+  const f = fixture();
+  if (kind === 'sync') f.requestWindow.mockImplementation(() => { throw new Error('private URL'); });
+  else f.requestWindow.mockRejectedValue(new Error('private URL'));
+  await f.controller.start();
+  expect(f.changed).toHaveBeenLastCalledWith({ state: 'UNMONITORED', opening: false, issue: 'failed' });
+  expect(JSON.stringify(log.mock.calls)).not.toContain('private URL');
+  f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
+  await f.controller.start();
+  expect(f.view.idle).toHaveBeenCalledOnce();
+});
+it('ignores a late close from an old PiP after a new monitoring session starts', async () => {
+  const f = fixture();
+  f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
+  await f.controller.start(); f.controller.stop();
+  const next = Object.assign(new EventTarget(), { document: {} as Document, closed: false, close: vi.fn() });
+  f.requestWindow.mockResolvedValue(next as unknown as Window);
+  await f.controller.start();
+  f.pip.dispatchEvent(new Event('pagehide'));
+  f.controller.question(123);
+  expect(f.view.question).toHaveBeenCalledExactlyOnceWith(123);
+});
+it('stays idle if a question transition occurs while opening', async () => {
+  const f = fixture();
+  f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
+  const pending = f.controller.start();
+  f.controller.question(123);
+  await pending;
+  expect(f.view.question).not.toHaveBeenCalled();
+  expect(f.view.idle).toHaveBeenCalledOnce();
+});
+it('feature-detects a callable requestWindow', () => {
+  expect(documentPip({ documentPictureInPicture: {} } as unknown as Window)).toBeUndefined();
+});
+it('renders minimal idle content and local detection time without HTML insertion', () => {
+  const document = new DocumentFake();
+  const view = createPipView(document as unknown as Document);
+  view.idle();
+  const main = document.body.children[0]!;
+  expect(main.children[0]!.textContent).toBe('\u25cf iNoti');
+  expect(main.children[1]!.hidden).toBe(true);
+  view.question(1_700_000_000_000);
+  expect(main.children[1]!.textContent).toBe('New iClicker Question');
+  expect(main.children[1]!.hidden).toBe(false);
+  expect(main.children[2]!.textContent).toBe(`Detected at ${new Date(1_700_000_000_000).toLocaleTimeString()}`);
+  view.idle();
+  expect(main.children[2]!.textContent).toBe('');
+});
+it('cleans up when rendering fails, even if close emits pagehide synchronously', async () => {
+  const pip = Object.assign(new EventTarget(), { document: {} as Document, closed: false, close: vi.fn() });
+  pip.close.mockImplementation(() => pip.dispatchEvent(new Event('pagehide')));
+  const changed = vi.fn();
+  const controller = createPipController({ requestWindow: async () => pip as unknown as Window }, changed, () => { throw new Error('private'); });
+  await controller.start();
+  expect(pip.close).toHaveBeenCalledOnce();
+  expect(changed).toHaveBeenLastCalledWith({ state: 'UNMONITORED', opening: false, issue: 'failed' });
+});

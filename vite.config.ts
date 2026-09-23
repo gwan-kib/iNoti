@@ -5,17 +5,6 @@ import { defineConfig } from 'vite';
 const path = (relative: string) => fileURLToPath(new URL(relative, import.meta.url));
 
 export default defineConfig(({ mode }) => {
-  if (mode === 'alert') {
-    return {
-      root: path('./src/alert'),
-      base: './',
-      publicDir: false,
-      build: {
-        target: 'es2022', outDir: path('./dist'), emptyOutDir: false,
-        rolldownOptions: { input: path('./src/alert/alert.html') },
-      },
-    };
-  }
   const background = mode === 'background';
   return {
     publicDir: false,

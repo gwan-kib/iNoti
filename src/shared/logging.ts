@@ -1,7 +1,7 @@
 // Enabled for the current real-browser diagnostic phase; disable before quiet builds.
 const DEBUG = true;
 
-export function logger(scope: 'content' | 'worker' | 'alert') {
+export function logger(scope: 'content' | 'worker' | 'pip') {
   return (event: string, details?: Record<string, string | number | boolean | undefined>) => {
     if (DEBUG) console.info(`[iNoti][${scope}] ${event}`, details ?? {});
   };

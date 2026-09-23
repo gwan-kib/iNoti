@@ -1,6 +1,6 @@
 # Architecture decisions
 
-These records distinguish implemented choices from future directions. **Accepted direction does not mean browser-verified.** D009 defines route policy, D011 defines custom alerts, and D012 updates navigation observation/permissions. D005 and D010 record superseded native-delivery choices.
+These records distinguish implemented choices from future directions. **Accepted direction does not mean browser-verified.** D009 defines route policy, D013 defines Document PiP monitoring, and D012 defines navigation observation/permissions. D011 records superseded popup delivery. D005 and D010 record superseded native-delivery choices.
 
 For each future record include an ID, status (proposed, accepted, or superseded), context, choice, alternatives, consequences, and evidence. Link an issue only if one exists. Update a record or supersede it when new evidence changes the choice.
 
@@ -50,7 +50,7 @@ Status: proposed; validation required.
 
 Use an offscreen document with the `AUDIO_PLAYBACK` reason if it is the reliable choice for the bundled sound. Keep a small audio abstraction so a demonstrably simpler and equally reliable approach can replace it.
 
-Adding `offscreen`, selecting the minimum Chrome version, and claiming reliable audio require lifecycle/browser evidence. No audio mechanism or asset is implemented; current HTML alerts have no sound.
+Adding `offscreen`, selecting the minimum Chrome version, and claiming reliable audio require lifecycle/browser evidence. No audio mechanism or asset is implemented; current PiP alerts have no sound.
 
 ## D007: Minimum permissions and no default discard override
 
@@ -68,7 +68,7 @@ Context: contributors need reproducible local checks and equivalent CI before ap
 
 Choice: Node 22.13+ within 22.x, selected by `.nvmrc`, with npm 10 or 11 and a committed npm lockfile. Use TypeScript 5.9, ESLint 10 with typescript-eslint, Vitest 5, and Vite 8. Exact direct dependency versions are pinned in `package.json`. TypeScript 5.9 stays within typescript-eslint's supported peer range. Use strict ES2022/bundler settings with DOM types and no compiler output. ESLint covers real configuration files and future source; Vitest runs once in Node with explicit imports. GitHub Actions runs the same scripts after `npm ci` and caches npm downloads.
 
-Alternatives: a UI framework, extension-specific plugin, or monorepo would add unnecessary infrastructure. Vite supports the planned plain HTML/CSS and TypeScript direction. D010 now defines the revised Phase 1 packaging.
+Alternatives: a UI framework, extension-specific plugin, or monorepo would add unnecessary infrastructure. Vite supports the planned plain HTML/CSS and TypeScript direction. D013 now defines the current Phase 1 delivery and packaging.
 
 Consequences: production output remains `dist/`, ignored by Git. Phase 0 originally used `tooling/index.html` and allowed zero tests. Revised Phase 1 removes both, adds Chrome API types and real tests, and emits the MV3 package. The build target does not establish the minimum supported Chrome version.
 
@@ -102,13 +102,13 @@ Consequences: one create request per accepted message, no retries, no click beha
 
 Evidence: mocked worker tests cover notification options, sender/payload rejection, and failed creation; build inspection checks referenced assets and scope. Loading unpacked and real notifications remain manual evidence requirements.
 
-## D011: Custom HTML alert windows and development diagnostics
+## D011: Custom HTML alert windows and development diagnostics (historical)
 
-Status: custom alert delivery accepted and implemented; no-permission and hashchange-only assumptions superseded by D012. Supersedes native delivery in D005/D010. Actual alert delivery remains unverified.
+Status: superseded by D013 for delivery/build/lifecycle and D012 for navigation/permissions. The original popup-window decision below is retained as historical evidence.
 
 Context: the owner wants a visible proof-of-concept alert independent of OS notification banners and detailed evidence of where route detection or delivery fails. Route parsing and hashchange observation remain unchanged.
 
-Choice: open local `alert.html?detectedAt=<timestamp>` using `chrome.windows.create`, type popup, 400 by 180 pixels, focused. The page uses packaged HTML/CSS/JS, validates the timestamp, renders with textContent, and closes its own window on ×. It remains open until closed. This is not an action popup, OS overlay, or always-on-top window; focus stealing is intentional for this testing stage.
+Choice: open local `alert.html?detectedAt=<timestamp>` using `chrome.windows.create`, type popup, 400 by 180 pixels, focused. The page uses packaged HTML/CSS/JS, validates the timestamp, renders with textContent, and closes its own window on Ãƒâ€”. It remains open until closed. This is not an action popup, OS overlay, or always-on-top window; focus stealing is intentional for this testing stage.
 
 Permissions: remove notifications with no replacement API permissions. Keep only the exact student-site static content-script match. The [Chrome windows API](https://developer.chrome.com/docs/extensions/reference/api/windows) requires tabs permission for sensitive tab properties, not this window creation. No tab content inspection, storage, external resources, or telemetry is introduced.
 
@@ -122,7 +122,7 @@ Evidence: automated mocks and package inspection are documented in [testing](TES
 
 ## D012: Chrome navigation events forwarded to per-page state
 
-Status: accepted and implemented in response to owner-supplied Chrome evidence; live alert delivery must be re-tested.
+Status: navigation observation accepted and implemented; the NEW_POLL/custom-window delivery described below was superseded by D013. Live delivery still requires re-testing.
 
 Context: content injection, baseline UNSUPPORTED at document_start, and worker startup were observed in real Chrome. Visible class-to-poll SPA navigation produced no hashchange log and no alert. History API navigation is a plausible explanation, not a directly verified site implementation detail.
 
@@ -136,9 +136,27 @@ Privacy and consequences: webNavigation is a broad browser capability, constrain
 
 Evidence: [Chrome webNavigation documentation](https://developer.chrome.com/docs/extensions/reference/api/webNavigation) specifies history/fragment events and its permission; [tabs messaging](https://developer.chrome.com/docs/extensions/reference/api/tabs#method-sendMessage) supports targeting content scripts. Tests cover filtering, forwarding, message validation, initial baseline recovery, duplicate source orders, and existing popup behavior. See [testing](TESTING.md).
 
+## D013: User-started Document Picture-in-Picture monitoring
+
+Status: accepted and implemented at the owner's request; real Chrome/iClicker validation pending. Supersedes D011 delivery/build/lifecycle and D012's NEW_POLL delivery path. D009 route policy and D012 navigation filtering remain unchanged.
+
+Context: a persistent small surface should show idle status and new questions while the student works in other tabs/applications. A normal popup window cannot provide the intended always-on-top behavior.
+
+Choice: show Start Monitoring only on supported class/session routes. Its click calls documentPictureInPicture.requestWindow directly within the user-activation chain. No question event opens a window. A successful open starts idle; only later eligible route transitions show an alert. Question end returns the same PiP to idle. Closing PiP means stop monitoring; re-enable always requires a click. Session exit, class switch, and opener pagehide clean up, including pending opens.
+
+The API provides always-on-top behavior and cannot outlive its opener. Chrome chooses placement and may clamp dimensions. Request 300 by 160 once for both minimal idle and compact alert content. Do not use arbitrary coordinates or automatic resizing; resizeTo/resizeBy require user activation. No separate-tab, Chrome popup, or native-notification fallback is offered. Unavailable API and opening failures leave monitoring inactive with a visible explanation.
+
+Browser support: desktop Chrome 116 is the minimum for requestWindow with width/height and pagehide cleanup, reflected in the manifest. Runtime feature detection remains necessary. Newer optional placement/return-button features are not used. No permission is added; the narrow content match and webNavigation remain. The page owns the Window reference, not the disposable worker. No MAIN-world bridge, scripting permission, DOM detection, or page-content inspection is introduced.
+
+Alternatives: opening on NEW_POLL violates the user-gesture requirement. Literal dot-sized windows and automatic expansion depend on browser sizing/activation constraints. Separate-tab/native/popup alternatives do not meet the requested experience. Cross-tab identity, sound, settings, and recovery are separate future work.
+
+Consequences: refreshing requires another click and suppresses an initial active poll. PiP is same-origin with its opener and contains only generic status/local time. Always-on-top does not establish reliable execution under Memory Saver/discard. Control placement, isolated-world API availability, site CSP/style compatibility, background delivery, and tab/application switching need real unpacked-extension verification.
+
+Evidence: [Chrome Document PiP documentation](https://developer.chrome.com/docs/web-platform/document-picture-in-picture) documents desktop support from Chrome 116, user activation, fixed initial dimensions, browser-controlled placement, opener lifetime, pagehide, and resize activation requirements. Synthetic tests cover lifecycle, UI rendering, safe failures, route safeguards, and source deduplication; they do not establish browser visibility. See [testing](TESTING.md).
+
 ## Decisions still required
 
 - Per-question identity, cross-tab duplicate handling, and any future fingerprint policy.
-- Monitoring re-enable, stale cross-tab event ordering, dedupe retention, and delivery retries.
-- Setting defaults, supported OS matrix, and minimum Chrome version.
-- Audio implementation, notification focus without broad `tabs` access, and any measured discard limitation.
+- Stale cross-tab event ordering, dedupe retention, and delivery retries.
+- Persistent preference defaults and the supported OS verification matrix.
+- Audio implementation, focus actions without broad tabs access, and measured discard limitations.

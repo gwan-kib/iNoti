@@ -1,4 +1,4 @@
-﻿# Detection strategy
+ï»¿# Detection strategy
 
 ## Confirmed project evidence
 
@@ -34,9 +34,9 @@ Latest owner-supplied real Chrome evidence: the content console showed `loaded` 
 | Unsupported to active, or changing classes directly into active | No |
 | Unsupported to waiting/closed, then same-class active | Yes, on the later supported transition |
 
-Previous state advances before sending a candidate. Consecutive reports of the same route from either source cannot resend it, without cooldown timers. NEW_POLL contains only event type and detection time. NAVIGATION_CHANGED carries a transient route hash, potentially containing class/question IDs, only to the originating page; it is neither persisted nor logged. State stays in the content script so worker suspension cannot erase the baseline.
+Previous state advances before updating the monitoring controller. Consecutive reports of the same route from either source cannot resend it, without cooldown timers. An eligible transition supplies only local detection time to an already-open PiP; it never opens one. Leaving active for waiting/closed returns PiP to idle. Unsupported routes or class changes stop monitoring. NAVIGATION_CHANGED carries a transient route hash, potentially containing class/question IDs, only to the originating page; it is neither persisted nor logged. State stays in the content script so worker suspension cannot erase the baseline.
 
-Content diagnostics log startup, baseline, navigation source, previous/next states, eligibility, and message delivery. Worker logs distinguish history/fragment observation, forwarding, delivery, and failure. Raw hashes and UUIDs are not logged. The custom HTML alert and route parser/transition policy are unchanged.
+Content diagnostics log startup, baseline, navigation source, previous/next states, eligibility, and control visibility. Worker logs distinguish history/fragment observation, forwarding, delivery, and failure. Raw hashes and UUIDs are not logged. The route parser/transition policy is unchanged; D013 replaces delivery with user-started PiP.
 
 ## Boundaries
 
@@ -44,4 +44,4 @@ This is route-transition detection, not question identity. Manually navigating b
 
 Multiple tabs may each alert; there is no global deduplication, reconnect policy, or persistent state. An event lost before the content receiver is ready is logged but not replayed; a later active route alone does not prove a new poll. Cross-source ordering across multiple rapid distinct transitions still needs browser testing. Quiz support remains deferred. DOM/network detection would require new evidence and a separate decision.
 
-See [tests and manual verification](TESTING.md), [architecture](ARCHITECTURE.md), and D009/D012 in [decisions](DECISIONS.md).
+See [tests and manual verification](TESTING.md), [architecture](ARCHITECTURE.md), and D009/D012/D013 in [decisions](DECISIONS.md).

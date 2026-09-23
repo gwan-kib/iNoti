@@ -2,7 +2,7 @@
 
 ## Scope and priorities
 
-- Read README.md and the relevant technical documents before changes. Phase 1 uses route detection and extension-owned HTML alert windows; distinguish automated results from unverified browser behavior and later features.
+- Read README.md and the relevant technical documents before changes. Phase 1 uses route detection and user-started Document Picture-in-Picture monitoring; distinguish automated results from unverified browser behavior and later features.
 - Stay inside the MVP unless the project owner explicitly authorizes post-MVP work. An issue is not required. Question detection, duplicate prevention, and recovery take priority over UI polish.
 - Inspect the checkout and existing changes before editing. Preserve unrelated work and keep changes focused on the requested task.
 - Follow CONTRIBUTING.md for the solo workflow: work on `main` by default, keep changes focused, validate, and update documentation. Do not require individual issues, feature branches, or PRs; use them only when requested or useful.
@@ -14,8 +14,8 @@
 - Do not invent DOM selectors or add DOM observation, polling, or network/WebSocket interception without new evidence and authorization.
 - Keep Chrome APIs at component boundaries and notification delivery out of the detector. Phase 1 is single-tab only; do not prematurely add question fingerprints or cross-tab registries.
 - Treat the worker as disposable and register listeners synchronously. It currently stores no session state. Storage/recovery, toolbar popup/settings, sound, click focus, and quiz support remain later work.
-- Use `chrome.windows.create` with a local alert page, not native notifications. Only `webNavigation` is requested for SPA observation; no tabs permission or toolbar popup is needed. The current focused window is a testing choice, not an always-on-top guarantee.
-- Keep `[iNoti][content]`, `[iNoti][worker]`, and `[iNoti][alert]` logs useful and private: source, normalized states, boolean decisions, failure categories, and optional window ID only. Never dump raw hashes, sender objects, payloads, or arbitrary errors. Filter navigation to top-frame exact `https://student.iclicker.com` before logging/forwarding; do not collect history or add speculative observers.
+- Use one user-started Document PiP surface owned by the page. Never open PiP from question events; close means stop monitoring. Use a fixed requested footprint, no positioning/automatic resize or fallback alerts. Only webNavigation is requested; no tabs permission or toolbar popup is needed.
+- Keep `[iNoti][content]`, `[iNoti][worker]`, and `[iNoti][pip]` logs useful and private: source, normalized states, boolean decisions, failure categories only. Never dump raw hashes, sender objects, payloads, or arbitrary errors. Filter navigation to top-frame exact `https://student.iclicker.com` before logging/forwarding; do not collect history or add speculative observers.
 
 ## Privacy and permissions
 
