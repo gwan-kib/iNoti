@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>iNoti Dev Tester</title>
+  <link rel="stylesheet" href="./dev-testing.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <p class="eyebrow">Development only</p>
+      <h1>iNoti Dev Tester</h1>
+      <p>Exercise the alert UI without an iClicker class. These controls do not send synthetic events into live detection.</p>
+    </header>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <h2>PiP state simulator</h2>
+          <p id="pip-status" role="status">PiP: checking support…</p>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="open-pip" type="button">Open PiP</button>
+        <button id="question" type="button">New Question</button>
+        <button id="idle" type="button">Return to Idle</button>
+        <button id="stop" type="button">Stop PiP</button>
+      </div>
+      <div class="preview-wrap">
+        <div class="preview-label">Inline preview</div>
+        <iframe id="preview" title="iNoti notification preview"></iframe>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <h2>Event log</h2>
+          <p>Also written to DevTools as <code>[iNoti][dev]</code>. Keep captures free of student/session data.</p>
+        </div>
+        <button id="clear-log" class="secondary" type="button">Clear</button>
+      </div>
+      <ol id="event-log" class="event-log" aria-live="polite"></ol>
+    </section>
+  </main>
+  <script src="./dev-testing.js"></script>
+</body>
+</html>

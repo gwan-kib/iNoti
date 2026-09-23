@@ -15,6 +15,8 @@ A TypeScript/Vite MV3 extension with no framework or runtime dependencies. Route
 | `src/shared/messages.ts` | Validated NAVIGATION_CHANGED contract |
 | `src/shared/logging.ts` | Privacy-safe content/worker/pip diagnostics |
 | `src/background/service-worker.ts` | Filtered navigation forwarding only; no session state or alert creation |
+| `src/popup/popup.ts` | Development toolbar popup; opens the extension-owned tester tab only |
+| `src/dev-testing/dev-testing.ts` | Development-only PiP state simulator and local event log; reuses the production PiP controller/view |
 
 ## Event flow and lifecycle
 
@@ -26,13 +28,15 @@ A TypeScript/Vite MV3 extension with no framework or runtime dependencies. Route
 6. PiP pagehide, the active button, leaving supported routes, changing class, or opener pagehide stops monitoring and clears references. A generation token closes stale pending opens after session exit. A late old-window close cannot stop a newer session. BFCache restoration establishes a fresh baseline without reopening PiP.
 7. Unsupported API or opening failure leaves monitoring inactive with a clear control state. Failure can be retried only by another click. No worker NEW_POLL contract or notification fallback remains.
 
+The toolbar popup and `dev-testing/` extension page are development tooling, not part of live detection. The popup opens `dev-testing/index.html`; that page can render the shared PiP view in an inline preview, open the real Document PiP surface from a user click, and manually drive idle/question/stop states. It never sends synthetic events into the content script or worker, so it cannot change or falsely validate iClicker detection.
+
 Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE -> MONITORING_IDLE, with any session-ending event returning to UNMONITORED. Opening is a transient guard, not active monitoring. Detection continues while unmonitored so enabling monitoring does not invent a question transition.
 
 ## PiP and build
 
 Request 300 by 160 pixels once. Chrome controls placement, chrome, and size clamping. Idle content is a dot and iNoti; active content adds the question title and local time. No resize calls, screen coordinates, history, auto-dismiss, sound, or stacking. PiP cannot outlive its opener. It is same-origin with the student page, not a separate extension-origin security boundary, so it contains no sensitive data.
 
-Two standalone Vite IIFE builds emit content and worker code. The first clears dist and copies assets; the second preserves that output. PiP DOM/CSS is bundled into content.js; it does not load an HTML entry, external resource, or script.
+Four standalone Vite IIFE builds emit content, worker, toolbar-popup, and dev-tester code. The content build clears dist and copies the manifest/icon; later builds preserve output and copy their local HTML/CSS. Production PiP DOM/CSS is still bundled into content.js; the dev tester bundles the same PiP controller/view code for isolated testing.
 
 ```text
 dist/
@@ -40,10 +44,18 @@ dist/
   content.js
   background.js
   assets/icon-128.png
+  popup/
+    popup.html
+    popup.css
+    popup.js
+  dev-testing/
+    index.html
+    dev-testing.css
+    dev-testing.js
 ```
 
 ## Diagnostics and limits
 
-DEBUG enables `[iNoti][content]`, `[iNoti][worker]`, and `[iNoti][pip]` logs. Only event names, normalized states, boolean decisions, and safe error categories are logged. No raw routes, IDs, payloads, arbitrary exceptions, or page content.
+DEBUG enables `[iNoti][content]`, `[iNoti][worker]`, and `[iNoti][pip]` logs. The development tester additionally emits `[iNoti][dev]` events and shows the same safe event summary on-page. Only event names, normalized states, boolean decisions, and safe error categories are logged. No raw routes, IDs, payloads, arbitrary exceptions, or page content.
 
 The worker remains disposable. Failed navigation delivery is not replayed; no DOM observation, polling, history patching, or network interception is added. Always-on-top is an API property, not evidence of tested background detection or this build's UI compatibility. See [testing](TESTING.md), [privacy](PRIVACY.md), and D013 in [decisions](DECISIONS.md).

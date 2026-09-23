@@ -13,8 +13,8 @@
 - Use filtered webNavigation history/fragment events plus `hashchange`, feeding one content-script evaluation function. Keep previous-route state in the page, not the disposable worker. Initial active routes establish a baseline; only same-class waiting/closed to active transitions notify.
 - Do not invent DOM selectors or add DOM observation, polling, or network/WebSocket interception without new evidence and authorization.
 - Keep Chrome APIs at component boundaries and notification delivery out of the detector. Phase 1 is single-tab only; do not prematurely add question fingerprints or cross-tab registries.
-- Treat the worker as disposable and register listeners synchronously. It currently stores no session state. Storage/recovery, toolbar popup/settings, sound, click focus, and quiz support remain later work.
-- Use one user-started Document PiP surface owned by the page. Never open PiP from question events; close means stop monitoring. Use a fixed requested footprint, no positioning/automatic resize or fallback alerts. Only webNavigation is requested; no tabs permission or toolbar popup is needed.
+- Treat the worker as disposable and register listeners synchronously. It currently stores no session state. Storage/recovery, production toolbar settings, sound, click focus, and quiz support remain later work. A development-only toolbar popup may link to the local dev tester, but it must not be treated as production settings UI.
+- Use one user-started Document PiP surface owned by the page. Never open PiP from question events; close means stop monitoring. Use a fixed requested footprint, no positioning/automatic resize or fallback alerts. Only webNavigation is requested; the development toolbar popup must not add broad tabs permission.
 - Keep `[iNoti][content]`, `[iNoti][worker]`, and `[iNoti][pip]` logs useful and private: source, normalized states, boolean decisions, failure categories only. Never dump raw hashes, sender objects, payloads, or arbitrary errors. Filter navigation to top-frame exact `https://student.iclicker.com` before logging/forwarding; do not collect history or add speculative observers.
 
 ## Privacy and permissions
@@ -30,7 +30,7 @@
 - Add or update tests whenever detection, state transitions, deduplication, messaging, settings, or recovery changes. Use docs/TESTING.md to choose relevant automated and manual checks.
 - Before a code change is considered complete, run the documented lint, type-check, test, and production-build commands. Browser-dependent behavior also needs applicable manual verification.
 - **Current command status:** run `npm run check` for lint, type-check, real Vitest tests, and the unpacked extension build. Exact setup and individual commands are in CONTRIBUTING.md and docs/TESTING.md; CI runs equivalent checks. Do not create placeholder tests or reinstate the no-tests allowance.
-- For documentation-only changes, check required files, relative links, consistency with the revised roadmap and checkout, and whitespace. Report browser checks not run with the concrete environment limitation; mocks do not establish live compatibility.
+- For documentation-only changes, check required files, relative links, consistency with the revised roadmap and checkout, and whitespace. Report browser checks not run with the concrete environment limitation; mocks and the development tester do not establish live iClicker compatibility.
 
 ## Documentation maintenance
 

@@ -6,3 +6,7 @@ coverage/
 .env
 .env.*
 !.env.example
+
+# Local development evidence; keep private/session-specific captures out of Git.
+dev-testing/logs/*
+!dev-testing/logs/.gitkeep

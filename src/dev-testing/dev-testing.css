@@ -1,0 +1,23 @@
+:root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #182338; background: #eef2f6; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.shell { width: min(920px, calc(100% - 32px)); margin: 32px auto 56px; }
+header { margin-bottom: 20px; }
+.eyebrow { margin: 0 0 6px; color: #25634c; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 38px); }
+h2 { margin: 0 0 4px; font-size: 18px; }
+p { margin: 0; color: #536076; line-height: 1.5; }
+.panel { margin-top: 18px; padding: 20px; border: 1px solid #d7dee8; border-radius: 14px; background: white; box-shadow: 0 8px 28px rgba(26, 39, 64, .06); }
+.panel-heading { display: flex; align-items: start; justify-content: space-between; gap: 16px; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0; }
+button { border: 0; border-radius: 9px; padding: 10px 14px; background: #25634c; color: white; font: inherit; font-weight: 650; cursor: pointer; }
+button.secondary { background: #e9eef4; color: #243147; }
+button:hover { filter: brightness(.96); }
+button:focus-visible { outline: 3px solid #8fcab5; outline-offset: 2px; }
+.preview-wrap { display: inline-block; max-width: 100%; padding: 12px; border-radius: 12px; background: #f1f4f8; }
+.preview-label { margin-bottom: 8px; color: #667085; font-size: 12px; font-weight: 700; }
+iframe { display: block; width: 300px; height: 160px; max-width: 100%; border: 1px solid #cbd5e1; border-radius: 9px; background: white; }
+.event-log { min-height: 120px; max-height: 300px; overflow: auto; margin: 16px 0 0; padding: 12px 12px 12px 36px; border-radius: 10px; background: #111827; color: #e5e7eb; font: 12px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.event-log:empty::before { content: "No events yet."; color: #9ca3af; }
+code { font: .9em ui-monospace, SFMono-Regular, Consolas, monospace; }
+@media (max-width: 560px) { .shell { width: min(100% - 20px, 920px); margin-top: 18px; } .panel { padding: 16px; } .panel-heading { flex-direction: column; } }

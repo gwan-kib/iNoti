@@ -29,13 +29,13 @@ Use `npm ci` for reproducible installation from `package-lock.json`. Use `npm in
 | --- | --- |
 | `npm run lint` | ESLint recommended JavaScript and TypeScript rules; warnings fail the check |
 | `npm run typecheck` | Strict TypeScript validation without emitting files |
-| `npm test` | Vitest single run of route, transition, messaging, and notification tests |
+| `npm test` | Vitest single run of route, transition, messaging, PiP, and development-tool wiring tests |
 | `npm run build` | Vite production build into `dist/` |
 | `npm run check` | Lint, type-check, tests, then build; stops on failure |
 
 Lint and type-checking cover configuration, source, and tests. Strict TypeScript includes DOM and Chrome API types. Chrome APIs are mocked at component boundaries in tests; no runtime dependency or UI framework is needed.
 
-Vite builds an unpacked MV3 extension into `dist/`: `manifest.json`, `content.js`, `background.js`, and `assets/icon-128.png`. Two library builds produce standalone IIFEs; the first clears output and copies manifest/icon, the second adds the classic worker. PiP DOM and styles are bundled into content.js. No alert HTML build or alert assets remain. Generated output and dependencies are ignored by Git. The manifest requires desktop Chrome 116 for Document PiP, with runtime feature detection; this minimum is not inferred from ES2022.
+Vite builds an unpacked MV3 extension into `dist/`: the manifest/icon, content and worker bundles, a small toolbar popup, and a development-test page. Four standalone IIFE builds run in sequence; the content build clears output, later builds preserve it, and the popup/tester builds copy their local HTML/CSS. The production PiP DOM/styles remain bundled into content.js; the dev tester reuses the same PiP controller/view code in its own bundle. Generated output and dependencies are ignored by Git. The manifest requires desktop Chrome 116 for Document PiP, with runtime feature detection; this minimum is not inferred from ES2022.
 
 Vitest has real application tests with no no-tests allowance. Synthetic checks establish route policy, monitoring lifecycle, mocked PiP opening, DOM rendering, and safe logging; they do not establish authenticated iClicker compatibility or always-on-top visibility. Test discovery is scoped to tests/ and lint excludes the local .kilo worktree directory so unrelated nested checkouts are not validated as this package.
 
@@ -47,12 +47,13 @@ CI uses the same Node line, `npm ci`, and the four individual validation scripts
 2. Open `chrome://extensions` in Chrome and enable **Developer mode**.
 3. Choose **Load unpacked** and select this checkout's `dist/` directory.
 4. Confirm the updated build has `webNavigation` permission enabled, check the iNoti card for errors, and inspect the service worker for startup errors.
-5. Open or refresh `https://student.iclicker.com/` so the static content script starts. Use a single tab and click Start Monitoring on a supported class page. PiP starts idle; OS notification settings are not involved.
-6. After code changes, rebuild, reload iNoti on the extensions page, and refresh the student page. Loading while already on a poll intentionally produces no alert.
+5. For UI-only testing, click the iNoti toolbar icon and choose **Open Dev Tester**. The extension-owned tab can preview idle/question states and open the same Document PiP surface without an iClicker class.
+6. For live detection testing, open or refresh `https://student.iclicker.com/` so the static content script starts. Use a single tab and click Start Monitoring on a supported class page. PiP starts idle; OS notification settings are not involved.
+7. After code changes, rebuild, reload iNoti on the extensions page, and refresh any student or dev-tester tabs. Loading while already on a poll intentionally produces no alert.
 
 Follow the manual scenarios in docs/TESTING.md and record browser/OS versions and actual results. This development build is not a Web Store release; no live-session verification is implied by a successful build. For documentation-only changes, inspect text, relative links, required files, consistency, and whitespace.
 
-For diagnosis, open the student page's DevTools console and the extension service-worker console before starting an instructor poll. Enable Info-level console messages and filter by `[iNoti]`. Look for [iNoti][pip] open, state, close, and failure events in the content context. `src/shared/logging.ts` has a single `DEBUG` constant, currently enabled for this testing phase; set it to false and rebuild to silence diagnostic output. Logs deliberately omit raw URLs, UUIDs, payloads, and unrecognized error text. See docs/TESTING.md for expected log stages.
+For diagnosis, open the student page's DevTools console and the extension service-worker console before starting an instructor poll. Enable Info-level console messages and filter by `[iNoti]`. Look for [iNoti][pip] open, state, close, and failure events in the content context. The dev tester also writes `[iNoti][dev]` events and mirrors them in its on-page event log. `src/shared/logging.ts` has a single `DEBUG` constant, currently enabled for this testing phase; set it to false and rebuild to silence production diagnostic output. Logs deliberately omit raw URLs, UUIDs, payloads, and unrecognized error text. If you save local captures, put them under `dev-testing/logs/`; that directory is ignored except for its placeholder. See docs/TESTING.md for expected log stages.
 
 Join a class after the page refresh: initial `UNSUPPORTED` is expected before SPA initialization. Look for worker `webNavigation history update observed` or `webNavigation fragment update observed`, forwarding/delivery logs, and content `navigation update received` with source `webNavigation` or `hashchange`. `UNSUPPORTED` to `WAITING` sets the baseline; a later same-class `QUESTION_ACTIVE` should change the already-open PiP to its alert state once. Injection was verified in the owner's Chrome test; this updated end-to-end flow still needs live verification.
 

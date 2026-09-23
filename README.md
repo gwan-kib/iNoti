@@ -16,6 +16,10 @@ Document PiP is an always-on-top browser surface. Chrome controls its position a
 
 You still answer questions yourself in iClicker. Sound, settings, quiz alerts, click-to-focus iClicker, and cross-tab deduplication are not implemented.
 
+### Development tester
+
+The unpacked development build includes a small toolbar popup with an **Open Dev Tester** button. It opens an extension-owned tab where the idle and new-question PiP states can be previewed and the real PiP surface can be opened manually without joining an iClicker class. This is development tooling only: it verifies the alert UI/lifecycle in isolation and does not prove that live iClicker detection works.
+
 ## Privacy
 
 iNoti uses static content-script access only to `https://student.iclicker.com/*` and the `webNavigation` permission for SPA route changes. It reads routes, never question text, choices, answers, grades, or unrelated browsing. PiP displays only generic status and local detection time. No telemetry, navigation history, or persistent storage is added. Logs omit URLs and identifiers. See [privacy](docs/PRIVACY.md).

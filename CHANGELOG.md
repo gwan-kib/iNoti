@@ -13,8 +13,9 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Added
 
+- Development-only toolbar popup and extension-owned dev tester for manually previewing idle/question PiP states without an iClicker class. The tester includes an on-page safe event log and a Git-ignored local log-capture folder.
 - Route-based detection with initial-active baseline and consecutive duplicate suppression across hashchange and filtered webNavigation history/fragment events.
 - Privacy-safe content, worker, and PiP diagnostics; no question/answer content, telemetry, or persistent state.
 - Project documentation, local checks, and CI configuration.
 
-Real Chrome/iClicker validation of PiP remains pending. Sound, settings, click focus, quiz support, cross-tab deduplication, and recovery remain deferred.
+Real Chrome/iClicker validation of PiP remains pending. The development tester does not replace live compatibility checks. Sound, production settings, click focus, quiz support, cross-tab deduplication, and recovery remain deferred.

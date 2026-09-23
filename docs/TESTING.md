@@ -23,12 +23,19 @@ CI runs equivalent checks; hosted CI results remain separate from local verifica
 - Consecutive hashchange/webNavigation deduplication in both orders, malformed contracts, wrong-direction messages and untrusted navigation senders.
 - No automatic opening from question events, no alerts before start/after stop, close restoring Start Monitoring, class/session exit and opener pagehide/BFCache cleanup.
 - Unsupported API, sync/async request failures with explicit retry, late pending-open cleanup, and stale close events.
+- Toolbar popup wiring to the extension-owned dev tester and manifest permission regression coverage.
 
 Small EventTarget/DOM fakes and injected window/view boundaries keep tests dependency-free. These do not emulate user activation enforcement, isolated-world API exposure, CSP, layout, browser size clamping, or always-on-top behavior. Removed NEW_POLL worker sender tests belonged to the deleted receiver; active worker-origin/navigation sender validation remains covered.
 
 ## Build inspection
 
-After building, dist must contain exactly manifest.json, content.js, background.js, and assets/icon-128.png. Verify no legacy alert HTML/JS/CSS remains, including when building over an old dist. The first stage clears output. Verify only webNavigation permission, exact student-site content match, minimum_chrome_version 116, no action popup, and no remote dependencies. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
+After building, dist must contain manifest.json, content.js, background.js, assets/icon-128.png, popup/{popup.html,popup.css,popup.js}, and dev-testing/{index.html,dev-testing.css,dev-testing.js}. Verify no legacy alert-window HTML/JS/CSS remains, including when building over an old dist. The first stage clears output. Verify only webNavigation permission, exact student-site content match, minimum_chrome_version 116, the toolbar popup points only to the extension-owned dev tester, and no remote dependencies. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
+
+## Development tester
+
+After building and reloading the unpacked extension, click the iNoti toolbar icon and choose **Open Dev Tester**. The tester must work without an iClicker tab. Confirm the inline preview can switch between idle and New iClicker Question, the displayed time updates locally, **Open PiP** opens the shared PiP view from the click, **Return to Idle** returns it to idle, and **Stop PiP** closes it. Confirm the on-page event log and DevTools `[iNoti][dev]` output contain only generic state/capability information. Clearing the log affects only the tester page.
+
+The tester is not evidence that route detection, background delivery, reconnect behavior, or authenticated iClicker compatibility works. Those still require the real-browser matrix below. Optional local console captures belong under `dev-testing/logs/`, which is intentionally ignored by Git.
 
 ## Real unpacked Chrome manual matrix
 
@@ -75,7 +82,7 @@ A route candidate with inactive monitoring intentionally produces no alert. If P
 
 The migration has local automated verification on Windows with Node 22.17.1 and npm 11.12.1. On 2026-09-23, npm run lint, npm run typecheck, npm test (74 tests across five files), npm run build, and npm run check all passed. Artifact inspection confirmed the exact four-file package, narrow permissions/site match, Chrome 116 minimum, and no legacy alert delivery in source/bundles. Relative documentation links and whitespace were checked. Initial sandboxed Vite execution hit spawn EPERM; validation was rerun with the required process access. A nested local .kilo worktree initially confused lint discovery; configuration now isolates this checkout without changing that worktree.
 
-No real Chrome/iClicker PiP matrix rows were run in this implementation session. No authenticated, controlled instructor/student poll session was supplied for live transition verification. Cross-application/minimize visibility, actual content-script API access, layout, and background behavior remain manual checks. Earlier owner evidence established injection/worker startup but missed hashchange navigation on a prior build; it does not verify this migration. Hosted CI is unverified.
+No real Chrome/iClicker PiP matrix rows were run in that implementation session. No authenticated, controlled instructor/student poll session was supplied for live transition verification. Cross-application/minimize visibility, actual content-script API access, layout, and background behavior remain manual checks. Earlier owner evidence established injection/worker startup but missed hashchange navigation on a prior build; it does not verify this migration. The development tester is also not a substitute for these checks. The current dev-tester/popup change still requires a fresh `npm run check`, unpacked-build inspection, and browser smoke test after this commit; hosted CI should be checked separately.
 
 ## Deferred work
 
