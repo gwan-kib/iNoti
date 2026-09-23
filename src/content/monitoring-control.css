@@ -5,3 +5,6 @@ button { font: 13px system-ui, sans-serif; color: var(--inoti-on-brand); backgro
       box-shadow: 0 2px 8px var(--inoti-control-shadow); max-width: 100%; }
     button:focus-visible { outline: 3px solid var(--inoti-monitor-focus); outline-offset: 3px; }
     button:disabled { cursor: default; background: var(--inoti-text-secondary); }
+
+button { display: flex; align-items: center; gap: 8px; }
+.brand-logo { width: 22px; height: 22px; object-fit: contain; flex-shrink: 0; }

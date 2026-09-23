@@ -11,3 +11,6 @@ p { margin: 0 0 16px; color: var(--inoti-text-secondary); font-size: 13px; line-
 button { width: 100%; border: 0; border-radius: 9px; padding: 10px 12px; background: var(--inoti-brand); color: var(--inoti-on-brand); font: inherit; font-weight: 650; cursor: pointer; }
 button:hover { filter: brightness(.96); }
 button:focus-visible { outline: 3px solid var(--inoti-focus); outline-offset: 2px; }
+
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand-logo { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }

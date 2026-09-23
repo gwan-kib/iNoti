@@ -46,3 +46,6 @@ main {
 [hidden] {
   display: none;
 }
+
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand-logo { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }

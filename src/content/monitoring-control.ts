@@ -1,3 +1,4 @@
+import { createBrandLogo } from '../shared/brand-logo';
 import controlStyles from './monitoring-control.css?inline';
 import type { MonitoringStatus } from './pip-controller';
 import { logger } from '../shared/logging';
@@ -14,6 +15,9 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
   style.textContent = controlStyles;
   const button = document.createElement('button');
   button.type = 'button';
+  const label = document.createElement('span');
+  label.className = 'monitoring-label';
+  button.append(createBrandLogo(document), label);
   button.addEventListener('click', toggle);
   root.append(style, button);
   return {
@@ -27,14 +31,14 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
     render(status: MonitoringStatus) {
       const active = status.state !== 'UNMONITORED';
       button.disabled = status.opening || status.issue === 'unsupported';
-      button.textContent = status.issue === 'unsupported' ? 'iNoti: Document PiP unavailable'
+      label.textContent = status.issue === 'unsupported' ? 'iNoti: Document PiP unavailable'
         : status.issue === 'failed' ? 'PiP failed · Start Monitoring again'
-        : status.opening ? '● Starting Monitoring…' : active ? '● Monitoring' : '● Start Monitoring';
+        : status.opening ? 'Starting Monitoring…' : active ? 'Monitoring' : 'Start Monitoring';
       button.title = status.issue === 'unsupported' ? 'Monitoring requires desktop Chrome 116+ with Document Picture-in-Picture available.'
         : status.issue === 'failed' ? 'Could not open Picture-in-Picture. Click to try again.'
           : active ? 'Stop monitoring' : 'Open iNoti Picture-in-Picture';
       button.setAttribute('aria-label', status.issue === 'failed' ? 'Could not open Picture-in-Picture. Start Monitoring again'
-        : active ? 'Monitoring. Stop monitoring' : button.textContent);
+        : active ? 'Monitoring. Stop monitoring' : label.textContent);
       button.setAttribute('aria-pressed', String(active));
     },
   };

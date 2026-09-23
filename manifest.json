@@ -8,7 +8,7 @@
     "webNavigation"
   ],
   "icons": {
-    "128": "assets/icon-128.png"
+    "128": "assets/inoti-logo.png"
   },
   "background": {
     "service_worker": "background.js"

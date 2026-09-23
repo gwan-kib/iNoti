@@ -31,7 +31,7 @@ Small EventTarget/DOM fakes and injected window/view boundaries keep tests depen
 
 Confirm `dist/shared/brand-colors.css` exists for popup/tester stylesheet imports. After palette edits, rebuild and reload; check the popup, inline preview, real PiP, and on-page monitoring button for consistent colors and legible focus/disabled states.
 
-After building, dist must contain manifest.json, content.js, background.js, assets/icon-128.png, popup/{popup.html,popup.css,popup.js}, and dev-testing/{index.html,dev-testing.css,dev-testing.js}. Verify no legacy alert-window HTML/JS/CSS remains, including when building over an old dist. The first stage clears output. Verify only webNavigation permission, exact student-site content match, minimum_chrome_version 116, the toolbar popup points only to the extension-owned dev tester, and no remote dependencies. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
+After building, dist must contain manifest.json, content.js, background.js, assets/inoti-logo.png, popup/{popup.html,popup.css,popup.js}, and dev-testing/{index.html,dev-testing.css,dev-testing.js}. Verify no legacy alert-window HTML/JS/CSS remains, including when building over an old dist. The first stage clears output. Verify only webNavigation permission, exact student-site content match, minimum_chrome_version 116, the toolbar popup points only to the extension-owned dev tester, and no remote dependencies. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
 
 ## Development tester
 
@@ -55,7 +55,7 @@ All rows below are **pending for this PiP migration**.
 | Unsupported/home/quiz route | No monitoring control or question alert |
 | Click Start Monitoring / activate with keyboard | One PiP opens idle; no separate Chrome alert window |
 | Rapid repeat clicks during opening | Only one request/window; no duplicate monitor |
-| Idle content | Minimal dot and iNoti, legible at browser-clamped size |
+| Idle content | Logo and iNoti, legible at browser-clamped size |
 | Switch Chrome tabs | PiP remains visible above windows |
 | Background/minimize Chrome with iClicker open | PiP remains visible; record any OS-specific difference |
 | Switch to another desktop application | PiP remains visible; record focus behavior |

@@ -1,7 +1,9 @@
 // Minimal DOM boundary fake: no browser layout or PiP visibility is implied.
 export class ElementFake extends EventTarget {
   children: ElementFake[] = [];
-  textContent = '';
+  private ownText = '';
+  get textContent(): string { return this.ownText + this.children.map(child => child.textContent).join(''); }
+  set textContent(value: string) { this.ownText = value; this.children = []; }
   hidden = false;
   disabled = false;
   title = '';

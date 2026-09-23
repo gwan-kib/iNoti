@@ -64,7 +64,7 @@ it('renders minimal idle content and local detection time without HTML insertion
   const view = createPipView(document as unknown as Document);
   view.idle();
   const main = document.body.children[0]!;
-  expect(main.children[0]!.textContent).toBe('\u25cf iNoti');
+  expect(main.children[0]!.textContent).toBe('iNoti');
   expect(main.children[1]!.hidden).toBe(true);
   view.question(1_700_000_000_000);
   expect(main.children[1]!.children[0]!.textContent).toBe('New iClicker Question');

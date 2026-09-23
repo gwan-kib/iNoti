@@ -9,7 +9,7 @@ const builds = {
     entry: './src/content/monitor.ts',
     name: 'iNotiContent',
     output: 'content.js',
-    assets: [['./manifest.json', 'manifest.json'], ['./assets/icon-128.png', 'assets/icon-128.png'], ['./src/shared/brand-colors.css', 'shared/brand-colors.css']],
+    assets: [['./manifest.json', 'manifest.json'], ['./assets/inoti-logo.png', 'assets/inoti-logo.png'], ['./src/shared/brand-colors.css', 'shared/brand-colors.css']],
   },
   background: {
     entry: './src/background/service-worker.ts',

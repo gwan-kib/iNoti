@@ -1,3 +1,4 @@
+import { createBrandLogo } from '../shared/brand-logo';
 import pipStyles from './pip-view.css?inline';
 
 export interface PipView {
@@ -16,7 +17,10 @@ export function createPipView(document: Document): PipView {
   main.setAttribute('aria-live', 'polite');
   const brand = document.createElement('div');
   brand.className = 'brand';
-  brand.textContent = '● iNoti';
+  const brandText = document.createElement('span');
+  brandText.className = 'brand-text';
+  brandText.textContent = 'iNoti';
+  brand.append(createBrandLogo(document), brandText);
   const title = document.createElement('h1');
   title.className = 'question-title';
   const titleText = document.createElement('span');
