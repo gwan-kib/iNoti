@@ -1,5 +1,6 @@
 import { isNewPoll, parseRoute } from './detector';
 import type { NewPollMessage } from '../shared/messages';
+import { isNavigationChangedMessage } from '../shared/messages';
 import { logger, safeError } from '../shared/logging';
 
 const log = logger('content');
@@ -9,11 +10,10 @@ log('loaded');
 let previous = parseRoute(window.location.hash);
 log('baseline state', { state: previous.state });
 
-window.addEventListener('hashchange', (event) => {
-  // Event URLs preserve the order of rapid, queued route changes.
-  const next = parseRoute(new URL(event.newURL).hash);
+function evaluateHash(hash: string, source: 'hashchange' | 'webNavigation') {
+  const next = parseRoute(hash);
   const notify = isNewPoll(previous, next);
-  log('hashchange detected', { previous: previous.state, next: next.state, eligibleNewPoll: notify });
+  log('navigation update received', { source, previous: previous.state, next: next.state, eligibleNewPoll: notify });
   previous = next;
   if (!notify) return;
 
@@ -34,4 +34,20 @@ window.addEventListener('hashchange', (event) => {
     log('NEW_POLL delivery failed', { reason: safeError(error) });
   }
   // No retry: without question identity, retrying could duplicate an alert.
+}
+
+window.addEventListener('hashchange', (event) => {
+  // Event URLs preserve the order of rapid, queued route changes.
+  evaluateHash(new URL(event.newURL).hash, 'hashchange');
+});
+
+chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
+  // Only our worker may supply navigation state; page scripts cannot use this channel.
+  if (sender.id !== chrome.runtime.id || sender.tab || !isNavigationChangedMessage(message)) {
+    log('rejected navigation update');
+    return false;
+  }
+  evaluateHash(message.hash, 'webNavigation');
+  sendResponse({ ok: true });
+  return false;
 });

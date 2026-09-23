@@ -3,6 +3,7 @@
   "name": "iNoti",
   "version": "0.1.0",
   "description": "Desktop alerts when a supported iClicker class route enters a live poll.",
+  "permissions": ["webNavigation"],
   "icons": { "128": "assets/icon-128.png" },
   "background": { "service_worker": "background.js" },
   "content_scripts": [{

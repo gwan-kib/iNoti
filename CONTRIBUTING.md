@@ -46,13 +46,15 @@ CI uses the same Node line, `npm ci`, and the four individual validation scripts
 1. Run `npm run build`.
 2. Open `chrome://extensions` in Chrome and enable **Developer mode**.
 3. Choose **Load unpacked** and select this checkout's `dist/` directory.
-4. Check the iNoti card for errors and inspect the service worker for startup errors.
+4. Confirm the updated build has `webNavigation` permission enabled, check the iNoti card for errors, and inspect the service worker for startup errors.
 5. Open or refresh `https://student.iclicker.com/` so the static content script starts. Use a single tab. OS notification settings are irrelevant to this alert window.
 6. After code changes, rebuild, reload iNoti on the extensions page, and refresh the student page. Loading while already on a poll intentionally produces no alert.
 
 Follow the manual scenarios in docs/TESTING.md and record browser/OS versions and actual results. This development build is not a Web Store release; no live-session verification is implied by a successful build. For documentation-only changes, inspect text, relative links, required files, consistency, and whitespace.
 
 For diagnosis, open the student page's DevTools console and the extension service-worker console before starting an instructor poll. Enable Info-level console messages and filter by `[iNoti]`. Inspect the alert page's own console for render/close events. `src/shared/logging.ts` has a single `DEBUG` constant, currently enabled for this testing phase; set it to false and rebuild to silence diagnostic output. Logs deliberately omit raw URLs, UUIDs, payloads, and unrecognized error text. See docs/TESTING.md for expected log stages.
+
+Join a class after the page refresh: initial `UNSUPPORTED` is expected before SPA initialization. Look for worker `webNavigation history update observed` or `webNavigation fragment update observed`, forwarding/delivery logs, and content `navigation update received` with source `webNavigation` or `hashchange`. `UNSUPPORTED` to `WAITING` sets the baseline; a later same-class `QUESTION_ACTIVE` should send one `NEW_POLL`. Injection was verified in the owner's Chrome test; this updated end-to-end flow still needs live verification.
 
 See [testing](docs/TESTING.md) for fixture requirements, browser scenarios, and release evidence.
 

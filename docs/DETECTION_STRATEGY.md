@@ -17,11 +17,13 @@ The observed sequence is waiting, poll, question, poll, question. Closed questio
 
 Only placeholders and synthetic UUIDs belong in committed evidence or tests. Browser/OS versions and real-session verification of this implementation remain to be recorded.
 
+Latest owner-supplied real Chrome evidence: the content console showed `loaded` and baseline `UNSUPPORTED` at document_start, and the worker showed startup. Joining a class and visibly entering `/poll` did not produce the expected hashchange log or alert. Injection is therefore verified for the previous build, but hashchange alone is insufficient. History API navigation is the likely explanation; the site's implementation was not directly inspected. The webNavigation fix and real alert delivery still require re-testing.
+
 ## Implemented detector
 
 `src/content/detector.ts` parses the hash with anchored route patterns and hexadecimal UUID-shaped identifiers (8-4-4-4-12). Extra segments, trailing slashes, query suffixes, malformed IDs, and quiz routes fail closed. Class identifiers normalize to lowercase; question IDs are validated but not retained in normalized state.
 
-`src/content/monitor.ts` reads the initial hash as a baseline, then listens for `hashchange`. It processes each event's new URL to preserve queued transition order. No timers, DOM observation, text inspection, iframe/Shadow DOM inspection, API inspection, or WebSocket interception is used.
+`src/content/monitor.ts` reads the initial hash as a baseline. One evaluation function handles `hashchange` event URLs and validated `NAVIGATION_CHANGED` hashes from the worker. The worker uses Chrome `onHistoryStateUpdated` and `onReferenceFragmentUpdated`, filtered by hostname plus exact HTTPS origin and top frame. It forwards only supported route hashes; unsupported routes become an empty marker to reset the baseline without disclosing arbitrary route content. No timers, DOM observation, text inspection, History API patching, API inspection, or WebSocket interception is used.
 
 | Transition | Candidate |
 | --- | --- |
@@ -32,14 +34,14 @@ Only placeholders and synthetic UUIDs belong in committed evidence or tests. Bro
 | Unsupported to active, or changing classes directly into active | No |
 | Unsupported to waiting/closed, then same-class active | Yes, on the later supported transition |
 
-Previous state advances before sending a candidate. Staying on a route and duplicate events cannot resend it. Messages contain only `NEW_POLL` and detection time, not class/question IDs or page content.
+Previous state advances before sending a candidate. Consecutive reports of the same route from either source cannot resend it, without cooldown timers. NEW_POLL contains only event type and detection time. NAVIGATION_CHANGED carries a transient route hash, potentially containing class/question IDs, only to the originating page; it is neither persisted nor logged. State stays in the content script so worker suspension cannot erase the baseline.
 
-Content diagnostics log startup, normalized baseline, previous/next states, eligibility, and message delivery. Raw hashes and UUIDs are not logged. Hashchange is still the only observation mechanism: if the visible route changes without a hashchange log, record that evidence for a separate fix. The worker now opens a custom HTML alert window; this does not change route policy.
+Content diagnostics log startup, baseline, navigation source, previous/next states, eligibility, and message delivery. Worker logs distinguish history/fragment observation, forwarding, delivery, and failure. Raw hashes and UUIDs are not logged. The custom HTML alert and route parser/transition policy are unchanged.
 
 ## Boundaries
 
 This is route-transition detection, not question identity. Manually navigating back into a poll from waiting/closed can alert again; an unchanged poll URL cannot reveal a new question. Initial active observation deliberately misses the already-open question to avoid refresh alerts.
 
-Multiple tabs may each alert; there is no global deduplication, reconnect policy, or persistent state. Routes changed through mechanisms that do not emit `hashchange` are not observed. Quiz UUIDs may identify a whole quiz, so quiz question notifications are deferred. DOM/network detection would require new evidence and a separate decision, not speculative fallback code.
+Multiple tabs may each alert; there is no global deduplication, reconnect policy, or persistent state. An event lost before the content receiver is ready is logged but not replayed; a later active route alone does not prove a new poll. Cross-source ordering across multiple rapid distinct transitions still needs browser testing. Quiz support remains deferred. DOM/network detection would require new evidence and a separate decision.
 
-See [tests and manual verification](TESTING.md), [architecture](ARCHITECTURE.md), and D009 in [decisions](DECISIONS.md).
+See [tests and manual verification](TESTING.md), [architecture](ARCHITECTURE.md), and D009/D012 in [decisions](DECISIONS.md).

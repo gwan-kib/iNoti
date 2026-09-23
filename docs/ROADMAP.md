@@ -1,6 +1,6 @@
 ﻿# Development roadmap
 
-Status: revised Phase 1 is implemented and automated checks are available. Browser loading and real-session notification verification remain pending; this is not a release-ready extension.
+Status: Phase 1 now supplements hashchange with filtered webNavigation. The owner verified injection/worker startup in Chrome, but saw an initial UNSUPPORTED baseline and missed visible SPA navigation. Automated checks cover the fix; live alert delivery must be re-tested. This is not a release-ready extension.
 
 The project owner's revised route evidence supersedes the investigation spike in the [original plan](https://docs.google.com/document/d/1t_shCi1Xmq2bixpmZxJfVJfxEwGP-gudvI6dxPf0xcg/edit). Repository docs are the maintained source of truth. Follow the [solo workflow](../CONTRIBUTING.md); issues, branches, and PRs are optional.
 
@@ -15,7 +15,7 @@ The project owner's revised route evidence supersedes the investigation spike in
 | 6 | Full MVP browser validation, privacy review, release and installation evidence | Pending |
 | 7 | Separately authorized post-MVP features | Deferred |
 
-The extension skeleton and custom alert path are part of Phase 1. Native notifications have been replaced by a local HTML/CSS popup window with no API permissions. It may steal focus during testing, is not always-on-top, and has no sound or auto-dismiss. Positioning, stacking, and non-focus behavior remain future work. The old investigation spike is no longer a prerequisite; actual hashchange events still require real-browser validation. [Detection strategy](DETECTION_STRATEGY.md) records the route evidence and limitations.
+The extension skeleton and custom alert path are part of Phase 1. The only API permission is webNavigation for SPA route observation; alert windows do not need notifications permission. They may steal focus, are not always-on-top, and have no sound or auto-dismiss. Positioning, stacking, and non-focus behavior remain future work. The old investigation spike is no longer a prerequisite. [Detection strategy](DETECTION_STRATEGY.md) records the Chrome evidence, new event forwarding, and remaining verification limits.
 
 ## Later MVP requirements
 

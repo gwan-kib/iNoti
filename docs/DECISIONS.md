@@ -1,6 +1,6 @@
 # Architecture decisions
 
-These records distinguish implemented choices from future directions. **Accepted direction does not mean browser-verified.** Phase 1 implements route detection and custom HTML alert windows. D009 and D011 define the current behavior; D005 and D010 record superseded native-delivery choices.
+These records distinguish implemented choices from future directions. **Accepted direction does not mean browser-verified.** D009 defines route policy, D011 defines custom alerts, and D012 updates navigation observation/permissions. D005 and D010 record superseded native-delivery choices.
 
 For each future record include an ID, status (proposed, accepted, or superseded), context, choice, alternatives, consequences, and evidence. Link an issue only if one exists. Update a record or supersede it when new evidence changes the choice.
 
@@ -54,9 +54,9 @@ Adding `offscreen`, selecting the minimum Chrome version, and claiming reliable 
 
 ## D007: Minimum permissions and no default discard override
 
-Status: accepted constraints; current Phase 1 permissions are defined in D011. Storage and offscreen remain deferred.
+Status: accepted constraints; current Phase 1 permissions are defined in D012. Storage and offscreen remain deferred.
 
-Request only currently needed access: D011 removes the notifications permission, with no replacement API permission. Storage and offscreen require later implemented uses. Do not default to `<all_urls>`, `tabs`, `scripting`, or `webRequest`; document a specific unmet capability before adding a permission.
+Request only currently needed access: D011 removed notifications; D012 adds webNavigation specifically for SPA observation. Storage and offscreen require later implemented uses. Do not default to `<all_urls>`, `tabs`, `scripting`, or `webRequest`; document a specific unmet capability before adding a permission.
 
 Do not disable tab discarding by default. If evidence justifies an active-session-only override, record the resource tradeoff, required access, cleanup/restoration behavior, and tests before adding it. See [privacy](PRIVACY.md).
 
@@ -76,7 +76,7 @@ Evidence: dependency compatibility was checked against npm metadata; [Vite's bui
 
 ## D009: Hash-route detection and initial baseline
 
-Status: accepted and implemented for revised Phase 1; supersedes D002 and the investigation-spike prerequisite.
+Status: route policy accepted and implemented; hashchange-only observation is superseded by D012. Supersedes D002 and the investigation-spike prerequisite.
 
 Context: the owner confirmed the student origin, waiting/poll/question hash routes, background route changes, and refresh retaining the poll route. The poll URL has no per-question UUID. See [route evidence](DETECTION_STRATEGY.md).
 
@@ -104,7 +104,7 @@ Evidence: mocked worker tests cover notification options, sender/payload rejecti
 
 ## D011: Custom HTML alert windows and development diagnostics
 
-Status: accepted and implemented; supersedes native delivery in D005/D010. Actual Chrome/iClicker verification remains pending.
+Status: custom alert delivery accepted and implemented; no-permission and hashchange-only assumptions superseded by D012. Supersedes native delivery in D005/D010. Actual alert delivery remains unverified.
 
 Context: the owner wants a visible proof-of-concept alert independent of OS notification banners and detailed evidence of where route detection or delivery fails. Route parsing and hashchange observation remain unchanged.
 
@@ -119,6 +119,22 @@ Diagnostics: `[iNoti][content]` covers startup, normalized route transition/elig
 Consequences: acknowledgement indicates window API completion, not page rendering. A third Vite HTML build packages the alert after the two script builds. Tests cover popup creation and failures, parsing/rendering/close, and logging privacy. Multiple alerts can remain open, without stacking or cross-tab coordination. Missing hashchange events must be diagnosed from real logs rather than hidden with a new observer.
 
 Evidence: automated mocks and package inspection are documented in [testing](TESTING.md). Actual display, focus, and authenticated route behavior are not established by those checks.
+
+## D012: Chrome navigation events forwarded to per-page state
+
+Status: accepted and implemented in response to owner-supplied Chrome evidence; live alert delivery must be re-tested.
+
+Context: content injection, baseline UNSUPPORTED at document_start, and worker startup were observed in real Chrome. Visible class-to-poll SPA navigation produced no hashchange log and no alert. History API navigation is a plausible explanation, not a directly verified site implementation detail.
+
+Choice: add only `webNavigation`. Register onHistoryStateUpdated and onReferenceFragmentUpdated synchronously with a student-host filter. Immediately reject non-top frames, invalid tab targets, and any origin other than exact HTTPS student.iclicker.com before logging/processing. Forward a supported hash or empty unsupported marker with NAVIGATION_CHANGED to that tab's top frame and originating document when available. Full URLs and unknown route data never enter the payload.
+
+The content script validates the message and extension sender, and shares one evaluateHash function with hashchange. Its existing per-page previous-route state remains authoritative. Unsupported-to-waiting updates baseline without alert; waiting/closed-to-active in the same class emits NEW_POLL. Unsupported-to-active and initial active remain silent. Consecutive duplicate source reports become active-to-active without cooldowns. The worker only accepts NEW_POLL for alert creation, avoiding a feedback loop.
+
+Alternatives: worker-held transition state would be lost on suspension. Page History API patching, polling, DOM selectors, and WebSocket/API interception are unnecessary for this evidence-driven fix. No tabs, scripting, notifications, webRequest, storage, alarms, or broad host matches are added. The custom alert is unchanged.
+
+Privacy and consequences: webNavigation is a broad browser capability, constrained here with event filters and exact runtime checks. No navigation history, raw URL/hash logs, identifiers in logs, page content, or telemetry. Hashes contain route identifiers transiently, only between worker and that page. Delivery failures are logged safely without retries. Document targeting avoids sending stale updates to a reloaded page; rapid cross-source ordering and real browser delivery remain manual verification items.
+
+Evidence: [Chrome webNavigation documentation](https://developer.chrome.com/docs/extensions/reference/api/webNavigation) specifies history/fragment events and its permission; [tabs messaging](https://developer.chrome.com/docs/extensions/reference/api/tabs#method-sendMessage) supports targeting content scripts. Tests cover filtering, forwarding, message validation, initial baseline recovery, duplicate source orders, and existing popup behavior. See [testing](TESTING.md).
 
 ## Decisions still required
 

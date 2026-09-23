@@ -6,6 +6,8 @@ No version has been released. This file is initialized early as part of the requ
 
 ### Added
 
+- Filtered Chrome webNavigation history/fragment events forwarded to per-page detection, addressing owner-reported missed SPA navigation. Adds only webNavigation permission, preserves hashchange and custom alerts, and suppresses consecutive duplicate reports from both sources. Live delivery of the fix remains unverified.
+
 - Minimal MV3 development extension: same-class hash-route transitions into a poll open a focused, extension-owned HTML alert window with local detection time and a close button. Initial active routes establish a baseline. Native notification delivery and its permission have been removed.
 - Privacy-safe content, worker, and alert console diagnostics; timestamp/rendering and popup-window tests. Browser validation remains pending.
 

@@ -13,7 +13,7 @@ export function safeError(error: unknown): string {
   // Only known API failure categories are safe to echo; arbitrary errors can contain URLs/data.
   if (typeof message === 'string') {
     if (message.includes('Extension context invalidated')) return 'extension context invalidated; refresh the student page';
-    if (message.includes('Receiving end does not exist')) return 'worker receiving end does not exist';
+    if (message.includes('Receiving end does not exist')) return 'message receiving end does not exist';
     if (message.includes('message port closed') || message.includes('message channel closed')) return 'response channel closed';
     if (message.includes('No current window')) return 'no current browser window';
     if (message.includes('Invalid value for bounds')) return 'invalid window bounds';

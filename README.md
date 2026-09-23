@@ -4,7 +4,7 @@ iNoti is an early Chrome extension for students using iClicker. It opens a small
 
 ## Availability
 
-**A minimal development version is implemented.** It can be built for loading unpacked, but browser loading and real-session alert delivery have not yet been verified for this implementation. It is not release-ready or available in the Chrome Web Store.
+**A minimal development version is implemented.** Real Chrome testing confirmed content-script injection and worker startup, but exposed missed SPA route changes with hashchange alone. The navigation fix now uses Chrome webNavigation events alongside hashchange; real-session alert delivery must be re-tested. It is not release-ready or available in the Chrome Web Store.
 
 For development installation, follow the [build and load-unpacked instructions](CONTRIBUTING.md). Keep one iClicker student tab open. Alerts use an extension-owned HTML window and do not rely on Chrome/OS notification permission, OS banners, or Do Not Disturb settings. Disable the extension through `chrome://extensions` to stop it.
 
@@ -20,7 +20,7 @@ You still answer questions yourself in iClicker. Sound, settings, quiz alerts, c
 
 ## Privacy
 
-iNoti uses static content-script access only to `https://student.iclicker.com/*` and requests no additional API permissions. It reads URL/hash routes, not question text, answers, choices, grades, or unrelated browsing. Alerts receive only the detection timestamp. Development console logs show normalized states and failure categories, without private URLs or UUIDs. It has no storage, external resources, or telemetry. See [privacy](docs/PRIVACY.md).
+iNoti uses static content-script access only to `https://student.iclicker.com/*` and the `webNavigation` permission to observe SPA route changes. Navigation listeners are filtered to the student hostname, then checked for the exact HTTPS origin and top frame before use. It reads routes, not question text, answers, choices, grades, or unrelated browsing. Alerts receive only the detection timestamp. Development logs show normalized states and failure categories, without URLs or UUIDs. It stores no navigation history and has no telemetry. See [privacy](docs/PRIVACY.md).
 
 ## Expected limitations
 

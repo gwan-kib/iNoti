@@ -13,7 +13,7 @@ it('uses consistent scope prefixes and structured safe details', () => {
 
 it('classifies known API errors without echoing private suffixes', () => {
   expect(safeError(new Error('Extension context invalidated: private data'))).toBe('extension context invalidated; refresh the student page');
-  expect(safeError({ message: 'Could not establish connection. Receiving end does not exist.' })).toBe('worker receiving end does not exist');
+  expect(safeError({ message: 'Could not establish connection. Receiving end does not exist.' })).toBe('message receiving end does not exist');
   expect(safeError(new Error('https://student.iclicker.com/#/class/11111111-1111-4111-8111-111111111111'))).not.toContain('11111111');
   expect(safeError('private student data')).not.toContain('private student data');
 });

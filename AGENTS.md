@@ -10,12 +10,12 @@
 ## Architecture rules
 
 - Keep iClicker route parsing centralized in `src/content/detector.ts`; use the confirmed route evidence in docs/DETECTION_STRATEGY.md. The previous live investigation spike is superseded.
-- Prefer `hashchange` and pure route/transition functions. Initial active routes establish a baseline; only same-class waiting/closed to active transitions notify.
+- Use filtered webNavigation history/fragment events plus `hashchange`, feeding one content-script evaluation function. Keep previous-route state in the page, not the disposable worker. Initial active routes establish a baseline; only same-class waiting/closed to active transitions notify.
 - Do not invent DOM selectors or add DOM observation, polling, or network/WebSocket interception without new evidence and authorization.
 - Keep Chrome APIs at component boundaries and notification delivery out of the detector. Phase 1 is single-tab only; do not prematurely add question fingerprints or cross-tab registries.
 - Treat the worker as disposable and register listeners synchronously. It currently stores no session state. Storage/recovery, toolbar popup/settings, sound, click focus, and quiz support remain later work.
-- Use `chrome.windows.create` with a local alert page, not native notifications. No API permissions or toolbar popup are needed. The current focused window is a testing choice, not an always-on-top guarantee.
-- Keep `[iNoti][content]`, `[iNoti][worker]`, and `[iNoti][alert]` logs useful and private: normalized states, boolean decisions, failure categories, and optional window ID only. Never dump raw hashes, sender objects, payloads, or arbitrary errors. Do not add detection fallbacks to hide missing hashchange events.
+- Use `chrome.windows.create` with a local alert page, not native notifications. Only `webNavigation` is requested for SPA observation; no tabs permission or toolbar popup is needed. The current focused window is a testing choice, not an always-on-top guarantee.
+- Keep `[iNoti][content]`, `[iNoti][worker]`, and `[iNoti][alert]` logs useful and private: source, normalized states, boolean decisions, failure categories, and optional window ID only. Never dump raw hashes, sender objects, payloads, or arbitrary errors. Filter navigation to top-frame exact `https://student.iclicker.com` before logging/forwarding; do not collect history or add speculative observers.
 
 ## Privacy and permissions
 
