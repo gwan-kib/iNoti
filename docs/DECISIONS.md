@@ -1,6 +1,6 @@
 # Architecture decisions
 
-These short records capture the source plan's design direction and unresolved implementation choices. **Accepted direction does not mean implemented or browser-verified.** All components remain unimplemented.
+These short records capture the source plan's design direction and unresolved implementation choices. **Accepted direction does not mean implemented or browser-verified.** Development tooling is implemented; all extension components remain unimplemented.
 
 For each future record include an ID, status (proposed, accepted, or superseded), context, choice, alternatives, consequences, and evidence. Link an issue only if one exists. Update a record or supersede it when new evidence changes the choice.
 
@@ -10,7 +10,7 @@ Status: accepted design direction.
 
 Reliable question alerts are the MVP. Use a content script for iClicker interpretation, a disposable service worker for coordination and delivery, and a popup for current status/settings. Use TypeScript, a lightweight build, and plain HTML/CSS instead of a UI framework for the small popup.
 
-This keeps detector changes isolated and avoids depending on an open popup or long-lived worker globals. Cross-browser packaging and advanced notification UI remain deferred. Exact tooling and versions are pending.
+This keeps detector changes isolated and avoids depending on an open popup or long-lived worker globals. Cross-browser packaging and advanced notification UI remain deferred. Tooling is recorded in D008.
 
 ## D002: Evidence-based DOM observation first
 
@@ -60,9 +60,23 @@ Plan `storage`, `notifications`, and only confirmed student-origin access. Add `
 
 Do not disable tab discarding by default. If evidence justifies an active-session-only override, record the resource tradeoff, required access, cleanup/restoration behavior, and tests before adding it. See [privacy](PRIVACY.md).
 
+## D008: Minimal Node, TypeScript, and Vite tooling
+
+Status: accepted and implemented for Phase 0; hosted CI execution remains unverified.
+
+Context: contributors need reproducible local checks and equivalent CI before application behavior exists. Phase 0 must not introduce an extension skeleton or fake tests.
+
+Choice: Node 22.13+ within 22.x, selected by `.nvmrc`, with npm 10 or 11 and a committed npm lockfile. Use TypeScript 5.9, ESLint 10 with typescript-eslint, Vitest 5, and Vite 8. Exact direct dependency versions are pinned in `package.json`. TypeScript 5.9 stays within typescript-eslint's supported peer range. Use strict ES2022/bundler settings with DOM types and no compiler output. ESLint covers real configuration files and future source; Vitest runs once in Node with explicit imports. GitHub Actions runs the same scripts after `npm ci` and caches npm downloads.
+
+Alternatives: a UI framework, extension-specific plugin, or monorepo would add unnecessary infrastructure now. A custom bundler script would require extra maintenance; Vite supports the planned plain HTML/CSS and TypeScript direction. Actual MV3 entry formats and manifest packaging remain Phase 2 work.
+
+Consequences: production output is `dist/`, ignored by Git. For now Vite processes only `tooling/index.html`, a static build entry identifying itself as infrastructure, without any extension behavior. It cannot be loaded unpacked. Vitest explicitly allows zero tests through `passWithNoTests`; remove this allowance with the first real tests. Browser/Chrome API types and browser test dependencies will be added only when used. The build target does not establish the minimum supported Chrome version.
+
+Evidence: dependency compatibility was checked against npm metadata; [Vite's build documentation](https://vite.dev/guide/build) describes HTML entry builds and [Vitest's configuration](https://vitest.dev/config/passwithnotests) documents the explicit no-tests allowance. Local command results and the hosted-CI limitation are recorded in [testing](TESTING.md); no application/browser behavior is verified.
+
 ## Decisions still required
 
 - Confirmed origins, signal evidence, session/question identity and fingerprint collision handling.
 - First-active observation, monitoring re-enable, stale event ordering, dedupe retention, and delivery retries.
-- Setting defaults, tooling/commands, supported OS matrix, and minimum Chrome version.
+- Setting defaults, supported OS matrix, and minimum Chrome version.
 - Audio implementation, notification focus without broad `tabs` access, and any measured discard limitation.

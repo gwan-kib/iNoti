@@ -4,7 +4,7 @@ iNoti is a planned browser extension for students using iClicker. It aims to ale
 
 ## Availability
 
-**iNoti is in early development and is not available to install yet.** The project currently has documentation only. Its planned features have not been tested in live iClicker sessions.
+**iNoti is in early development and is not available to install yet.** The extension itself has not been implemented. Its planned features have not been tested in live iClicker sessions.
 
 Installation instructions and supported browser details will be added when a usable version is ready.
 

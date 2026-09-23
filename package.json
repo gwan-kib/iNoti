@@ -1,0 +1,27 @@
+{
+  "name": "inoti",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Development tooling for the planned iNoti Chrome extension",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0 <23",
+    "npm": ">=10 <12"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "vite build",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.20.4",
+    "eslint": "10.11.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.70.1",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
+  }
+}

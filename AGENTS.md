@@ -2,7 +2,7 @@
 
 ## Scope and priorities
 
-- Read README.md and the relevant technical documents before changes. The repository currently contains documentation only; do not describe planned functionality or checks as implemented.
+- Read README.md and the relevant technical documents before changes. The repository currently contains documentation and Phase 0 development tooling; do not describe planned extension functionality as implemented.
 - Stay inside the MVP unless the project owner explicitly authorizes post-MVP work. An issue is not required. Question detection, duplicate prevention, and recovery take priority over UI polish.
 - Inspect the checkout and existing changes before editing. Preserve unrelated work and keep changes focused on the requested task.
 - Follow CONTRIBUTING.md for the solo workflow: work on `main` by default, keep changes focused, validate, and update documentation. Do not require individual issues, feature branches, or PRs; use them only when requested or useful.
@@ -28,8 +28,8 @@
 - Explain why non-obvious behavior exists, particularly fragile iClicker signals, browser lifecycle handling, deduplication, and workarounds. Avoid comments that only restate code.
 - Add or update tests whenever detection, state transitions, deduplication, messaging, settings, or recovery changes. Use docs/TESTING.md to choose relevant automated and manual checks.
 - Before a code change is considered complete, run the documented lint, type-check, test, and production-build commands. Browser-dependent behavior also needs applicable manual verification.
-- **Current command status:** none of these commands exists yet. The tooling change must define exact developer commands in CONTRIBUTING.md and docs/TESTING.md (update README.md only for installation or usage information users need) and configure equivalent CI checks. Do not invent passing commands, create placeholder tests to imply coverage, or claim the tooling portion of Phase 0 is complete.
-- For documentation-only changes at this stage, check required files, relative links, consistency with the source plan and checkout, and whitespace. Report executable checks as unavailable, not passed.
+- **Current command status:** run `npm run check` for lint, type-check, Vitest, and the infrastructure production build. Exact setup and individual commands are in CONTRIBUTING.md and docs/TESTING.md; CI runs equivalent checks. Vitest currently permits no tests; remove that allowance with the first real tests. Do not create placeholder tests or mistake tooling success for application coverage.
+- For documentation-only changes, check required files, relative links, consistency with the source plan and checkout, and whitespace. Report unrun checks honestly. Browser checks remain unavailable until an extension exists.
 
 ## Documentation maintenance
 

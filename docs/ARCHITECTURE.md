@@ -63,13 +63,10 @@ Normal background tabs, minimized Chrome, and another foreground app are require
 
 ## Proposed source structure
 
-These paths describe future files; they do not exist yet.
+These paths describe future extension files; they do not exist yet. Package metadata, TypeScript/build/test/lint configuration, and CI already exist; see [developer setup](../CONTRIBUTING.md). The current `tooling/index.html` build entry is infrastructure only and will be replaced during Phase 2.
 
 ```text
 manifest.json
-package.json
-tsconfig.json
-.github/workflows/
 src/
   background/
     service-worker.ts
@@ -100,4 +97,4 @@ tests/
   integration/
 ```
 
-The offscreen subtree is conditional. Build tooling, runtime versions, exact origins, OS support, minimum Chrome version, and final audio implementation remain open. Permission boundaries are maintained in [PRIVACY.md](PRIVACY.md).
+The offscreen subtree is conditional. Exact origins, OS support, minimum Chrome version, and final audio implementation remain open. Tooling choices are recorded in D008 in [decisions](DECISIONS.md). Permission boundaries are maintained in [PRIVACY.md](PRIVACY.md).

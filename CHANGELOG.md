@@ -8,4 +8,4 @@ No version has been released. This file is initialized early as part of the requ
 
 - Initial project documentation covering MVP scope, architecture, detection research, testing, privacy, decisions, contribution rules, and pull request review.
 
-Implementation, build tooling, CI, and browser validation remain pending. Add user-visible changes here as release preparation begins; assign a version and release date only when a release is actually prepared.
+Development tooling and CI configuration are now present. Extension implementation and browser validation remain pending. Add user-visible changes here as release preparation begins; assign a version and release date only when a release is actually prepared.

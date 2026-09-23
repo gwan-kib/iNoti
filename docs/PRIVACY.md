@@ -2,7 +2,7 @@
 
 ## Status
 
-This is the privacy contract for the planned MVP, not a claim about an implemented or audited extension. The repository currently contains documentation only: there is no running extension, manifest, storage implementation, or telemetry. Verify this document against the production build before release.
+This is the privacy contract for the planned MVP, not a claim about an implemented or audited extension. The repository currently contains documentation and development tooling: there is no running extension, manifest, storage implementation, or telemetry. Verify this document against the production build before release.
 
 ## Allowed reading and prohibited behavior
 

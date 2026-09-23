@@ -2,20 +2,27 @@
 
 ## Current status and commands
 
-No implementation, tests, fixtures, simulator, package scripts, or CI exists yet. No runtime checks or manual browser scenarios have passed. This document defines future verification requirements.
+Phase 0 development tooling and CI configuration exist. No application implementation, tests, fixtures, or simulator exists yet. Local tooling checks can run; application coverage and manual browser verification remain unavailable until the relevant later phases.
 
 | Check | Command/status |
 | --- | --- |
-| Dependency installation | Not configured; runtime and package manager pending |
-| Lint | Not configured |
-| Type-check | Not configured |
-| Unit and integration tests | Not configured |
-| Production build | Not configured; output directory pending |
-| CI | Not configured; planned to run lint, type-check, tests, and production build on pushes to `main` and optional PRs |
+| Dependency installation | `npm ci` with Node 22.13+ within 22.x and npm 10 or 11; `npm install` for intentional dependency updates |
+| Lint | `npm run lint` checks JavaScript/TypeScript configuration and future source/tests |
+| Type-check | `npm run typecheck` checks TypeScript configuration and future source/tests without emitting files |
+| Unit and integration tests | `npm test` runs Vitest; no tests exist, explicitly permitted by `passWithNoTests` |
+| Production build | `npm run build` builds the infrastructure HTML entry into `dist/index.html`; not an extension |
+| Combined validation | `npm run check` runs lint, type-check, tests, and build in order |
+| CI | `.github/workflows/ci.yml` uses `npm ci` and the same four checks on pushes to `main` and PRs targeting `main` |
 
-The tooling change must replace these entries with exact working commands and update CONTRIBUTING.md. Update README.md only when user installation or usage changes. Run the local checks before committing a completed code change; CI automates verification after pushing without requiring a PR. Do not use placeholder tests or report unavailable checks as passing. For documentation-only work now, verify required files, relative links, whitespace, the agreed project plan, and the distinction between planned and implemented behavior.
+See [developer setup](../CONTRIBUTING.md) for clone/install steps. Run local checks before committing a completed code change. CI automates verification after pushing without requiring a PR; a hosted run has not yet been verified as part of this local setup. `npm test` reporting no tests is not evidence of application correctness. Remove `passWithNoTests` when adding the first real tests, and use explicit Vitest imports in test files. Do not add placeholder tests. For documentation-only work, verify required files, relative links, whitespace, and the distinction between planned and implemented behavior.
 
-## Automated coverage
+The current production artifact has no manifest and cannot be loaded unpacked. All manual scenarios below are future requirements, not executed checks. Local build success only validates the infrastructure build entry.
+
+### Phase 0 local verification
+
+Verified on Windows with Node 22.17.1 and npm 11.12.1: `npm install`, a clean `npm ci`, and `npm run check` completed successfully. The combined command ran `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build`; each exited successfully. Vitest reported no test files, and Vite emitted only `dist/index.html`. Dependencies and build output are ignored by Git. The initial sandboxed Vitest run encountered `spawn EPERM`; running with the required process access resolved it without a code workaround. Hosted GitHub Actions execution remains unverified until this change is pushed.
+
+## Planned automated coverage
 
 | Area | Required cases |
 | --- | --- |
