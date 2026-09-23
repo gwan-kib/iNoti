@@ -13,7 +13,7 @@ No implementation, tests, fixtures, simulator, package scripts, or CI exists yet
 | Production build | Not configured; output directory pending |
 | CI | Not configured; planned to run lint, type-check, tests, and production build on pushes to `main` and optional PRs |
 
-The tooling change must replace these entries with exact working commands and update README.md and CONTRIBUTING.md. Run the local checks before committing a completed code change; CI automates verification after pushing without requiring a PR. Do not use placeholder tests or report unavailable checks as passing. For documentation-only work now, verify required files, relative links, whitespace, the agreed project plan, and the distinction between planned and implemented behavior.
+The tooling change must replace these entries with exact working commands and update CONTRIBUTING.md. Update README.md only when user installation or usage changes. Run the local checks before committing a completed code change; CI automates verification after pushing without requiring a PR. Do not use placeholder tests or report unavailable checks as passing. For documentation-only work now, verify required files, relative links, whitespace, the agreed project plan, and the distinction between planned and implemented behavior.
 
 ## Automated coverage
 
