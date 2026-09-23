@@ -1,6 +1,6 @@
 # Architecture decisions
 
-These records distinguish implemented choices from future directions. **Accepted direction does not mean browser-verified.** Phase 1 implements route detection and basic desktop notification requests. D009 and D010 supersede conflicting assumptions in the original plan.
+These records distinguish implemented choices from future directions. **Accepted direction does not mean browser-verified.** Phase 1 implements route detection and custom HTML alert windows. D009 and D011 define the current behavior; D005 and D010 record superseded native-delivery choices.
 
 For each future record include an ID, status (proposed, accepted, or superseded), context, choice, alternatives, consequences, and evidence. Link an issue only if one exists. Update a record or supersede it when new evidence changes the choice.
 
@@ -36,9 +36,9 @@ Use `chrome.storage.local` for monitoring/sound preferences and `chrome.storage.
 
 Never persist question text, choices, or student answers. Defaults, exact schemas, retention, and browser-restart behavior remain open. Selecting sync would require a privacy update because settings would no longer be local-only.
 
-## D005: Native notifications for V1
+## D005: Native notifications for V1 (historical)
 
-Status: accepted design direction.
+Status: superseded by D011; native delivery is no longer implemented.
 
 Native notifications support alerting while another application is active. Keep them separate from detection and tie actions to session/question identity. Request interaction persistence where supported without promising OS-independent placement or duration.
 
@@ -50,13 +50,13 @@ Status: proposed; validation required.
 
 Use an offscreen document with the `AUDIO_PLAYBACK` reason if it is the reliable choice for the bundled sound. Keep a small audio abstraction so a demonstrably simpler and equally reliable approach can replace it.
 
-Native notifications should be silent to prevent double sound. Adding `offscreen`, selecting the minimum Chrome version, and claiming reliable audio require lifecycle/browser evidence. No audio mechanism or asset is implemented.
+Adding `offscreen`, selecting the minimum Chrome version, and claiming reliable audio require lifecycle/browser evidence. No audio mechanism or asset is implemented; current HTML alerts have no sound.
 
 ## D007: Minimum permissions and no default discard override
 
-Status: accepted constraints; the Phase 1 manifest is defined in D010. Storage and offscreen remain deferred.
+Status: accepted constraints; current Phase 1 permissions are defined in D011. Storage and offscreen remain deferred.
 
-Plan `storage`, `notifications`, and only confirmed student-origin access. Add `offscreen` only if used. Do not default to `<all_urls>`, `tabs`, `scripting`, or `webRequest`; document a specific unmet capability before adding a permission.
+Request only currently needed access: D011 removes the notifications permission, with no replacement API permission. Storage and offscreen require later implemented uses. Do not default to `<all_urls>`, `tabs`, `scripting`, or `webRequest`; document a specific unmet capability before adding a permission.
 
 Do not disable tab discarding by default. If evidence justifies an active-session-only override, record the resource tradeoff, required access, cleanup/restoration behavior, and tests before adding it. See [privacy](PRIVACY.md).
 
@@ -88,9 +88,9 @@ Consequences: refresh avoids duplicate alerts, but an already-active question is
 
 Evidence: supplied project observations and synthetic parser, transition, and content-script tests. Real-session behavior of this build remains unverified.
 
-## D010: Minimal Phase 1 MV3 delivery and permissions
+## D010: Minimal Phase 1 MV3 delivery and permissions (historical)
 
-Status: accepted and implemented; browser verification pending.
+Status: delivery, permission, and packaging choices superseded by D011. The original decision below is retained as history, not current behavior.
 
 Context: prove the smallest route-to-desktop-notification path before adding controls, audio, or lifecycle coordination.
 
@@ -101,6 +101,24 @@ Alternatives: dynamic injection would require unnecessary permissions; popup, au
 Consequences: one create request per accepted message, no retries, no click behavior, no stacking system, no persistent worker state. Chrome supplies notification IDs and controls display. Message completion keeps the response channel open; delivery failures return failure and produce a generic content-script warning. Multiple tabs can independently alert. The original bell icon is generated from simple geometry, with no external artwork or runtime asset fetch.
 
 Evidence: mocked worker tests cover notification options, sender/payload rejection, and failed creation; build inspection checks referenced assets and scope. Loading unpacked and real notifications remain manual evidence requirements.
+
+## D011: Custom HTML alert windows and development diagnostics
+
+Status: accepted and implemented; supersedes native delivery in D005/D010. Actual Chrome/iClicker verification remains pending.
+
+Context: the owner wants a visible proof-of-concept alert independent of OS notification banners and detailed evidence of where route detection or delivery fails. Route parsing and hashchange observation remain unchanged.
+
+Choice: open local `alert.html?detectedAt=<timestamp>` using `chrome.windows.create`, type popup, 400 by 180 pixels, focused. The page uses packaged HTML/CSS/JS, validates the timestamp, renders with textContent, and closes its own window on ×. It remains open until closed. This is not an action popup, OS overlay, or always-on-top window; focus stealing is intentional for this testing stage.
+
+Permissions: remove notifications with no replacement API permissions. Keep only the exact student-site static content-script match. The [Chrome windows API](https://developer.chrome.com/docs/extensions/reference/api/windows) requires tabs permission for sensitive tab properties, not this window creation. No tab content inspection, storage, external resources, or telemetry is introduced.
+
+Alternatives: native notifications remain subject to OS presentation and permissions. Injected page UI would not provide a separate window. Native companions, stacking, position controls, audio, and non-focus-stealing behavior exceed this proof of concept and remain deferred.
+
+Diagnostics: `[iNoti][content]` covers startup, normalized route transition/eligibility, send/acknowledgement/failure. `[iNoti][worker]` covers startup, receipt, payload/sender validation, and window creation. `[iNoti][alert]` covers load, timestamp rendering/validation failure, missing elements, and close. A shared DEBUG switch is enabled. Only safe API failure categories are logged; arbitrary error objects may contain private URLs or data and are withheld. No raw hash, class/question UUID, sender object, payload, or query-string dump is logged.
+
+Consequences: acknowledgement indicates window API completion, not page rendering. A third Vite HTML build packages the alert after the two script builds. Tests cover popup creation and failures, parsing/rendering/close, and logging privacy. Multiple alerts can remain open, without stacking or cross-tab coordination. Missing hashchange events must be diagnosed from real logs rather than hidden with a new observer.
+
+Evidence: automated mocks and package inspection are documented in [testing](TESTING.md). Actual display, focus, and authenticated route behavior are not established by those checks.
 
 ## Decisions still required
 

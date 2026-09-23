@@ -51,3 +51,28 @@ it('requires a supported baseline after unrelated and quiz routes', async () => 
   navigate(`${base}/poll`);
   expect(sendMessage).toHaveBeenCalledTimes(1);
 });
+
+it('logs the detection and acknowledgement path without route identifiers', async () => {
+  const output = vi.spyOn(console, 'info').mockImplementation(() => {});
+  const { navigate } = await start(base);
+  navigate(`${base}/poll`);
+  const text = JSON.stringify(output.mock.calls);
+  expect(text).toContain('loaded');
+  expect(text).toContain('baseline state');
+  expect(text).toContain('hashchange detected');
+  expect(text).toContain('sending NEW_POLL');
+  expect(text).toContain('NEW_POLL acknowledged by worker');
+  expect(text).not.toContain('11111111');
+  expect(text).not.toContain('student.iclicker.com');
+});
+
+it('logs synchronous send failures without retrying or leaking the error payload', async () => {
+  const output = vi.spyOn(console, 'info').mockImplementation(() => {});
+  const { navigate, sendMessage } = await start(base);
+  sendMessage.mockImplementation(() => { throw new Error('Extension context invalidated: private data'); });
+  navigate(`${base}/poll`);
+  navigate(`${base}/poll`);
+  expect(sendMessage).toHaveBeenCalledTimes(1);
+  expect(JSON.stringify(output.mock.calls)).toContain('NEW_POLL delivery failed');
+  expect(JSON.stringify(output.mock.calls)).not.toContain('private data');
+});

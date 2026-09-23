@@ -6,7 +6,8 @@ No version has been released. This file is initialized early as part of the requ
 
 ### Added
 
-- Minimal MV3 development extension: same-class hash-route transitions into a poll request a silent native desktop notification; initial active routes establish a baseline. Includes synthetic route and mocked Chrome API tests. Browser validation remains pending.
+- Minimal MV3 development extension: same-class hash-route transitions into a poll open a focused, extension-owned HTML alert window with local detection time and a close button. Initial active routes establish a baseline. Native notification delivery and its permission have been removed.
+- Privacy-safe content, worker, and alert console diagnostics; timestamp/rendering and popup-window tests. Browser validation remains pending.
 
 - Initial project documentation covering MVP scope, architecture, detection research, testing, privacy, decisions, contribution rules, and pull request review.
 

@@ -35,9 +35,9 @@ Use `npm ci` for reproducible installation from `package-lock.json`. Use `npm in
 
 Lint and type-checking cover configuration, source, and tests. Strict TypeScript includes DOM and Chrome API types. Chrome APIs are mocked at component boundaries in tests; no runtime dependency or UI framework is needed.
 
-Vite builds a real unpacked MV3 extension into `dist/`: `manifest.json`, `content.js`, `background.js`, and `assets/icon-128.png`. Two library builds produce standalone IIFEs without module imports; the first clears output and copies the manifest/icon, and the second adds the classic worker. Generated output and dependencies are ignored by Git. Run the full build command, not just its second stage. No minimum Chrome version is claimed from the ES2022 syntax target alone.
+Vite builds an unpacked MV3 extension into `dist/`: `manifest.json`, `content.js`, `background.js`, `alert.html`, hashed alert JS/CSS in `assets/`, and `assets/icon-128.png`. Two library builds produce standalone IIFEs; the first clears output and copies the manifest/icon, the second adds the classic worker. A third HTML build adds the local alert page and its assets without clearing earlier output. Run the full build command. Generated output and dependencies are ignored by Git. No minimum Chrome version is claimed from the ES2022 target alone.
 
-Vitest now has real application tests; `passWithNoTests` has been removed. Synthetic tests establish route policy and mocked API calls, not authenticated iClicker or OS notification behavior.
+Vitest has real application tests with no no-tests allowance. Synthetic tests establish route policy, mocked window creation, timestamp rendering, and safe logging; they do not establish authenticated iClicker or Chrome window behavior.
 
 CI uses the same Node line, `npm ci`, and the four individual validation scripts with npm caching. Hosted CI results must be checked after pushing; local success does not establish a successful GitHub Actions run.
 
@@ -47,10 +47,12 @@ CI uses the same Node line, `npm ci`, and the four individual validation scripts
 2. Open `chrome://extensions` in Chrome and enable **Developer mode**.
 3. Choose **Load unpacked** and select this checkout's `dist/` directory.
 4. Check the iNoti card for errors and inspect the service worker for startup errors.
-5. Open or refresh `https://student.iclicker.com/` so the static content script starts. Use a single tab and enable Chrome notifications in OS settings.
+5. Open or refresh `https://student.iclicker.com/` so the static content script starts. Use a single tab. OS notification settings are irrelevant to this alert window.
 6. After code changes, rebuild, reload iNoti on the extensions page, and refresh the student page. Loading while already on a poll intentionally produces no alert.
 
 Follow the manual scenarios in docs/TESTING.md and record browser/OS versions and actual results. This development build is not a Web Store release; no live-session verification is implied by a successful build. For documentation-only changes, inspect text, relative links, required files, consistency, and whitespace.
+
+For diagnosis, open the student page's DevTools console and the extension service-worker console before starting an instructor poll. Enable Info-level console messages and filter by `[iNoti]`. Inspect the alert page's own console for render/close events. `src/shared/logging.ts` has a single `DEBUG` constant, currently enabled for this testing phase; set it to false and rebuild to silence diagnostic output. Logs deliberately omit raw URLs, UUIDs, payloads, and unrecognized error text. See docs/TESTING.md for expected log stages.
 
 See [testing](docs/TESTING.md) for fixture requirements, browser scenarios, and release evidence.
 

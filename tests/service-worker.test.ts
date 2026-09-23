@@ -7,24 +7,24 @@ const addListener = vi.fn();
 
 beforeEach(async () => {
   vi.resetModules();
-  create.mockReset().mockResolvedValue('notification');
+  create.mockReset().mockResolvedValue({ id: 42 });
   addListener.mockClear();
   vi.stubGlobal('chrome', {
     runtime: { id: 'test-extension', onMessage: { addListener }, getURL: (path: string) => `chrome-extension://test-extension/${path}` },
-    notifications: { create },
+    windows: { create },
   });
   await import('../src/background/service-worker');
 });
 afterEach(() => vi.unstubAllGlobals());
 
-it('registers on startup and creates one silent notification with local time', async () => {
+it('registers on startup and creates one compact focused popup with only the timestamp', async () => {
   const respond = vi.fn();
   expect(addListener).toHaveBeenCalledTimes(1);
   expect(addListener.mock.calls[0]?.[0](message, sender, respond)).toBe(true);
   await Promise.resolve();
   expect(create).toHaveBeenCalledExactlyOnceWith({
-    type: 'basic', iconUrl: 'chrome-extension://test-extension/assets/icon-128.png',
-    title: 'New iClicker Question', message: `Detected at ${new Date(message.detectedAt).toLocaleTimeString()}`, silent: true,
+    url: `chrome-extension://test-extension/alert.html?detectedAt=${message.detectedAt}`,
+    type: 'popup', width: 400, height: 180, focused: true,
   });
   expect(respond).toHaveBeenCalledWith({ ok: true });
 });
@@ -47,10 +47,17 @@ it.each([
 });
 
 it('reports a creation failure without retrying', async () => {
-  create.mockRejectedValue(new Error('OS notification failure'));
+  create.mockRejectedValue(new Error('Window creation failed'));
   const respond = vi.fn();
   addListener.mock.calls[0]?.[0](message, sender, respond);
   await Promise.resolve();
   expect(respond).toHaveBeenCalledWith({ ok: false });
   expect(create).toHaveBeenCalledTimes(1);
+});
+
+it('reports synchronous window API failures', () => {
+  create.mockImplementation(() => { throw new Error('No current window'); });
+  const respond = vi.fn();
+  addListener.mock.calls[0]?.[0](message, sender, respond);
+  expect(respond).toHaveBeenCalledWith({ ok: false });
 });

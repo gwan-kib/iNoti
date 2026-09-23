@@ -34,6 +34,8 @@ Only placeholders and synthetic UUIDs belong in committed evidence or tests. Bro
 
 Previous state advances before sending a candidate. Staying on a route and duplicate events cannot resend it. Messages contain only `NEW_POLL` and detection time, not class/question IDs or page content.
 
+Content diagnostics log startup, normalized baseline, previous/next states, eligibility, and message delivery. Raw hashes and UUIDs are not logged. Hashchange is still the only observation mechanism: if the visible route changes without a hashchange log, record that evidence for a separate fix. The worker now opens a custom HTML alert window; this does not change route policy.
+
 ## Boundaries
 
 This is route-transition detection, not question identity. Manually navigating back into a poll from waiting/closed can alert again; an unchanged poll URL cannot reveal a new question. Initial active observation deliberately misses the already-open question to avoid refresh alerts.

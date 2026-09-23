@@ -2,28 +2,24 @@
 
 ## Implemented Phase 1
 
-The extension inspects only iClicker URL/hash routes on `https://student.iclicker.com`. It does not inspect question text, choices, selected answers, grades, student information, or unrelated browsing. It does not answer questions or submit anything.
+iNoti reads only supported iClicker URL/hash routes. It never reads or persists question text, choices, responses, grades, student identity, or unrelated browsing, and does not submit answers.
 
-| Permission/access | Reason |
-| --- | --- |
-| `notifications` | Create a native desktop notification for a supported poll transition |
-| Static content-script match `https://student.iclicker.com/*` | Observe the student page's hash changes; manifest matching cannot select fragment routes |
+The manifest requests no API permissions. The previous `notifications` permission has been removed. Static content-script access remains exactly `https://student.iclicker.com/*`. There are no separate host permissions, broad domains, storage, tabs, scripting, activeTab, alarms, offscreen, webRequest, or all-URLs access.
 
-There is no separate `host_permissions` entry: the static content-script declaration provides the required site scope. No `storage`, `tabs`, `scripting`, `activeTab`, `alarms`, `offscreen`, `webRequest`, broad domain access, or `<all_urls>` is requested. See D010 in [decisions](DECISIONS.md).
+Creating an extension-owned popup with `chrome.windows.create` does not need broad tab-data access. No toolbar/action popup is declared. See D011 in [decisions](DECISIONS.md).
 
 ## Data flow and retention
 
-- The content script holds the previous route state and normalized class ID in memory. Question IDs are validated only; no question content is read.
-- The message contains only an event type and local detection timestamp. Class/question IDs and student data are not sent.
-- The worker checks Chrome-provided sender context without storing it or reading other tabs.
-- No extension storage, analytics, backend, or network transmission is implemented.
-- Notifications contain a generic title and local time. Chrome/the OS controls their display and retention in notification history.
-- Delivery errors produce a generic console warning without URL, identifiers, payload, or page content.
+- The content script holds only its previous normalized route/class ID in memory. Question IDs are validated, not retained.
+- Messages contain only `NEW_POLL` and detection time; no class/question UUID or student information.
+- The worker validates Chrome sender context without storing it or inspecting other tabs.
+- The alert URL contains only `detectedAt`. The page validates it and renders text safely. It is visible in that alert's local address/DevTools context until closed; there is no extension-managed persistent storage or history.
+- The title, detection time, and close control use bundled HTML/CSS/JS only. No external fonts, assets, telemetry, network requests, or backend are used.
+- Development logs include state names, boolean decisions, known error categories, and optionally a window ID. They exclude URLs, UUIDs, arbitrary payloads/error text, and page content. Inspect logs before sharing them alongside other DevTools output.
+- `DEBUG` in `src/shared/logging.ts` can disable diagnostics on rebuild.
 
-Closing/reloading the page discards its detector state. Disable or remove iNoti through `chrome://extensions` to stop monitoring. There are no saved extension settings to reset.
+Alerts may take focus, remain open until closed, and are not always-on-top. OS notification settings are not involved. Reloading/closing the student page discards detector state; disable/remove iNoti in `chrome://extensions` to stop future monitoring and close any existing alert windows separately.
 
 ## Future changes
 
-Storage, click focus, sound, and multi-tab coordination are deferred. Any new permission or host access needs a written reason, consideration of narrower alternatives, a decision record, and matching manifest/README/privacy updates. Never retain question text, answers, credentials, live session identifiers, or production-page dumps in tests or logs.
-
-Before release, recheck the built manifest, reads, messages, logs, notification text, and assets against this document. Automated mocks do not establish browser privacy or notification behavior; follow [testing](TESTING.md).
+Storage, sound, focus-iClicker actions, and multi-tab coordination remain deferred. New permissions need a written reason, narrower-alternative review, a decision, and matching manifest/README/privacy changes. Keep tests synthetic and never commit live identifiers or production-page dumps. Verify real-browser behavior using [testing](TESTING.md).

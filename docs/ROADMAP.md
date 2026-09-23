@@ -7,15 +7,15 @@ The project owner's revised route evidence supersedes the investigation spike in
 | Phase | Work and exit criterion | Status |
 | --- | --- | --- |
 | 0 | Reproducible tooling, validation commands, and equivalent CI | Implemented; hosted CI results not verified here |
-| 1 | Minimal route detector and desktop notification: unpacked extension observes a supported transition into poll, messages the worker, and creates one alert without initial-load/refresh duplicates | Implemented; automated verification complete, browser exit evidence pending |
-| 2 | Popup/status and persistent monitoring controls with documented defaults | Pending |
+| 1 | Route detector, detailed diagnostics, and custom HTML alert window: supported transition into poll creates one focused popup without initial-load/refresh duplicates | Implemented; automated verification complete, browser exit evidence pending |
+| 2 | Toolbar popup/status and persistent monitoring controls with documented defaults | Pending |
 | 3 | Notification click-to-focus and optional sound with validated browser/OS behavior | Pending |
 | 4 | Question identity, worker-owned cross-tab deduplication, and multiple-session policy | Pending |
 | 5 | Recovery, reconnect, refresh, worker suspension, and discard limitations | Pending |
 | 6 | Full MVP browser validation, privacy review, release and installation evidence | Pending |
 | 7 | Separately authorized post-MVP features | Deferred |
 
-The extension skeleton and basic notification path are now part of Phase 1. The old live investigation spike is no longer a prerequisite. [Detection strategy](DETECTION_STRATEGY.md) records supplied evidence and the remaining route-only limitations.
+The extension skeleton and custom alert path are part of Phase 1. Native notifications have been replaced by a local HTML/CSS popup window with no API permissions. It may steal focus during testing, is not always-on-top, and has no sound or auto-dismiss. Positioning, stacking, and non-focus behavior remain future work. The old investigation spike is no longer a prerequisite; actual hashchange events still require real-browser validation. [Detection strategy](DETECTION_STRATEGY.md) records the route evidence and limitations.
 
 ## Later MVP requirements
 
