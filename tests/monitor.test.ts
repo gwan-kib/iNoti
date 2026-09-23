@@ -61,9 +61,9 @@ it.each([base, closed])('returns the same PiP to idle on question end: %s', asyn
   await app.open();
   app.navigate(`${base}/poll`);
   expect(app.active()).toBe(true);
-  const time = app.pipDocument.body.children[0]!.children[2]!.textContent;
+  const time = app.pipDocument.body.children[0]!.children[2]!.children[0]!.textContent;
   app.navigate(`${base}/poll`);
-  expect(app.pipDocument.body.children[0]!.children[2]!.textContent).toBe(time);
+  expect(app.pipDocument.body.children[0]!.children[2]!.children[0]!.textContent).toBe(time);
   app.navigate(end);
   expect(app.active()).toBe(false);
   app.navigate(`${base}/poll`);

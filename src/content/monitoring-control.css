@@ -1,0 +1,7 @@
+@import "../shared/brand-colors.css";
+
+button { font: 13px system-ui, sans-serif; color: var(--inoti-on-brand); background: var(--inoti-monitor-surface);
+      border: 1px solid var(--inoti-on-brand); border-radius: 24px; padding: 9px 13px; cursor: pointer;
+      box-shadow: 0 2px 8px var(--inoti-control-shadow); max-width: 100%; }
+    button:focus-visible { outline: 3px solid var(--inoti-monitor-focus); outline-offset: 3px; }
+    button:disabled { cursor: default; background: var(--inoti-text-secondary); }

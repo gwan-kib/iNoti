@@ -67,11 +67,11 @@ it('renders minimal idle content and local detection time without HTML insertion
   expect(main.children[0]!.textContent).toBe('\u25cf iNoti');
   expect(main.children[1]!.hidden).toBe(true);
   view.question(1_700_000_000_000);
-  expect(main.children[1]!.textContent).toBe('New iClicker Question');
+  expect(main.children[1]!.children[0]!.textContent).toBe('New iClicker Question');
   expect(main.children[1]!.hidden).toBe(false);
-  expect(main.children[2]!.textContent).toBe(`Detected at ${new Date(1_700_000_000_000).toLocaleTimeString()}`);
+  expect(main.children[2]!.children[0]!.textContent).toBe(`Detected at ${new Date(1_700_000_000_000).toLocaleTimeString()}`);
   view.idle();
-  expect(main.children[2]!.textContent).toBe('');
+  expect(main.children[2]!.children[0]!.textContent).toBe('');
 });
 it('cleans up when rendering fails, even if close emits pagehide synchronously', async () => {
   const pip = Object.assign(new EventTarget(), { document: {} as Document, closed: false, close: vi.fn() });

@@ -11,7 +11,7 @@ A TypeScript/Vite MV3 extension with no framework or runtime dependencies. Route
 | `src/content/monitor.ts` | Per-page baseline, shared hashchange/navigation evaluation, monitoring coordination, opener lifecycle |
 | `src/content/monitoring-control.ts` | Namespaced floating button in a closed shadow root, status and accessible stop/retry controls |
 | `src/content/pip-controller.ts` | API detection, user-gesture request, pending-open guard, PiP reference, state, close and cleanup |
-| `src/content/pip-view.ts` | Dependency-free generic idle/alert DOM and local time rendering |
+| `src/content/pip-view.ts` and `pip-view.css` | Generic idle/alert DOM and local time rendering, with a separate stylesheet bundled for injection into the dynamic PiP document |
 | `src/shared/messages.ts` | Validated NAVIGATION_CHANGED contract |
 | `src/shared/logging.ts` | Privacy-safe content/worker/pip diagnostics |
 | `src/background/service-worker.ts` | Filtered navigation forwarding only; no session state or alert creation |
@@ -33,6 +33,8 @@ The toolbar popup and `dev-testing/` extension page are development tooling, not
 Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE -> MONITORING_IDLE, with any session-ending event returning to UNMONITORED. Opening is a transient guard, not active monitoring. Detection continues while unmonitored so enabling monitoring does not invent a question transition.
 
 ## PiP and build
+
+`src/shared/brand-colors.css` is the shared color palette. Surface styles use its `--inoti-*` custom properties. Popup and tester styles import the packaged `shared/brand-colors.css`; PiP and monitoring-control styles bundle the same palette for injection into their dynamic document or shadow root. Change palette values there to recolor all consumers, then rebuild and reload.
 
 Request the footprint from `PIP_DIMENSIONS` in `src/shared/pip-dimensions.ts` once. The development preview uses those same dimensions for its content area. Chrome controls placement, chrome, and size clamping. Idle content is a dot and iNoti; active content adds the question title and local time. No resize calls, screen coordinates, history, auto-dismiss, sound, or stacking. PiP cannot outlive its opener. It is same-origin with the student page, not a separate extension-origin security boundary, so it contains no sensitive data.
 

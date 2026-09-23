@@ -1,3 +1,4 @@
+import controlStyles from './monitoring-control.css?inline';
 import type { MonitoringStatus } from './pip-controller';
 import { logger } from '../shared/logging';
 
@@ -9,13 +10,8 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
   host.style.cssText = 'all:initial;position:fixed;right:12px;bottom:12px;z-index:2147483647;max-width:calc(100vw - 24px);';
   const root = host.attachShadow({ mode: 'closed' });
   const style = document.createElement('style');
-  style.textContent = `
-    button { font: 13px system-ui, sans-serif; color: #fff; background: #205c46;
-      border: 1px solid #fff; border-radius: 24px; padding: 9px 13px; cursor: pointer;
-      box-shadow: 0 2px 8px #0003; max-width: 100%; }
-    button:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
-    button:disabled { cursor: default; background: #46536a; }
-  `;
+  // The closed shadow root needs its own copy of the shared palette and styles.
+  style.textContent = controlStyles;
   const button = document.createElement('button');
   button.type = 'button';
   button.addEventListener('click', toggle);

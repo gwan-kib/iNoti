@@ -17,6 +17,13 @@
 - Use one user-started Document PiP surface owned by the page. Never open PiP from question events; close means stop monitoring. Use a fixed requested footprint, no positioning/automatic resize or fallback alerts. Only webNavigation is requested; the development toolbar popup must not add broad tabs permission.
 - Keep `[iNoti][content]`, `[iNoti][worker]`, and `[iNoti][pip]` logs useful and private: source, normalized states, boolean decisions, failure categories only. Never dump raw hashes, sender objects, payloads, or arbitrary errors. Filter navigation to top-frame exact `https://student.iclicker.com` before logging/forwarding; do not collect history or add speculative observers.
 
+## UI styling
+
+- Define reusable colors in `src/shared/brand-colors.css` as named CSS custom properties. Whenever possible, use these variables in surface styles instead of hardcoding hex, RGB/HSL, or named colors elsewhere. Add new palette entries there, including shadow colors; keep the shared palette available in extension pages, PiP documents, and isolated shadow roots.
+
+- Keep each surface's static styles in its own CSS file, including the popup and PiP. Whenever possible, do not write CSS inline in HTML, style attributes, or TypeScript template strings. Dynamic measured dimensions may be set in code. For dynamic PiP documents or shadow roots, inject CSS imported from a separate file when needed and explain why.
+- Keep semantic elements such as headings and buttons, but wrap independently styled text in a named span or div (use spans inside headings, paragraphs, and buttons). Use descriptive classes for text size, color, and other visual edits instead of relying only on generic h1 or p selectors. A named div already containing text can serve as its own wrapper.
+
 ## Privacy and permissions
 
 - Never collect student answers, auto-submit answers, or inspect unrelated websites.

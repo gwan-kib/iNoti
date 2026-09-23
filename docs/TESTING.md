@@ -29,13 +29,15 @@ Small EventTarget/DOM fakes and injected window/view boundaries keep tests depen
 
 ## Build inspection
 
+Confirm `dist/shared/brand-colors.css` exists for popup/tester stylesheet imports. After palette edits, rebuild and reload; check the popup, inline preview, real PiP, and on-page monitoring button for consistent colors and legible focus/disabled states.
+
 After building, dist must contain manifest.json, content.js, background.js, assets/icon-128.png, popup/{popup.html,popup.css,popup.js}, and dev-testing/{index.html,dev-testing.css,dev-testing.js}. Verify no legacy alert-window HTML/JS/CSS remains, including when building over an old dist. The first stage clears output. Verify only webNavigation permission, exact student-site content match, minimum_chrome_version 116, the toolbar popup points only to the extension-owned dev tester, and no remote dependencies. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
 
 ## Development tester
 
 Change `PIP_DIMENSIONS` in `src/shared/pip-dimensions.ts` to size the real PiP request and the initial inline preview. Rebuild, reload the extension, and refresh the tester after editing. After **Open PiP**, verify the preview matches the actual PiP content viewport, including Chrome's size clamping, and follows manual window resizing. Closing PiP detaches the resize listener and retains the last preview size; reopening synchronizes again. The preview does not reproduce Chrome's title bar or window frame.
 
-Both surfaces render `src/content/pip-view.ts` directly, including its HTML, CSS, text, and idle/question rendering. Make visual changes there; no separate tester view needs updating. The preview wrapper scrolls on narrow screens instead of shrinking the PiP viewport and adds no border or rounding to the view. **Open PiP** also uses the production controller for real window lifecycle testing; the inline preview's simulation buttons are not a browser lifecycle emulation.
+Both surfaces render `src/content/pip-view.ts` directly for markup, text, and idle/question rendering, with styles imported from `src/content/pip-view.css`. Edit `.question-title-text` or `.detection-time-text` in that stylesheet to style the named text spans; no separate tester view needs updating. The toolbar popup uses `src/popup/popup.css`, including `.popup-title-text`. The preview wrapper scrolls on narrow screens instead of shrinking the PiP viewport and adds no border or rounding to the view. **Open PiP** also uses the production controller for real window lifecycle testing; the inline preview's simulation buttons are not a browser lifecycle emulation.
 
 After building and reloading the unpacked extension, click the iNoti toolbar icon and choose **Open Dev Tester**. The tester must work without an iClicker tab. Confirm the inline preview can switch between idle and New iClicker Question, the displayed time updates locally, **Open PiP** opens the shared PiP view from the click, **Return to Idle** returns it to idle, and **Stop PiP** closes it. Confirm the on-page event log and DevTools `[iNoti][dev]` output contain only generic state/capability information. Clearing the log affects only the tester page.
 

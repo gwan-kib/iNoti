@@ -1,10 +1,13 @@
-:root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #182338; background: #f6f8fb; }
+@import "../shared/brand-colors.css";
+
+:root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--inoti-text); background: var(--inoti-surface); }
 body { margin: 0; min-width: 280px; }
 main { padding: 18px; }
-.brand { color: #25634c; font-weight: 700; }
-.eyebrow { margin: 12px 0 2px; color: #667085; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-h1 { margin: 0 0 8px; font-size: 20px; }
-p { margin: 0 0 16px; color: #46536a; font-size: 13px; line-height: 1.45; }
-button { width: 100%; border: 0; border-radius: 9px; padding: 10px 12px; background: #25634c; color: white; font: inherit; font-weight: 650; cursor: pointer; }
+.brand { color: var(--inoti-brand); font-weight: 700; }
+.eyebrow { margin: 12px 0 2px; color: var(--inoti-text-muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.popup-title { margin: 0 0 8px; font-size: inherit; }
+.popup-title-text { font-size: 20px; }
+p { margin: 0 0 16px; color: var(--inoti-text-secondary); font-size: 13px; line-height: 1.45; }
+button { width: 100%; border: 0; border-radius: 9px; padding: 10px 12px; background: var(--inoti-brand); color: var(--inoti-on-brand); font: inherit; font-weight: 650; cursor: pointer; }
 button:hover { filter: brightness(.96); }
-button:focus-visible { outline: 3px solid #8fcab5; outline-offset: 2px; }
+button:focus-visible { outline: 3px solid var(--inoti-focus); outline-offset: 2px; }
