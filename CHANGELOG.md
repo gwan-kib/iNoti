@@ -6,6 +6,8 @@ No version has been released. This file is initialized early as part of the requ
 
 ### Added
 
+- Minimal MV3 development extension: same-class hash-route transitions into a poll request a silent native desktop notification; initial active routes establish a baseline. Includes synthetic route and mocked Chrome API tests. Browser validation remains pending.
+
 - Initial project documentation covering MVP scope, architecture, detection research, testing, privacy, decisions, contribution rules, and pull request review.
 
-Development tooling and CI configuration are now present. Extension implementation and browser validation remain pending. Add user-visible changes here as release preparation begins; assign a version and release date only when a release is actually prepared.
+The development manifest uses version 0.1.0 for unpacked loading; this is not a published release. Sound, settings, click focus, quiz support, cross-tab deduplication, and recovery remain deferred. Browser validation is pending.

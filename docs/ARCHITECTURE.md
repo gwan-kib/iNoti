@@ -1,100 +1,46 @@
-# Architecture
+﻿# Architecture
 
-Status: planned design derived from the source roadmap; no components are implemented. See [decisions](DECISIONS.md) for accepted directions and provisional choices.
+## Implemented Phase 1
 
-## Components and state ownership
+iNoti is a minimal Manifest V3 extension built with TypeScript and Vite. No UI framework or runtime dependency is used.
 
-| Component | Responsibility | State ownership |
-| --- | --- | --- |
-| Content script | Runs only on approved iClicker student origins; observes session/question DOM, normalizes state, derives local keys, emits meaningful changes | Page-local observation and prior evaluation only; no notification UI or global authority |
-| MV3 service worker | Validates messages, coordinates tabs, suppresses duplicates, creates/clears notifications, handles click focus and settings | Authoritative session registry, duplicate gate, notification mapping; reconstructable after suspension |
-| Popup | Displays Idle/Monitoring iClicker and monitoring/sound controls; requests status on opening | Transient presentation; never an always-running coordinator |
-| Optional offscreen document | Plays one bundled sound on a deduplicated request | Audio lifecycle only; use AUDIO_PLAYBACK if selected after testing |
-
-Use TypeScript and a lightweight build with plain HTML/CSS for the popup. React is unnecessary for the MVP. Put browser APIs behind small wrappers where that improves testing or later portability without prematurely adding cross-browser packaging.
-
-## Event and message flow
-
-1. Content-script startup immediately evaluates the page and registers its state. A narrowly scoped MutationObserver triggers later evaluations, with mutation bursts batched if needed.
-2. The detector maps observed signals to normalized states; a pure reducer determines meaningful transitions. It must fail closed on ambiguous evidence.
-3. The worker receives a candidate, checks effective settings and session/question identity, and applies the authoritative duplicate gate across tabs.
-4. An accepted candidate produces one native notification and one sound request if sound is enabled. The notification is silent so the OS and bundled sound do not both play.
-5. A notification click resolves its stored tab/window mapping, activates that tab, and focuses its Chrome window. A missing target must be handled safely rather than selecting an unrelated tab.
-
-Planned shared contracts in `src/shared/messages.ts`:
-
-| Direction | Messages |
+| File | Responsibility |
 | --- | --- |
-| Content script to worker | `SESSION_STATUS`, `STATE_CHANGED`, `NEW_QUESTION_CANDIDATE`, `DISCONNECTED` |
-| Worker to offscreen document | `PLAY_SOUND` |
-| Popup to worker | `GET_STATUS`, `SET_MONITORING_ENABLED`, `GET_SETTINGS`, `UPDATE_SETTINGS` |
-| Worker to popup | Current monitoring state and effective settings |
+| `manifest.json` | Notifications permission, exact student-site content-script match, classic service worker, local icon |
+| `src/content/detector.ts` | Pure hash-route parser and same-class transition decision |
+| `src/content/monitor.ts` | Startup baseline, hashchange events, one message per eligible transition |
+| `src/shared/messages.ts` | Typed `NEW_POLL` contract and runtime payload validation |
+| `src/background/service-worker.ts` | Sender validation, one native notification, completion response |
+| `assets/icon-128.png` | Bundled original geometric bell icon |
+| `tests/` | Synthetic route and transition cases, mocked content-script and Chrome boundaries |
 
-Exact payload schemas and runtime validation are pending implementation. Use only minimal state, identifiers, and timing metadata; do not include question text, answer choices, or student answers. Derive the sender's tab identity from the browser-provided context.
+## Event flow
 
-## Normalized states
+1. A static top-frame content script starts at `document_start` on `https://student.iclicker.com/*`.
+2. The initial hash establishes a baseline without notification, including when already on a poll.
+3. Each `hashchange` event is parsed. Waiting or closed to active in the same class produces one `{ type: 'NEW_POLL', detectedAt }` message.
+4. The worker validates the payload and Chrome sender: same extension, top frame, a tab ID, and exact supported origin. Tab identity comes only from Chrome; no tab ID is accepted in the message. The current route is not re-read in the worker because subsequent navigation may already have occurred.
+5. The worker requests one basic native notification with the title **New iClicker Question**, local detection time, bundled icon, and `silent: true`.
+6. The listener returns `true` to keep the asynchronous response channel open, then responds with success/failure. The content script logs only a generic delivery failure and does not retry.
 
-| State | Meaning and transitions |
-| --- | --- |
-| `NO_SESSION` | No valid session; session discovery moves to `WAITING` or a confidently established current state |
-| `WAITING` | Valid session without an answerable question; a new question moves to `QUESTION_ACTIVE` |
-| `QUESTION_ACTIVE` | Answerable question; notify only for a genuinely new session/question key |
-| `QUESTION_CLOSED` | Submitted, closed, or results state; no new alert; may return to waiting |
-| `DISCONNECTED` | Lost connection or invalid/uncertain session; no alert until valid state returns |
+The worker registers its listener synchronously on each start and keeps no session state. The content script stores only the previous normalized route in memory. Refresh creates a new baseline. Worker suspension therefore does not erase the content-script baseline, but full lifecycle reliability is not yet browser-verified.
 
-Reconnect may return to waiting or active, but the same question must not alert again. Page parsing and transition policy remain separate. See [detection strategy](DETECTION_STRATEGY.md) for identity and unresolved edge cases.
+## Build
 
-## Storage and multiple tabs
-
-- Proposed persistent preferences: monitoring enabled and sound enabled in `chrome.storage.local`. Defaults remain open. Use `sync` only after explicitly choosing cross-device settings and updating privacy documentation.
-- Planned `chrome.storage.session`: tab/session registry, minimal dedupe metadata, and notification-to-tab/window mappings. This state must survive worker restarts; it is not a promise of persistence across a full browser restart.
-- Registry entries are keyed by `tabId` and contain `sessionKey`, normalized state, last question key, and last update time. Stable session identity must be established by investigation.
-- Suppress duplicates by `sessionKey + questionKey` across tabs, while keeping genuinely different sessions separately addressable. Do not assume the newest or focused tab is the correct target.
-- Remove tab registry entries and target mappings when tabs close or leave iClicker. Refresh registration after navigation/restart. Define dedupe retention and expiry before implementation so tab cleanup does not accidentally replay an already-notified question.
-- Never persist question text, choices, or student answers. Question-key algorithm, concurrency handling, storage schema, and dedupe expiry remain design tasks.
-
-## Notifications and recovery
-
-Use the title **New iClicker Question** and message **Detected at [local time]**. Notification IDs should be tied deterministically to session/question identity. Request `requireInteraction` where supported, but treat placement and persistence as OS-controlled behavior.
-
-On full refresh, recompute and re-register. On SPA route or container changes, re-evaluate and reattach observation as needed. On worker restart, load ephemeral metadata and reconcile fresh content messages. During disconnection or unsupported states, suppress uncertain alerts. On reconnect, require evidence of a genuinely new question.
-
-Normal background tabs, minimized Chrome, and another foreground app are required test cases. Frozen/discarded tabs are a separate limitation to investigate. Do not disable discarding by default; any active-session-only exception needs evidence, a decision, tests, and restoration of normal behavior after monitoring ends.
-
-## Proposed source structure
-
-These paths describe future extension files; they do not exist yet. Package metadata, TypeScript/build/test/lint configuration, and CI already exist; see [developer setup](../CONTRIBUTING.md). The current `tooling/index.html` build entry is infrastructure only and will be replaced during Phase 2.
+`npm run build` runs two Vite library builds. Each emits a self-contained IIFE: static content scripts cannot rely on module imports, and the worker also uses a standalone classic script. The first build clears `dist/` and emits the manifest/icon; the second preserves those files and adds the worker.
 
 ```text
-manifest.json
-src/
-  background/
-    service-worker.ts
-    notifications.ts
-    session-registry.ts
-  content/
-    iclicker-monitor.ts
-    detector.ts
-    question-key.ts
-  offscreen/
-    offscreen.html
-    offscreen.ts
-  popup/
-    popup.html
-    popup.ts
-    popup.css
-  shared/
-    messages.ts
-    state.ts
-    settings.ts
-    constants.ts
-assets/
-  icons/
-  sounds/
-tests/
-  fixtures/
-  unit/
-  integration/
+dist/
+  manifest.json
+  content.js
+  background.js
+  assets/icon-128.png
 ```
 
-The offscreen subtree is conditional. Exact origins, OS support, minimum Chrome version, and final audio implementation remain open. Tooling choices are recorded in D008 in [decisions](DECISIONS.md). Permission boundaries are maintained in [PRIVACY.md](PRIVACY.md).
+There is no HTML entry, popup, offscreen document, remote script, or web-accessible resource declaration. See [developer setup](../CONTRIBUTING.md).
+
+## Later design directions, not implemented
+
+The full MVP may add popup/settings, sound, click-to-focus, worker-owned cross-tab deduplication, storage, and recovery. A poll URL provides no question identity, so those features require explicit identity and lifecycle decisions. No registry, fingerprints, storage wrappers, or unused abstractions have been created in Phase 1.
+
+Plain HTML/CSS remains the planned popup direction. An offscreen document remains conditional on later sound testing. See [roadmap](ROADMAP.md), [decisions](DECISIONS.md), and [privacy](PRIVACY.md).

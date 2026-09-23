@@ -1,70 +1,43 @@
-# Detection strategy
+﻿# Detection strategy
 
-## Evidence status
+## Confirmed project evidence
 
-**No live iClicker investigation has been performed for this repository.** No origin, selector, stable identifier, or network signal is confirmed, and no detector or fixture has been implemented. The following is the investigation and implementation contract, not a record of observed behavior.
+The project owner supplied the following observations for revised Phase 1. They replace the previously required investigation spike; they are not a claim that this checkout has passed an authenticated browser test.
 
-Do not hard-code production selectors until the Phase 1 spike establishes an evidence-backed design.
+Supported origin: `https://student.iclicker.com`.
 
-## Investigation checklist
+| Hash route | Normalized state |
+| --- | --- |
+| `#/class/<classId>` | `WAITING` |
+| `#/class/<classId>/poll` | `QUESTION_ACTIVE` |
+| `#/class/<classId>/question/<questionId>` | `QUESTION_CLOSED` |
+| Everything else, including quiz routes | `UNSUPPORTED` |
 
-| Question | Evidence to record | Current status |
-| --- | --- | --- |
-| Which student origins are needed? | Exact origin and narrow matching scope, excluding credentials and private URLs | Unverified |
-| How are waiting, active, submitted, closed, results, inactive, and disconnected states exposed? | Semantic attributes, roles, structural relationships, and enabled/disabled controls per state | Unverified |
-| Are session/class and question IDs stable? | Stability across transitions, refresh, duplicate tabs, and reconnect; synthetic examples only | Unverified |
-| Ordinary DOM, iframe, or Shadow DOM? | Boundary and access requirements, stable observation root | Unverified |
-| Full navigation or SPA routing? | Route transitions, container replacement, observer reattachment requirements | Unverified |
-| Does background rendering continue? | Chrome/OS versions and observed focused, unfocused, minimized behavior | Unverified |
-| What happens under Memory Saver/discard? | Freeze/discard behavior and recovery evidence | Unverified |
-| Is network inspection necessary? | Specific DOM failure and evidence that a narrower alternative cannot work | Unverified; last resort only |
+The observed sequence is waiting, poll, question, poll, question. Closed question routes expose different question UUIDs, but the poll route has no question UUID. Hash routes were observed changing in a background tab. Refreshing on a poll leaves the URL on that poll.
 
-For each finding record the date, environment, state transition, sanitized signal description, confidence/fragility, and corresponding synthetic fixture/test. Do not commit production page dumps, live identifiers, student data, question text, or answers. Record limitations as well as successful observations.
+Only placeholders and synthetic UUIDs belong in committed evidence or tests. Browser/OS versions and real-session verification of this implementation remain to be recorded.
 
-## Preferred signals and observer design
+## Implemented detector
 
-1. Prefer a stable question/session identifier or semantic state attribute already exposed in the DOM.
-2. Otherwise use stable structural relationships, accessibility roles/attributes, and control state that distinguish an answerable question without relying on styling or localized text.
-3. Observe the smallest stable state container using a MutationObserver. A mutation requests re-evaluation; it is not itself a new question.
-4. If stable identity is absent, investigate a local fingerprint. Prefer session identity plus a stable DOM identifier. Only if needed, hash normalized question content transiently; never transmit or retain the source content.
-5. Consider API/network/WebSocket observation only if documented DOM limitations justify the coupling and permission cost.
+`src/content/detector.ts` parses the hash with anchored route patterns and hexadecimal UUID-shaped identifiers (8-4-4-4-12). Extra segments, trailing slashes, query suffixes, malformed IDs, and quiz routes fail closed. Class identifiers normalize to lowercase; question IDs are validated but not retained in normalized state.
 
-Centralize page selectors and signal interpretation in `src/content/detector.ts`; isolate key construction in `question-key.ts`. Batch bursts into an evaluation when necessary without high-frequency polling. Re-evaluate on startup, relevant navigation, and container replacement. Document iframe/Shadow DOM handling and add fixture coverage if observed.
+`src/content/monitor.ts` reads the initial hash as a baseline, then listens for `hashchange`. It processes each event's new URL to preserve queued transition order. No timers, DOM observation, text inspection, iframe/Shadow DOM inspection, API inspection, or WebSocket interception is used.
 
-## State and notification rules
+| Transition | Candidate |
+| --- | --- |
+| Initial active route, including refresh | No |
+| Same-class waiting to active | Yes |
+| Same-class closed to active | Yes |
+| Active to closed, active to active, waiting to waiting | No |
+| Unsupported to active, or changing classes directly into active | No |
+| Unsupported to waiting/closed, then same-class active | Yes, on the later supported transition |
 
-| Observed meaning | Normalized state | Alert eligibility |
-| --- | --- | --- |
-| No valid active session | `NO_SESSION` | None |
-| Valid session waiting | `WAITING` | None |
-| Confidently answerable question | `QUESTION_ACTIVE` | Candidate only with proven session/question identity |
-| Submitted, closed, or results | `QUESTION_CLOSED` | None |
-| Connection lost or session uncertain | `DISCONNECTED` | None |
+Previous state advances before sending a candidate. Staying on a route and duplicate events cannot resend it. Messages contain only `NEW_POLL` and detection time, not class/question IDs or page content.
 
-Unsupported markup must fail closed: do not notify without confident answerability. Keep the reducer pure where possible; parsing determines meaning and the reducer decides whether a meaningful transition warrants a candidate.
+## Boundaries
 
-## Question keys and deduplication
+This is route-transition detection, not question identity. Manually navigating back into a poll from waiting/closed can alert again; an unchanged poll URL cannot reveal a new question. Initial active observation deliberately misses the already-open question to avoid refresh alerts.
 
-- Prefer stable session and question IDs; define fallback normalization only after investigation. Scope every question key to its session.
-- The content script avoids repeated identical state events. The service worker is the authoritative cross-tab gate.
-- Alert only when state establishes a new answerable question whose identity has not already produced an alert for that session. A different key alone is not proof if the page is closed, showing results, or uncertain.
-- Answer submission, results, closure, unrelated mutations, same-question re-render, duplicate tabs, and recovery of the same question must produce zero additional alerts.
-- Preserve sufficient ephemeral dedupe metadata through worker suspension and refresh/reconnect. Keep distinct sessions independent even when their local question identifiers coincide.
-- Test simultaneous duplicate candidates and delayed/stale events. Comparing only a single last key may be insufficient if an older question arrives after a newer one; define ordering and retained-key policy before implementation.
+Multiple tabs may each alert; there is no global deduplication, reconnect policy, or persistent state. Routes changed through mechanisms that do not emit `hashchange` are not observed. Quiz UUIDs may identify a whole quiz, so quiz question notifications are deferred. DOM/network detection would require new evidence and a separate decision, not speculative fallback code.
 
-The exact fingerprint algorithm, collision strategy, dedupe retention/expiry, and notification delivery/retry ordering are unresolved. Document and test the chosen behavior before claiming exactly-once delivery across lifecycle disruptions.
-
-## Open behavior decisions
-
-- Whether a first-ever observation of an already-active question alerts, and how that differs from a recovered already-notified question.
-- Whether re-enabling monitoring during a question alerts or establishes a baseline.
-- How two separate questions with identical text are distinguished without stable IDs.
-- How an older tab reporting stale state is rejected, and how session identity survives navigation safely.
-- How identity is renewed when a session ends or a class starts another session.
-- How refresh/reconnect and a full browser restart differ when ephemeral metadata is absent.
-
-The source plan does not resolve these details. They must be settled with evidence, recorded in [DECISIONS.md](DECISIONS.md), and represented in tests.
-
-## Phase 1 exit criterion
-
-A written design identifies supported origins, confident state signals, observation boundaries, identity strategy, failure modes, and synthetic fixtures for all required states. Real background behavior has been recorded, and unknowns that prevent reliable detection are resolved before production detection code. See [TESTING.md](TESTING.md).
+See [tests and manual verification](TESTING.md), [architecture](ARCHITECTURE.md), and D009 in [decisions](DECISIONS.md).

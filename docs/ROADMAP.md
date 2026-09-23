@@ -1,40 +1,26 @@
-# Development roadmap
+﻿# Development roadmap
 
-Status: Phase 0 tooling and CI configuration implemented; local verification and hosted CI status are documented in [testing](TESTING.md). Extension components and live iClicker investigation remain pending. There is no installable extension or released version.
+Status: revised Phase 1 is implemented and automated checks are available. Browser loading and real-session notification verification remain pending; this is not a release-ready extension.
 
-The documentation is adapted from the [original implementation plan](https://docs.google.com/document/d/1t_shCi1Xmq2bixpmZxJfVJfxEwGP-gudvI6dxPf0xcg/edit). Repository docs are the maintained source of truth as implementation advances. Follow the [solo workflow](../CONTRIBUTING.md): work on `main` by default, choose small tasks directly from this roadmap, validate, update docs, and commit. Issues, branches, and PRs are optional.
-
-## Implementation order
+The project owner's revised route evidence supersedes the investigation spike in the [original plan](https://docs.google.com/document/d/1t_shCi1Xmq2bixpmZxJfVJfxEwGP-gudvI6dxPf0xcg/edit). Repository docs are the maintained source of truth. Follow the [solo workflow](../CONTRIBUTING.md); issues, branches, and PRs are optional.
 
 | Phase | Work and exit criterion | Status |
 | --- | --- | --- |
-| 0 | Documentation plus build/check scripts and CI; contributors can start and validate the repo | Implemented and locally verified; hosted CI execution pending verification |
-| 1 | Investigate real iClicker states; record evidence and synthetic fixtures before production detection code | Pending |
-| 2 | Extension skeleton, settings, shared messages; load unpacked and exchange mocked status | Pending |
-| 3 | Session detection and popup controls; joining/leaving updates status without notifications | Pending |
-| 4 | Detector, keys, reducer, dedupe; one new-question event per new answerable question in fixtures | Pending |
-| 5 | Native notification, sound, focus; one alert while backgrounded | Pending |
-| 6 | Recovery and multiple tabs; no false/duplicate alerts or manual restart after ordinary disruptions | Pending |
-| 7 | Simulator and real-session validation, privacy review, release documentation | Pending |
-| 8 | Separately authorized post-MVP work after the MVP consistently passes | Deferred |
+| 0 | Reproducible tooling, validation commands, and equivalent CI | Implemented; hosted CI results not verified here |
+| 1 | Minimal route detector and desktop notification: unpacked extension observes a supported transition into poll, messages the worker, and creates one alert without initial-load/refresh duplicates | Implemented; automated verification complete, browser exit evidence pending |
+| 2 | Popup/status and persistent monitoring controls with documented defaults | Pending |
+| 3 | Notification click-to-focus and optional sound with validated browser/OS behavior | Pending |
+| 4 | Question identity, worker-owned cross-tab deduplication, and multiple-session policy | Pending |
+| 5 | Recovery, reconnect, refresh, worker suspension, and discard limitations | Pending |
+| 6 | Full MVP browser validation, privacy review, release and installation evidence | Pending |
+| 7 | Separately authorized post-MVP features | Deferred |
 
-The MVP is complete only when a clean Chrome installation passes the [release checks](TESTING.md), including exactly one notification and one enabled sound per new question, correct click focus, persistent settings, and recovery in both simulated and real iClicker usage.
+The extension skeleton and basic notification path are now part of Phase 1. The old live investigation spike is no longer a prerequisite. [Detection strategy](DETECTION_STRATEGY.md) records supplied evidence and the remaining route-only limitations.
 
+## Later MVP requirements
 
-## MVP requirements and deferred scope
+The full MVP still requires persistent controls, sound, correct click focus, cross-tab duplicate suppression, and tested recovery. Phase 1 does not satisfy those requirements. Identity must be resolved before promising one alert per question across tabs or reconnects.
 
-Detect a valid session and each genuinely new answerable question. Show Idle/Monitoring status, persist monitoring and sound settings, deliver one native notification and one enabled sound, and focus the correct existing tab/window on click. Setting defaults remain undecided.
+Quiz notifications, custom positioning, notification stacks/progress bars/history, themes, extra sounds, cross-browser packaging, mobile notifications, and backend integrations remain deferred. DOM or network observation is not planned without new evidence.
 
-Submission, results, closure, repeated rendering, and duplicate tabs must not produce additional alerts for the same question. Refresh, SPA route changes, ordinary reconnects, and service-worker restarts must recover without a manual extension restart.
-
-Before release, provide verified user installation, usage, supported browser/OS details, and troubleshooting for missing alerts, notification settings, sound, and recovery.
-
-Custom positioning, stacked cards, progress bars, multiple sounds, volume control, notification history, themes, additional platforms, and cross-browser packaging remain post-MVP work.
-
-## Technical details and open questions
-
-- [Architecture](ARCHITECTURE.md): component responsibilities, messages, storage, notification text, and lifecycle recovery.
-- [Detection strategy](DETECTION_STRATEGY.md): unverified origins, DOM signals, session/question identity, investigation, and deduplication.
-- [Decisions](DECISIONS.md): chosen tooling and design directions; pending audio, settings, minimum Chrome version, and OS support decisions.
-- [Privacy](PRIVACY.md): exact permission plan and data boundaries.
-- [Testing](TESTING.md): background behavior, sound/focus validation, unsupported-state handling, and Memory Saver/discard investigation.
+See [architecture](ARCHITECTURE.md), [decisions](DECISIONS.md), [privacy](PRIVACY.md), and [testing](TESTING.md).

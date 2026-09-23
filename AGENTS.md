@@ -2,19 +2,18 @@
 
 ## Scope and priorities
 
-- Read README.md and the relevant technical documents before changes. The repository currently contains documentation and Phase 0 development tooling; do not describe planned extension functionality as implemented.
+- Read README.md and the relevant technical documents before changes. The repository implements Phase 1 route detection and desktop notification requests; distinguish automated results from unverified browser behavior and later features.
 - Stay inside the MVP unless the project owner explicitly authorizes post-MVP work. An issue is not required. Question detection, duplicate prevention, and recovery take priority over UI polish.
 - Inspect the checkout and existing changes before editing. Preserve unrelated work and keep changes focused on the requested task.
 - Follow CONTRIBUTING.md for the solo workflow: work on `main` by default, keep changes focused, validate, and update documentation. Do not require individual issues, feature branches, or PRs; use them only when requested or useful.
 
 ## Architecture rules
 
-- Keep iClicker-specific selectors and signals centralized in the detection layer, planned as `src/content/detector.ts`. Do not invent selectors before live investigation supplies evidence.
-- Prefer stable identifiers and semantic/structural signals over generated CSS classes and styling details.
-- Use event-driven observation of the smallest stable subtree. Do not introduce high-frequency polling without a documented reason.
-- Separate page parsing, a pure state reducer, question-key derivation, and the service worker's authoritative cross-tab duplicate gate.
-- Treat the service worker and popup as disposable. Correctness must survive worker suspension; reconstruct session state from ephemeral storage and fresh content-script events.
-- Keep notification UI out of the detector. Native notifications are the MVP delivery mechanism; offscreen audio remains conditional on testing.
+- Keep iClicker route parsing centralized in `src/content/detector.ts`; use the confirmed route evidence in docs/DETECTION_STRATEGY.md. The previous live investigation spike is superseded.
+- Prefer `hashchange` and pure route/transition functions. Initial active routes establish a baseline; only same-class waiting/closed to active transitions notify.
+- Do not invent DOM selectors or add DOM observation, polling, or network/WebSocket interception without new evidence and authorization.
+- Keep Chrome APIs at component boundaries and notification delivery out of the detector. Phase 1 is single-tab only; do not prematurely add question fingerprints or cross-tab registries.
+- Treat the worker as disposable and register listeners synchronously. It currently stores no session state. Storage/recovery, popup/settings, sound, click focus, and quiz support remain later work.
 
 ## Privacy and permissions
 
@@ -28,8 +27,8 @@
 - Explain why non-obvious behavior exists, particularly fragile iClicker signals, browser lifecycle handling, deduplication, and workarounds. Avoid comments that only restate code.
 - Add or update tests whenever detection, state transitions, deduplication, messaging, settings, or recovery changes. Use docs/TESTING.md to choose relevant automated and manual checks.
 - Before a code change is considered complete, run the documented lint, type-check, test, and production-build commands. Browser-dependent behavior also needs applicable manual verification.
-- **Current command status:** run `npm run check` for lint, type-check, Vitest, and the infrastructure production build. Exact setup and individual commands are in CONTRIBUTING.md and docs/TESTING.md; CI runs equivalent checks. Vitest currently permits no tests; remove that allowance with the first real tests. Do not create placeholder tests or mistake tooling success for application coverage.
-- For documentation-only changes, check required files, relative links, consistency with the source plan and checkout, and whitespace. Report unrun checks honestly. Browser checks remain unavailable until an extension exists.
+- **Current command status:** run `npm run check` for lint, type-check, real Vitest tests, and the unpacked extension build. Exact setup and individual commands are in CONTRIBUTING.md and docs/TESTING.md; CI runs equivalent checks. Do not create placeholder tests or reinstate the no-tests allowance.
+- For documentation-only changes, check required files, relative links, consistency with the revised roadmap and checkout, and whitespace. Report browser checks not run with the concrete environment limitation; mocks do not establish live compatibility.
 
 ## Documentation maintenance
 

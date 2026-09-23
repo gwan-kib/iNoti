@@ -1,30 +1,28 @@
 # iNoti
 
-iNoti is a planned browser extension for students using iClicker. It aims to alert you when a new question is ready to answer, so you can work in another tab or application while keeping your iClicker session open.
+iNoti is an early Chrome extension for students using iClicker. It requests a desktop notification when an open student tab moves from a class waiting or results route into a live poll.
 
 ## Availability
 
-**iNoti is in early development and is not available to install yet.** The extension itself has not been implemented. Its planned features have not been tested in live iClicker sessions.
+**A minimal development version is implemented.** It can be built for loading unpacked, but browser loading and real-session notification delivery have not yet been verified for this implementation. It is not release-ready or available in the Chrome Web Store.
 
-Installation instructions and supported browser details will be added when a usable version is ready.
+For development installation, follow the [build and load-unpacked instructions](CONTRIBUTING.md). Keep one iClicker student tab open and allow Chrome notifications in your operating system. Disable the extension through `chrome://extensions` to stop it.
 
-## What it will do
+## Current behavior
 
-- Notify you when a new answerable question appears, with the time it was detected.
-- Play a sound that you can turn on or off.
-- Take you back to the correct iClicker tab when you click the notification.
-- Show whether it is monitoring a session and let you turn monitoring on or off.
-- Remember your settings and avoid repeated alerts for the same question.
+- Request one silent native notification, with local detection time, for a supported same-class transition into `/poll`.
+- Ignore waiting, submitted/results, quiz, and unrelated routes as notification triggers.
+- Treat initial load on a poll as a baseline, preventing an extra alert on refresh.
 
-The first version is planned for Chrome. You will need to keep the iClicker session open. iNoti will alert you to questions; you will still answer them yourself in iClicker.
+You still answer questions yourself in iClicker. Sound, popup/settings, quiz alerts, notification click-to-focus, and cross-tab deduplication are not implemented.
 
 ## Privacy
 
-iNoti is designed to monitor only the supported iClicker student pages. It must not collect your answers, submit answers for you, monitor unrelated websites, or save question text and answer choices. See the [privacy plan](docs/PRIVACY.md) for details.
+iNoti requests the `notifications` permission and static content-script access only to `https://student.iclicker.com/*`. It reads URL/hash routes, not question text, answers, choices, grades, or unrelated browsing. It has no storage or telemetry. See [privacy](docs/PRIVACY.md).
 
 ## Expected limitations
 
-Background alerts are a core goal, but reliability still needs testing. If Chrome suspends or unloads the iClicker page to save resources, monitoring may stop until the page resumes. How notifications appear and how long they stay visible may also depend on your operating system.
+Use a single tab: multiple tabs may each notify. A poll URL has no question ID, so revisiting an old poll can alert again and a new question without a route change cannot be detected. An already-open poll intentionally produces no initial alert. Frozen/discarded pages, reconnects, and notification delivery failures are not handled yet. Background route changes have been observed, but this build's background delivery still needs testing. Notification presentation and retention depend on Chrome and the operating system.
 
 ## Project documentation
 

@@ -1,6 +1,6 @@
 # Contributing
 
-Start with [README.md](README.md) for scope and status and [AGENTS.md](AGENTS.md) for implementation constraints. This checkout has documentation and development tooling; application code is pending.
+Start with [README.md](README.md) for scope and status and [AGENTS.md](AGENTS.md) for implementation constraints. This checkout implements the minimal Phase 1 route-to-notification path; later MVP features remain pending.
 
 ## Solo development workflow
 
@@ -29,19 +29,28 @@ Use `npm ci` for reproducible installation from `package-lock.json`. Use `npm in
 | --- | --- |
 | `npm run lint` | ESLint recommended JavaScript and TypeScript rules; warnings fail the check |
 | `npm run typecheck` | Strict TypeScript validation without emitting files |
-| `npm test` | Vitest single run; currently reports no test files and exits successfully |
+| `npm test` | Vitest single run of route, transition, messaging, and notification tests |
 | `npm run build` | Vite production build into `dist/` |
 | `npm run check` | Lint, type-check, tests, then build; stops on failure |
 
-Lint checks existing JavaScript/TypeScript configuration and future source/tests. Type-checking currently checks the TypeScript configuration files and automatically includes future `src/**/*.ts` and `tests/**/*.ts`. DOM types are enabled; Chrome-specific types and runtime wrappers remain deferred until needed.
+Lint and type-checking cover configuration, source, and tests. Strict TypeScript includes DOM and Chrome API types. Chrome APIs are mocked at component boundaries in tests; no runtime dependency or UI framework is needed.
 
-Vite currently builds only `tooling/index.html`, a static infrastructure entry, into `dist/index.html`. It is not a popup, simulator, or installable extension. The build clears `dist/`; generated output and dependencies are ignored by Git. Phase 2 must replace this entry with actual extension packaging, including a manifest and appropriate worker/content-script outputs. No minimum Chrome version is implied by the ES2022 syntax target.
+Vite builds a real unpacked MV3 extension into `dist/`: `manifest.json`, `content.js`, `background.js`, and `assets/icon-128.png`. Two library builds produce standalone IIFEs without module imports; the first clears output and copies the manifest/icon, and the second adds the classic worker. Generated output and dependencies are ignored by Git. Run the full build command, not just its second stage. No minimum Chrome version is claimed from the ES2022 syntax target alone.
 
-Vitest has no application tests yet. `passWithNoTests` explicitly permits this infrastructure-only stage; remove that setting when the first real tests arrive. A successful test command now establishes runner setup, not application coverage. No fake tests or fixtures are included.
+Vitest now has real application tests; `passWithNoTests` has been removed. Synthetic tests establish route policy and mocked API calls, not authenticated iClicker or OS notification behavior.
 
 CI uses the same Node line, `npm ci`, and the four individual validation scripts with npm caching. Hosted CI results must be checked after pushing; local success does not establish a successful GitHub Actions run.
 
-Loading unpacked in Chrome and all extension/browser checks remain unavailable until Phase 2 supplies an extension skeleton. For documentation-only changes, inspect changed text, relative links, required files, consistency, and whitespace.
+## Load unpacked for development
+
+1. Run `npm run build`.
+2. Open `chrome://extensions` in Chrome and enable **Developer mode**.
+3. Choose **Load unpacked** and select this checkout's `dist/` directory.
+4. Check the iNoti card for errors and inspect the service worker for startup errors.
+5. Open or refresh `https://student.iclicker.com/` so the static content script starts. Use a single tab and enable Chrome notifications in OS settings.
+6. After code changes, rebuild, reload iNoti on the extensions page, and refresh the student page. Loading while already on a poll intentionally produces no alert.
+
+Follow the manual scenarios in docs/TESTING.md and record browser/OS versions and actual results. This development build is not a Web Store release; no live-session verification is implied by a successful build. For documentation-only changes, inspect text, relative links, required files, consistency, and whitespace.
 
 See [testing](docs/TESTING.md) for fixture requirements, browser scenarios, and release evidence.
 
