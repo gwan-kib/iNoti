@@ -1,5 +1,7 @@
 import { createPipController, documentPip, type MonitoringStatus } from '../content/pip-controller';
 import { createPipView } from '../content/pip-view';
+import { PIP_DIMENSIONS } from '../shared/pip-dimensions';
+import { followPipSize } from './preview-size';
 
 function required<T extends HTMLElement>(id: string): T {
   const element = document.getElementById(id);
@@ -20,6 +22,8 @@ function initDevTester() {
   const statusElement = required<HTMLElement>('pip-status');
   const logElement = required<HTMLOListElement>('event-log');
   const previewFrame = required<HTMLIFrameElement>('preview');
+  previewFrame.style.width = `${PIP_DIMENSIONS.width}px`;
+  previewFrame.style.height = `${PIP_DIMENSIONS.height}px`;
   const previewDocument = previewFrame.contentDocument;
   if (!previewDocument) throw new Error('Inline preview document unavailable');
 
@@ -38,10 +42,21 @@ function initDevTester() {
     console.info('[iNoti][dev] ' + event, details ?? {});
   };
   const renderStatus = () => { statusElement.textContent = statusText(current, Boolean(api)); };
+  let stopFollowingSize: (() => void) | undefined;
   const controller = createPipController(api, (next) => {
+    if (next.state === 'UNMONITORED') {
+      stopFollowingSize?.();
+      stopFollowingSize = undefined;
+    }
     current = next;
     renderStatus();
     appendLog('PiP state changed', { state: next.state, opening: next.opening, issue: next.issue ?? 'none' });
+  }, (pipDocument) => {
+    const view = createPipView(pipDocument);
+    if (pipDocument.defaultView) {
+      stopFollowingSize = followPipSize(previewFrame, pipDocument.defaultView);
+    }
+    return view;
   });
 
   renderStatus();

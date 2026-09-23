@@ -14,9 +14,10 @@ button { border: 0; border-radius: 9px; padding: 10px 14px; background: #25634c;
 button.secondary { background: #e9eef4; color: #243147; }
 button:hover { filter: brightness(.96); }
 button:focus-visible { outline: 3px solid #8fcab5; outline-offset: 2px; }
-.preview-wrap { display: inline-block; max-width: 100%; padding: 12px; border-radius: 12px; background: #f1f4f8; }
+.preview-wrap { display: inline-block; max-width: 100%; overflow: auto; padding: 12px; border-radius: 12px; background: #f1f4f8; }
 .preview-label { margin-bottom: 8px; color: #667085; font-size: 12px; font-weight: 700; }
-iframe { display: block; width: 300px; height: 160px; max-width: 100%; border: 1px solid #cbd5e1; border-radius: 9px; background: white; }
+/* Keep the shared PiP viewport exact; scroll the wrapper instead of shrinking or clipping it. */
+#preview { display: block; box-sizing: content-box; border: 0; }
 .event-log { min-height: 120px; max-height: 300px; overflow: auto; margin: 16px 0 0; padding: 12px 12px 12px 36px; border-radius: 10px; background: #111827; color: #e5e7eb; font: 12px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .event-log:empty::before { content: "No events yet."; color: #9ca3af; }
 code { font: .9em ui-monospace, SFMono-Regular, Consolas, monospace; }

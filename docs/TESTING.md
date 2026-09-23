@@ -33,6 +33,10 @@ After building, dist must contain manifest.json, content.js, background.js, asse
 
 ## Development tester
 
+Change `PIP_DIMENSIONS` in `src/shared/pip-dimensions.ts` to size the real PiP request and the initial inline preview. Rebuild, reload the extension, and refresh the tester after editing. After **Open PiP**, verify the preview matches the actual PiP content viewport, including Chrome's size clamping, and follows manual window resizing. Closing PiP detaches the resize listener and retains the last preview size; reopening synchronizes again. The preview does not reproduce Chrome's title bar or window frame.
+
+Both surfaces render `src/content/pip-view.ts` directly, including its HTML, CSS, text, and idle/question rendering. Make visual changes there; no separate tester view needs updating. The preview wrapper scrolls on narrow screens instead of shrinking the PiP viewport and adds no border or rounding to the view. **Open PiP** also uses the production controller for real window lifecycle testing; the inline preview's simulation buttons are not a browser lifecycle emulation.
+
 After building and reloading the unpacked extension, click the iNoti toolbar icon and choose **Open Dev Tester**. The tester must work without an iClicker tab. Confirm the inline preview can switch between idle and New iClicker Question, the displayed time updates locally, **Open PiP** opens the shared PiP view from the click, **Return to Idle** returns it to idle, and **Stop PiP** closes it. Confirm the on-page event log and DevTools `[iNoti][dev]` output contain only generic state/capability information. Clearing the log affects only the tester page.
 
 The tester is not evidence that route detection, background delivery, reconnect behavior, or authenticated iClicker compatibility works. Those still require the real-browser matrix below. Optional local console captures belong under `dev-testing/logs/`, which is intentionally ignored by Git.

@@ -1,4 +1,5 @@
 import { logger, safeError } from '../shared/logging';
+import { PIP_DIMENSIONS } from '../shared/pip-dimensions';
 import { createPipView, type PipView } from './pip-view';
 
 export interface DocumentPip {
@@ -52,7 +53,7 @@ export function createPipController(
       let opened: Window | undefined;
       try {
         // No await before this call: preserve the button's transient user activation.
-        opened = await api.requestWindow({ width: 300, height: 160 });
+        opened = await api.requestWindow(PIP_DIMENSIONS);
         if (request !== generation) { opened.close(); return; }
         if (opened.closed) throw new Error('PiP closed before initialization');
         pip = opened;
