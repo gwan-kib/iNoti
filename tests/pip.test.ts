@@ -65,12 +65,14 @@ it('renders minimal idle content and local detection time without HTML insertion
   const view = createPipView(document as unknown as Document);
   view.idle();
   const main = document.body.children[0]!;
-  expect(main.children[0]!.textContent).toBe('iNoti');
-  expect(main.children[1]!.hidden).toBe(true);
+  expect(main.children[0]!.textContent).toBe('iNotiMonitoring');
+  expect(main.children[1]!.textContent).toBe('Waiting for a question');
   view.question(1_700_000_000_000);
-  expect(main.children[1]!.children[0]!.textContent).toBe('New iClicker Question');
+  expect(main.children[1]!.children[0]!.textContent).toBe('iClicker question detected');
   expect(main.children[1]!.hidden).toBe(false);
-  expect(main.children[2]!.children[0]!.textContent).toBe(`Detected at ${new Date(1_700_000_000_000).toLocaleTimeString()}`);
+  expect(main.children[0]!.textContent).toBe('iNotiNew Question');
+  expect(main.children[4]!.hidden).toBe(true);
+  expect(main.children[2]!.children[0]!.textContent).toBe(new Date(1_700_000_000_000).toLocaleTimeString());
   view.idle();
   expect(main.children[2]!.children[0]!.textContent).toBe('');
 });
@@ -89,12 +91,12 @@ it('converts rem dimensions synchronously on each user-started open', async () =
   const f = fixture(() => fontSize);
   f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
   const first = f.controller.start();
-  expect(f.requestWindow).toHaveBeenLastCalledWith({ width: 160, height: 192 });
+  expect(f.requestWindow).toHaveBeenLastCalledWith({ width: 288, height: 128 });
   await first;
   f.controller.stop();
   fontSize = 20;
   const second = f.controller.start();
-  expect(f.requestWindow).toHaveBeenLastCalledWith({ width: 200, height: 240 });
+  expect(f.requestWindow).toHaveBeenLastCalledWith({ width: 360, height: 160 });
   await second;
 });
 
@@ -114,23 +116,23 @@ it('shows elapsed time, catches up after delayed ticks, and resets for the next 
   expect(elapsed.hidden).toBe(true);
   expect(page.setInterval).not.toHaveBeenCalled();
   view.question(started);
-  expect(elapsed.textContent).toBe('Elapsed: 0:00');
+  expect(elapsed.textContent).toBe('0:00');
   expect(elapsed.attributes.get('aria-live')).toBe('off');
   expect(page.setInterval).toHaveBeenCalledWith(expect.any(Function), 1000);
   vi.setSystemTime(started + 65_900);
   tick();
-  expect(elapsed.textContent).toBe('Elapsed: 1:05');
+  expect(elapsed.textContent).toBe('1:05');
   vi.setSystemTime(started + 3_661_000);
   tick();
-  expect(elapsed.textContent).toBe('Elapsed: 1:01:01');
+  expect(elapsed.textContent).toBe('1:01:01');
   view.setPulseEnabled(false);
-  expect(elapsed.textContent).toBe('Elapsed: 1:01:01');
+  expect(elapsed.textContent).toBe('1:01:01');
   view.idle();
   expect(page.clearInterval).toHaveBeenCalledWith(42);
   expect(elapsed.hidden).toBe(true);
   expect(elapsed.textContent).toBe('');
   view.question(Date.now());
-  expect(elapsed.textContent).toBe('Elapsed: 0:00');
+  expect(elapsed.textContent).toBe('0:00');
   page.dispatchEvent(new Event('pagehide'));
   expect(page.clearInterval).toHaveBeenCalledTimes(2);
 });
@@ -144,7 +146,7 @@ it('replaces an existing timer and never shows negative elapsed time', () => {
   view.question(1000);
   view.question(2000);
   expect(page.clearInterval).toHaveBeenCalledExactlyOnceWith(7);
-  expect(document.body.children[0]!.children[3]!.textContent).toBe('Elapsed: 0:00');
+  expect(document.body.children[0]!.children[3]!.textContent).toBe('0:00');
   view.idle();
 });
 
@@ -178,12 +180,14 @@ it('stops the elapsed timer and pulse on end, then restores the next alert', () 
   const main = document.body.children[0]!;
   expect(page.clearInterval).toHaveBeenCalledExactlyOnceWith(7);
   expect(document.body.attributes.get('data-question-active')).toBe('false');
-  expect(main.children[1]!.textContent).toBe('Question Ended');
+  expect(main.children[1]!.textContent).toBe('Question ended');
+  expect(main.children[0]!.textContent).toBe('iNotiEnded');
+  expect(main.children[4]!.hidden).toBe(false);
   expect(main.children[2]!.textContent).toBe(`Ended at ${new Date(1_700_000_000_000).toLocaleTimeString()}`);
   expect(main.children[3]!.hidden).toBe(true);
   expect(main.children[3]!.textContent).toBe('');
   view.question(Date.now());
-  expect(main.children[1]!.textContent).toBe('New iClicker Question');
+  expect(main.children[1]!.textContent).toBe('iClicker question detected');
   expect(main.children[3]!.hidden).toBe(false);
   expect(document.body.attributes.get('data-question-active')).toBe('true');
   expect(page.setInterval).toHaveBeenCalledTimes(2);
@@ -223,7 +227,7 @@ it('shows Question Answered only for active alerts and reports the click', () =>
   const answered = vi.fn();
   const view = createPipView(document as unknown as Document, () => {}, answered);
   const button = document.body.children[2]!;
-  expect(button.textContent).toBe('Question Answered');
+  expect(button.textContent).toBe('Answered');
   view.idle();
   expect(button.hidden).toBe(true);
   button.dispatchEvent(new Event('click'));
@@ -290,4 +294,14 @@ it('wires the configured view to focus the opener synchronously without closing 
   expect(pip.close).not.toHaveBeenCalled();
   expect(pip.clearInterval).not.toHaveBeenCalled();
   view.idle();
+});
+
+
+it('adds a subset Google Rounded Symbols stylesheet link to each view document', () => {
+  const document = new DocumentFake();
+  createPipView(document as unknown as Document);
+  const link = document.head.children[0]!;
+  expect(link.attributes.get('rel')).toBe('stylesheet');
+  expect(link.attributes.get('href')).toBe('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=hourglass_empty,schedule&display=block');
+  expect(link.attributes.get('referrerpolicy')).toBe('no-referrer');
 });

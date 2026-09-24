@@ -69,7 +69,7 @@ it.each([base, closed])('shows the question end time in the same PiP: %s', async
   app.navigate(end);
   expect(app.active()).toBe(false);
   const main = app.pipDocument.body.children[0]!;
-  expect(main.children[1]!.textContent).toBe('Question Ended');
+  expect(main.children[1]!.textContent).toBe('Question ended');
   expect(main.children[1]!.hidden).toBe(false);
   const endedText = `Ended at ${new Date(Date.now()).toLocaleTimeString()}`;
   expect(main.children[2]!.textContent).toBe(endedText);
@@ -79,7 +79,7 @@ it.each([base, closed])('shows the question end time in the same PiP: %s', async
   expect(main.children[2]!.textContent).toBe(endedText);
   app.navigate(`${base}/poll`);
   expect(app.active()).toBe(true);
-  expect(main.children[1]!.textContent).toBe('New iClicker Question');
+  expect(main.children[1]!.textContent).toBe('iClicker question detected');
   expect(app.requestWindow).toHaveBeenCalledTimes(1);
   expect(app.pip.close).not.toHaveBeenCalled();
 });

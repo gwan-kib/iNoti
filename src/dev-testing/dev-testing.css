@@ -27,3 +27,10 @@ code { font: .9em ui-monospace, SFMono-Regular, Consolas, monospace; }
 
 .brand { display: flex; align-items: center; gap: 0.5rem; }
 .brand-logo { width: 2.5rem; height: 2.5rem; object-fit: contain; flex-shrink: 0; }
+
+.pulse-option { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; }
+.pulse-option input { width: 1rem; height: 1rem; margin: 0; accent-color: var(--inoti-brand); }
+.pulse-option input:focus-visible { outline: 0.125rem solid var(--inoti-focus); outline-offset: 0.125rem; }
+.pulse-option-text { font-size: 0.875rem; font-weight: 650; }
+.pulse-help { margin-bottom: 1rem; }
+.pulse-help-text { font-size: 0.75rem; }

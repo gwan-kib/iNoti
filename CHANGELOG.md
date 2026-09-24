@@ -6,6 +6,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
+- Redesigned PiP as a compact landscape card across idle, active, and ended states, with status badges, Google Material Symbols Rounded loaded through a Google Fonts stylesheet link, a single timing row, and side-by-side Go to Question/Answered actions. Requested height is now 8rem instead of 15rem; Chrome controls final size.
+
 - Matched the app to the logo with a purple/pink palette across the popup, PiP, monitoring control, and dev tester. Active alerts pulse a soft lavender circle that grows outward from the middle of the question title over the pink alert surface.
 
 - Converted static CSS pixel lengths to rem units so typography and spacing follow the root font size. The requested PiP footprint also scales from rem at each user-started open.
@@ -18,6 +20,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 - Declared desktop Chrome 116 minimum; retained only webNavigation permission and exact student-site access.
 
 ### Added
+
+- Dev tester Idle button and session-only pulse toggle, applied to the inline preview and open PiP.
 
 - Active-alert Question Answered button below Go to Question returns PiP to its idle monitoring screen without stopping monitoring, so the next detected question still alerts.
 

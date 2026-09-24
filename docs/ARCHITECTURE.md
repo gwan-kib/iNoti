@@ -34,9 +34,9 @@ Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE
 
 ## Alert appearance preference
 
-`src/shared/alert-preference.ts` owns the Chrome storage boundary for the boolean `pulseAlerts` preference (default true). `configured-pip-view.ts` subscribes each PiP/preview view and detaches on pagehide. A live storage change wins over a pending initial read; disposal ignores late reads. Views remain solid until the preference loads, and on read failure. The localhost tester has no extension storage and uses the enabled default. The extension-owned tester follows the saved setting.
+`src/shared/alert-preference.ts` owns the Chrome storage boundary for the boolean `pulseAlerts` preference (default true). `configured-pip-view.ts` subscribes each PiP/preview view and detaches on pagehide. A live storage change wins over a pending initial read; disposal ignores late reads. Views remain solid until the preference loads, and on read failure. The localhost tester has no extension storage and uses the enabled default. The extension-owned tester initially follows the saved setting; its pulse checkbox can override both tester views for the page session without saving. The tester Idle button resets the preview and open controller to idle from either active or ended.
 
-Only active questions receive the pink alert surface. On a 2.4-second CSS cycle a soft lavender circle grows outward from the middle of the question title over that surface and fades as it expands, using shared palette colors. The pulse is clipped to the window so its overflow never adds scrollbars or changes the PiP footprint. Disabling the preference or enabling system reduced motion leaves a solid soft pink alert. Idle rendering removes the active state. The pulse uses no JavaScript animation timers, detection changes, or worker state.
+Only active questions receive the pink alert surface. On a 1.75-second CSS cycle a soft lavender circle grows outward from the middle of the question title over that surface and fades as it expands, using shared palette colors. The pulse is clipped to the window so its overflow never adds scrollbars or changes the PiP footprint. Disabling the preference or enabling system reduced motion leaves a solid soft pink alert. Idle rendering removes the active state. The pulse uses no JavaScript animation timers, detection changes, or worker state.
 
 ## Return to the question
 
@@ -44,7 +44,7 @@ The active alert shows Go to Question outside the status live region. `configure
 
 ## Manual answer
 
-Question Answered sits below Go to Question for the active alert only. Its click reaches `pip-controller.ts` through the same opener-owned callback channel, calls `view.idle()`, and moves the controller from MONITORING_QUESTION_ACTIVE to MONITORING_IDLE without stopping monitoring. Treating the manual answer as idle, not ended, keeps the next detected question eligible; the route eventually reaching waiting/results is ignored while idle, so no synthetic ended screen appears. The callback still checks that a question is active and that PiP is open, so a stale click cannot change state after close.
+Answered sits beside Go to Question for the active alert only. Its click reaches `pip-controller.ts` through the same opener-owned callback channel, calls `view.idle()`, and moves the controller from MONITORING_QUESTION_ACTIVE to MONITORING_IDLE without stopping monitoring. Treating the manual answer as idle, not ended, keeps the next detected question eligible; the route eventually reaching waiting/results is ignored while idle, so no synthetic ended screen appears. The callback still checks that a question is active and that PiP is open, so a stale click cannot change state after close.
 
 ## PiP and build
 
@@ -79,3 +79,5 @@ dist/
 DEBUG enables `[iNoti][content]`, `[iNoti][worker]`, and `[iNoti][pip]` logs. The development tester additionally emits `[iNoti][dev]` events and shows the same safe event summary on-page. Only event names, normalized states, boolean decisions, and safe error categories are logged. No raw routes, IDs, payloads, arbitrary exceptions, or page content.
 
 The worker remains disposable. Failed navigation delivery is not replayed; no DOM observation, polling, history patching, or network interception is added. Always-on-top is an API property, not evidence of tested background detection or this build's UI compatibility. See [testing](TESTING.md), [privacy](PRIVACY.md), and D013 in [decisions](DECISIONS.md).
+
+The compact PiP requests a 18rem by 8rem landscape viewport (288 by 128 CSS pixels at a 16px opener root), subject to Chrome clamping. Idle, active, and ended states share the brand/status header and left-aligned content. Active alerts pair local detection time with elapsed time in one row and show side-by-side actions. Google Material Symbols Rounded are loaded through a Google Fonts stylesheet `<link>` in each generated PiP/preview HTML head, subset to schedule and hourglass_empty. Decorative CSS ligatures use that font. The link suppresses the referrer. Icons require access to Google Fonts and permission from the inherited page CSP; there is no bundled SVG fallback.

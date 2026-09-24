@@ -1,5 +1,6 @@
 import { createPipController, documentPip, type MonitoringStatus } from '../content/pip-controller';
-import { createConfiguredPipView as createPipView } from '../content/configured-pip-view';
+import { createPipView } from '../content/pip-view';
+import { watchPulsePreference } from '../shared/alert-preference';
 import { PIP_DIMENSIONS_REM } from '../shared/pip-dimensions';
 import { followPipSize } from './preview-size';
 
@@ -28,12 +29,29 @@ function initDevTester() {
   const previewDocument = previewFrame.contentDocument;
   if (!previewDocument) throw new Error('Inline preview document unavailable');
 
-  const preview = createPipView(previewDocument, () => {
+  const pulseToggle = required<HTMLInputElement>('pulse-alerts');
+  let pipView: ReturnType<typeof createPipView> | undefined;
+  const preview = createPipView(previewDocument, () => window.focus(), () => {
     preview.idle();
     controller.answered();
     appendLog('question answered');
   });
   preview.idle();
+  const applyPulse = () => {
+    preview.setPulseEnabled(pulseToggle.checked);
+    pipView?.setPulseEnabled(pulseToggle.checked);
+  };
+  // Follow the saved preference until this tester explicitly overrides it.
+  // The override is session-only and never changes the production preference.
+  const unwatchPulse = watchPulsePreference(enabled => {
+    pulseToggle.checked = enabled;
+    applyPulse();
+  });
+  window.addEventListener('pagehide', unwatchPulse, { once: true });
+  pulseToggle.addEventListener('change', () => {
+    unwatchPulse();
+    applyPulse();
+  });
 
   const api = documentPip(window);
   let current: MonitoringStatus = { state: 'UNMONITORED', opening: false };
@@ -50,6 +68,7 @@ function initDevTester() {
   let stopFollowingSize: (() => void) | undefined;
   const controller = createPipController(api, (next) => {
     if (next.state === 'UNMONITORED') {
+      pipView = undefined;
       stopFollowingSize?.();
       stopFollowingSize = undefined;
     }
@@ -57,7 +76,12 @@ function initDevTester() {
     renderStatus();
     appendLog('PiP state changed', { state: next.state, opening: next.opening, issue: next.issue ?? 'none' });
   }, (pipDocument, onAnswered) => {
-    const view = createPipView(pipDocument, onAnswered);
+    const view = createPipView(pipDocument, () => window.focus(), () => {
+      preview.idle();
+      onAnswered();
+    });
+    pipView = view;
+    applyPulse();
     if (pipDocument.defaultView) {
       stopFollowingSize = followPipSize(previewFrame, pipDocument.defaultView);
     }
@@ -71,6 +95,12 @@ function initDevTester() {
     preview.idle();
     appendLog('Open PiP requested');
     void controller.start();
+  });
+
+  required<HTMLButtonElement>('idle').addEventListener('click', () => {
+    preview.idle();
+    controller.idle();
+    appendLog('simulated idle');
   });
 
   required<HTMLButtonElement>('question').addEventListener('click', () => {

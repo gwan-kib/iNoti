@@ -33,7 +33,7 @@ After CSS sizing changes, check the popup, tester, PiP, and monitoring control a
 
 Confirm `dist/shared/brand-colors.css` exists for popup/tester stylesheet imports. After palette edits, rebuild and reload; check the popup, inline preview, real PiP, and on-page monitoring button for consistent colors and legible focus/disabled states.
 
-After building, dist must contain manifest.json, content.js, background.js, assets/inoti-logo.png, popup/{popup.html,popup.css,popup.js}, and dev-testing/{index.html,dev-testing.css,dev-testing.js}. Verify no legacy alert-window HTML/JS/CSS remains, including when building over an old dist. The first stage clears output. Verify only webNavigation and storage permissions, exact student-site content match, minimum_chrome_version 123, the toolbar popup includes the pulse preference and links to the extension-owned dev tester, and no remote dependencies. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
+After building, dist must contain manifest.json, content.js, background.js, assets/inoti-logo.png, popup/{popup.html,popup.css,popup.js}, and dev-testing/{index.html,dev-testing.css,dev-testing.js}. Verify no legacy alert-window HTML/JS/CSS remains, including when building over an old dist. The first stage clears output. Verify only webNavigation and storage permissions, exact student-site content match, minimum_chrome_version 123, the toolbar popup includes the pulse preference and links to the extension-owned dev tester, and no remote scripts. PiP icons load the Google Fonts stylesheet and font. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
 
 ## Hot reload smoke check
 
@@ -41,7 +41,7 @@ Run `npm run dev` and open the local tester. Switch the inline preview to a ques
 
 ## Development tester
 
-Change `PIP_DIMENSIONS_REM` in `src/shared/pip-dimensions.ts` to size the real PiP request and the initial inline preview in rem. Each user-started request converts the rem footprint using the opener root font size; verify 160 x 192 CSS pixels at 16px and 200 x 240 at 20px before browser clamping. Font changes do not resize an already-open PiP. Rebuild, reload the extension, and refresh the tester after editing. After **Open PiP**, verify the preview matches the actual PiP content viewport, including Chrome's size clamping, and follows manual window resizing. Closing PiP detaches the resize listener and retains the last preview size; reopening synchronizes again. The preview does not reproduce Chrome's title bar or window frame.
+Change `PIP_DIMENSIONS_REM` in `src/shared/pip-dimensions.ts` to size the real PiP request and the initial inline preview in rem. Each user-started request converts the rem footprint using the opener root font size; verify 288 x 128 CSS pixels at 16px and 360 x 160 at 20px before browser clamping. Font changes do not resize an already-open PiP. Rebuild, reload the extension, and refresh the tester after editing. After **Open PiP**, verify the preview matches the actual PiP content viewport, including Chrome's size clamping, and follows manual window resizing. Closing PiP detaches the resize listener and retains the last preview size; reopening synchronizes again. The preview does not reproduce Chrome's title bar or window frame.
 
 Both surfaces render `src/content/pip-view.ts` directly for markup, text, and idle/question rendering, with styles imported from `src/content/pip-view.css`. Edit `.question-title-text` or `.detection-time-text` in that stylesheet to style the named text spans; no separate tester view needs updating. The toolbar popup uses `src/popup/popup.css`, including `.popup-title-text`. The preview wrapper scrolls on narrow screens instead of shrinking the PiP viewport and adds no border or rounding to the view. **Open PiP** also uses the production controller for real window lifecycle testing; the inline preview's simulation buttons are not a browser lifecycle emulation.
 
@@ -131,3 +131,15 @@ No real Chrome/iClicker PiP matrix rows were run in that implementation session.
 ## Deferred work
 
 Sound, other persistent settings, quiz support, cross-tab identity/deduplication, history, stacking, progress, auto-dismiss, positioning, session storage, telemetry, polling, DOM observation, and network interception remain absent. Recovery and full MVP release evidence remain future work.
+
+## Compact PiP redesign
+
+Check idle, active, and ended at the requested 18rem by 8rem viewport, Chrome-clamped sizes, manually narrowed windows, and increased fonts. Confirm the status badge, Google Fonts clock/hourglass symbols, timing row, and side-by-side Go to Question/Answered buttons fit without clipping. Check keyboard focus, pulse on/off and reduced motion, long elapsed times, and local 12/24-hour time formats. Idle and ended retain monitoring guidance with no actions.
+
+Browser layout and live iClicker verification remain pending: the browser inventory for this redesign returned no connected browsers or apps, and no authenticated class session is available.
+
+Redesign automated verification: `npm run check` passed lint, type-check, all 102 tests, and all four builds. The previous SVG assets have since been replaced by a Google Fonts stylesheet link.
+
+Tester controls: click Idle from both active and ended; both views should return to waiting without closing PiP, and the next New Question should work. Toggle Pulse new-question background before/after opening PiP, stop/reopen, and verify both views retain the selection. Reload resets the override to the saved preference (or enabled on localhost). System reduced motion still prevents animation. Automated tester wiring covers idle transitions and pulse propagation; browser verification remains pending.
+
+Google Symbols check: inspect the PiP/preview HTML head for the Google Fonts stylesheet link, verify rounded schedule/hourglass glyphs load in both localhost and extension testers and live iClicker PiP, and check inherited CSP/network failures. Confirm times and controls remain usable if the font is unavailable. No browser is connected to verify remote font rendering in this session.

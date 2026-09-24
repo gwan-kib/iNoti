@@ -24,10 +24,16 @@
       </div>
       <div class="controls">
         <button id="open-pip" type="button">Open PiP</button>
+        <button id="idle" type="button"><span class="button-text">Idle</span></button>
         <button id="question" type="button">New Question</button>
         <button id="ended" type="button"><span class="button-text">End Question</span></button>
         <button id="stop" type="button">Stop PiP</button>
       </div>
+      <label class="pulse-option">
+        <input id="pulse-alerts" type="checkbox">
+        <span class="pulse-option-text">Pulse new-question background</span>
+      </label>
+      <p class="pulse-help"><span class="pulse-help-text">Applies to this tester and its PiP for this session. Reduced-motion preferences still apply.</span></p>
       <div class="preview-wrap">
         <div class="preview-label">Inline preview</div>
         <iframe id="preview" title="iNoti notification preview"></iframe>

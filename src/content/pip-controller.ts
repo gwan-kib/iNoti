@@ -52,6 +52,13 @@ export function createPipController(
   return {
     stop,
     answered,
+    idle() {
+      if (!pip || !view) return;
+      if (pip.closed) { stop(); return; }
+      view.idle();
+      update({ state: 'MONITORING_IDLE', opening: false });
+      log('PiP -> idle');
+    },
     async start() {
       if (status.opening || status.state !== 'UNMONITORED') return;
       log('start monitoring requested');
