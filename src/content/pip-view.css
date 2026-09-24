@@ -13,15 +13,20 @@ body {
   overflow-x: hidden;
   background: var(--inoti-surface);
   color: var(--inoti-text);
-  font: 0.8125rem system-ui, sans-serif;
+  font:
+    0.8125rem system-ui,
+    sans-serif;
 }
-body[data-question-active="true"] { background: var(--inoti-alert-surface); }
+body[data-question-active="true"] {
+  background: var(--inoti-alert-surface);
+}
 main {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: max-content 1fr;
   align-items: center;
   gap: 0.375rem 0.625rem;
+  padding: 0.5rem;
   position: relative;
   isolation: isolate;
 }
@@ -33,9 +38,20 @@ main {
   gap: 0.5rem;
   color: var(--inoti-brand);
 }
-.brand-identity { display: flex; align-items: center; gap: 0.4375rem; }
-.brand-logo { width: 1.625rem; height: 1.625rem; object-fit: contain; }
-.brand-text { font-size: 1rem; font-weight: 750; }
+.brand-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+}
+.brand-logo {
+  width: 1.625rem;
+  height: 1.625rem;
+  object-fit: contain;
+}
+.brand-text {
+  font-size: 1rem;
+  font-weight: 750;
+}
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -48,15 +64,25 @@ main {
   white-space: nowrap;
 }
 .status-badge::before {
-  content: '';
+  content: "";
   width: 0.375rem;
   height: 0.375rem;
   border-radius: 50%;
   background: currentColor;
 }
-.question-title { grid-column: 1 / -1; position: relative; margin: 0; font-size: inherit; }
-.question-title-text { font-size: 1rem; font-weight: 750; line-height: 1.25; }
-.detection-time, .elapsed-time {
+.question-title {
+  grid-column: 1 / -1;
+  position: relative;
+  margin: 0;
+  font-size: inherit;
+}
+.question-title-text {
+  font-size: 1rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+.detection-time,
+.elapsed-time {
   display: flex;
   align-items: center;
   gap: 0.375rem;
@@ -65,15 +91,21 @@ main {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.elapsed-time { border-left: 0.0625rem solid var(--inoti-border); padding-left: 0.625rem; }
-.detection-time-text, .elapsed-time-text { font-size: 0.75rem; }
+.elapsed-time {
+  border-left: 0.0625rem solid var(--inoti-border);
+  padding-left: 0.625rem;
+}
+.detection-time-text,
+.elapsed-time-text {
+  font-size: 0.75rem;
+}
 .material-symbol {
   order: -1;
   flex-shrink: 0;
   width: 1rem;
   height: 1rem;
   overflow: hidden;
-  font-family: 'Material Symbols Rounded';
+  font-family: "Material Symbols Rounded";
   font-size: 1rem;
   font-weight: 400;
   font-style: normal;
@@ -83,14 +115,25 @@ main {
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;
-  font-feature-settings: 'liga';
+  font-feature-settings: "liga";
   -webkit-font-smoothing: antialiased;
 }
 /* Decorative ligatures stay out of the status text and accessibility tree. */
-.clock-icon::before { content: 'schedule'; }
-.timer-icon::before { content: 'hourglass_empty'; }
-.status-detail { grid-column: 1 / -1; margin: 0; color: var(--inoti-text-secondary); font-size: 0.75rem; line-height: 1.5; }
-.go-to-question, .question-answered {
+.clock-icon::before {
+  content: "schedule";
+}
+.timer-icon::before {
+  content: "hourglass_empty";
+}
+.status-detail {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--inoti-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.go-to-question,
+.question-answered {
   position: relative;
   padding: 0.4375rem 0.375rem;
   border: 0;
@@ -98,35 +141,81 @@ main {
   font: inherit;
   cursor: pointer;
 }
-.go-to-question { background: var(--inoti-brand); color: var(--inoti-on-brand); }
-.question-answered { background: var(--inoti-secondary-surface); color: var(--inoti-secondary-text); }
-.go-to-question-text, .question-answered-text { font-size: 0.8125rem; font-weight: 700; }
-.go-to-question:hover, .question-answered:hover { filter: brightness(.95); }
-.go-to-question:focus-visible, .question-answered:focus-visible { outline: 0.125rem solid var(--inoti-focus); outline-offset: 0.125rem; }
+.go-to-question {
+  background: var(--inoti-brand);
+  color: var(--inoti-on-brand);
+}
+.question-answered {
+  background: var(--inoti-secondary-surface);
+  color: var(--inoti-secondary-text);
+}
+.go-to-question-text,
+.question-answered-text {
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.go-to-question:hover,
+.question-answered:hover {
+  filter: brightness(0.95);
+}
+.go-to-question:focus-visible,
+.question-answered:focus-visible {
+  outline: 0.125rem solid var(--inoti-focus);
+  outline-offset: 0.125rem;
+}
 /* Fixed overlay contains the expanding ripple inside the viewport. */
 .question-title::before {
-  content: '';
+  content: "";
   position: fixed;
-  inset: 0;
+  left: 50%;
+  top: 50%;
+  width: 50rem;
+  height: 50rem;
+  border-radius: 50%;
+  translate: -50% -50%;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(circle at center, var(--inoti-alert-pulse), transparent 70%);
+  background: radial-gradient(circle at center, var(--inoti-alert-pulse), transparent 100%);
   transform: scale(0);
   opacity: 0;
 }
-body[data-question-active="true"][data-pulse="true"] .question-title::before { animation: question-pulse 1.75s ease-out infinite; }
+body[data-question-active="true"][data-pulse="true"] .question-title::before {
+  animation: question-pulse 1.75s ease-out infinite;
+}
 @keyframes question-pulse {
-  0% { transform: scale(0.05); opacity: 0.95; }
-  100% { transform: scale(1); opacity: 0; }
+  0% {
+    transform: scale(0.05);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  body[data-question-active="true"][data-pulse="true"] .question-title::before { animation: none; }
+  body[data-question-active="true"][data-pulse="true"] .question-title::before {
+    animation: none;
+  }
 }
 @media (max-width: 17rem) {
-  body { padding: 0.625rem; }
-  .brand-logo { width: 1.5rem; height: 1.5rem; }
-  .status-badge { padding: 0.3125rem 0.4375rem; }
-  .question-title-text { font-size: 0.9375rem; }
-  .go-to-question-text, .question-answered-text { font-size: 0.75rem; }
+  body {
+    padding: 0.625rem;
+  }
+  .brand-logo {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+  .status-badge {
+    padding: 0.3125rem 0.4375rem;
+  }
+  .question-title-text {
+    font-size: 0.9375rem;
+  }
+  .go-to-question-text,
+  .question-answered-text {
+    font-size: 0.75rem;
+  }
 }
-[hidden] { display: none; }
+[hidden] {
+  display: none;
+}
