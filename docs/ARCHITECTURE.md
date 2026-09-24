@@ -36,7 +36,7 @@ Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE
 
 `src/shared/alert-preference.ts` owns the Chrome storage boundary for the boolean `pulseAlerts` preference (default true). `configured-pip-view.ts` subscribes each PiP/preview view and detaches on pagehide. A live storage change wins over a pending initial read; disposal ignores late reads. Views remain solid until the preference loads, and on read failure. The localhost tester has no extension storage and uses the enabled default. The extension-owned tester follows the saved setting.
 
-Only active questions receive the pink/lavender background. CSS smoothly pulses between shared palette colors over 2.4 seconds; disabling the preference or enabling system reduced motion leaves a solid soft pink alert. Idle rendering removes the active state. The pulse uses no JavaScript animation timers, detection changes, or worker state.
+Only active questions receive the pink alert surface. On a 2.4-second CSS cycle a soft lavender circle grows outward from the middle of the question title over that surface and fades as it expands, using shared palette colors. The pulse is clipped to the window so its overflow never adds scrollbars or changes the PiP footprint. Disabling the preference or enabling system reduced motion leaves a solid soft pink alert. Idle rendering removes the active state. The pulse uses no JavaScript animation timers, detection changes, or worker state.
 
 ## Return to the question
 

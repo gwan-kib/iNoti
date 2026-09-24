@@ -158,7 +158,7 @@ Evidence: [Chrome Document PiP documentation](https://developer.chrome.com/docs/
 
 Status: accepted and implemented at the owner's explicit request. Expands the popup scope only for pulse versus solid alert appearance.
 
-Choice: active-question backgrounds gently pulse by default, using a 2.4-second CSS cycle between light green palette colors. The popup can disable motion, retaining a solid green alert. System reduced-motion preferences also disable animation. Idle stays unchanged. Save only boolean `pulseAlerts` in `chrome.storage.local` and subscribe to local changes in open views. No session state is persisted, and the worker still only forwards navigation.
+Choice: active-question backgrounds gently pulse by default, using a 2.4-second CSS cycle in which a soft lavender circle grows outward from the middle of the question title over the pink alert surface and fades as it expands. The popup can disable motion, retaining a solid soft pink alert. System reduced-motion preferences also disable animation. Idle stays unchanged. Save only boolean `pulseAlerts` in `chrome.storage.local` and subscribe to local changes in open views. No session state is persisted, and the worker still only forwards navigation.
 
 Permission reason: add `storage` to retain the preference across popup closure/browser restarts and share changes with content-owned PiP. Page localStorage would belong to iClicker and extension-page localStorage cannot directly serve content scripts; an in-memory setting would be lost. No tabs permission, broader hosts, sync, or student data is needed. See [Chrome storage API](https://developer.chrome.com/docs/extensions/reference/api/storage).
 

@@ -16,7 +16,7 @@ This is an unpacked development version, not a Chrome Web Store release. Use des
 
 Document PiP is an always-on-top browser surface. Chrome controls its position and may clamp its size; iNoti requests one small footprint for idle and alert content. Visibility across tabs, minimizing Chrome, and application switching must still be verified for this build on your system. If the API is unavailable, the control explains this. There is no separate-tab, popup-window, or native-notification fallback.
 
-New-question alerts gently pulse between soft pink and lavender by default. Open the iNoti toolbar popup and turn off **Pulse new-question background** for a solid soft pink alert. Changes apply to an open PiP immediately and are saved on this device. System reduced-motion preferences also keep the background solid. Idle and ended screens do not pulse. The elapsed timer stops and hides when the question ends.
+New-question alerts gently pulse by default: a soft lavender circle grows outward from the middle of the question title over the pink alert surface. Open the iNoti toolbar popup and turn off **Pulse new-question background** for a solid soft pink alert. Changes apply to an open PiP immediately and are saved on this device. System reduced-motion preferences also keep the background solid. Idle and ended screens do not pulse. The elapsed timer stops and hides when the question ends.
 
 You still answer questions yourself in iClicker. Sound, other settings, quiz alerts, and cross-tab deduplication are not implemented.
 

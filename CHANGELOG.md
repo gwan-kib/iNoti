@@ -6,7 +6,7 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
-- Matched the app to the logo with a purple/pink palette across the popup, PiP, monitoring control, and dev tester. Active alerts pulse between soft pink and lavender.
+- Matched the app to the logo with a purple/pink palette across the popup, PiP, monitoring control, and dev tester. Active alerts pulse a soft lavender circle that grows outward from the middle of the question title over the pink alert surface.
 
 - Converted static CSS pixel lengths to rem units so typography and spacing follow the root font size. The requested PiP footprint also scales from rem at each user-started open.
 
