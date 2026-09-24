@@ -1,25 +1,25 @@
 /* Shared palette for extension pages, PiP, and the monitoring shadow root. */
 :root, :host {
-  --inoti-surface: #f6f8fb;
-  --inoti-alert-surface: #e0f2e8;
-  --inoti-alert-pulse: #b5dfc8;
-  --inoti-text: #182338;
-  --inoti-brand: #25634c;
-  --inoti-text-secondary: #46536a;
-  --inoti-text-muted: #667085;
-  --inoti-focus: #8fcab5;
-  --inoti-page: #eef2f6;
-  --inoti-text-description: #536076;
-  --inoti-border: #d7dee8;
-  --inoti-panel-shadow: rgba(26, 39, 64, .06);
-  --inoti-secondary-surface: #e9eef4;
-  --inoti-secondary-text: #243147;
-  --inoti-preview-surface: #f1f4f8;
-  --inoti-log-surface: #111827;
-  --inoti-log-text: #e5e7eb;
-  --inoti-log-muted: #9ca3af;
-  --inoti-monitor-surface: #205c46;
-  --inoti-monitor-focus: #2563eb;
-  --inoti-control-shadow: #0003;
+  --inoti-surface: #fbf7ff;
+  --inoti-alert-surface: #f8e5f2;
+  --inoti-alert-pulse: #e5d2f7;
+  --inoti-text: #30213f;
+  --inoti-brand: #6837ae;
+  --inoti-text-secondary: #655172;
+  --inoti-text-muted: #786381;
+  --inoti-focus: #a34486;
+  --inoti-page: #f3ebfa;
+  --inoti-text-description: #705a7e;
+  --inoti-border: #dfcfe9;
+  --inoti-panel-shadow: rgba(77, 36, 112, .08);
+  --inoti-secondary-surface: #eee0f7;
+  --inoti-secondary-text: #533767;
+  --inoti-preview-surface: #f8edf7;
+  --inoti-log-surface: #291b38;
+  --inoti-log-text: #f4eafa;
+  --inoti-log-muted: #c5afd4;
+  --inoti-monitor-surface: #7040b5;
+  --inoti-monitor-focus: #edabd3;
+  --inoti-control-shadow: rgba(63, 29, 88, .2);
   --inoti-on-brand: #ffffff;
 }

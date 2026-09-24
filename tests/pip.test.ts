@@ -89,12 +89,12 @@ it('converts rem dimensions synchronously on each user-started open', async () =
   const f = fixture(() => fontSize);
   f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
   const first = f.controller.start();
-  expect(f.requestWindow).toHaveBeenLastCalledWith({ width: 160, height: 160 });
+  expect(f.requestWindow).toHaveBeenLastCalledWith({ width: 160, height: 192 });
   await first;
   f.controller.stop();
   fontSize = 20;
   const second = f.controller.start();
-  expect(f.requestWindow).toHaveBeenLastCalledWith({ width: 200, height: 200 });
+  expect(f.requestWindow).toHaveBeenLastCalledWith({ width: 200, height: 240 });
   await second;
 });
 

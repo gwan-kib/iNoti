@@ -36,7 +36,7 @@ Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE
 
 `src/shared/alert-preference.ts` owns the Chrome storage boundary for the boolean `pulseAlerts` preference (default true). `configured-pip-view.ts` subscribes each PiP/preview view and detaches on pagehide. A live storage change wins over a pending initial read; disposal ignores late reads. Views remain solid until the preference loads, and on read failure. The localhost tester has no extension storage and uses the enabled default. The extension-owned tester follows the saved setting.
 
-Only active questions receive the green background. CSS smoothly pulses between shared palette colors over 2.4 seconds; disabling the preference or enabling system reduced motion leaves a solid green alert. Idle rendering removes the active state. The pulse uses no JavaScript animation timers, detection changes, or worker state.
+Only active questions receive the pink/lavender background. CSS smoothly pulses between shared palette colors over 2.4 seconds; disabling the preference or enabling system reduced motion leaves a solid soft pink alert. Idle rendering removes the active state. The pulse uses no JavaScript animation timers, detection changes, or worker state.
 
 ## Return to the question
 
@@ -48,7 +48,7 @@ Static surface styles use `rem` lengths, converted at a default 16px root size, 
 
 `assets/inoti-logo.png` is the original shared logo, used for the extension icon, popup, tester header, and extension-page favicons. PiP and the monitoring control import an inline copy through `src/shared/brand-logo.ts`, avoiding web-accessible resources or new permissions. Decorative images accompany existing accessible text labels.
 
-`src/shared/brand-colors.css` is the shared color palette. Surface styles use its `--inoti-*` custom properties. Popup and tester styles import the packaged `shared/brand-colors.css`; PiP and monitoring-control styles bundle the same palette for injection into their dynamic document or shadow root. Change palette values there to recolor all consumers, then rebuild and reload.
+`src/shared/brand-colors.css` is the shared logo-inspired purple/pink color palette, with pale lavender surfaces, purple buttons, and soft pink active alerts. Surface styles use its `--inoti-*` custom properties. Popup and tester styles import the packaged `shared/brand-colors.css`; PiP and monitoring-control styles bundle the same palette for injection into their dynamic document or shadow root. Change palette values there to recolor all consumers, then rebuild and reload.
 
 Request the footprint from `PIP_DIMENSIONS_REM` in `src/shared/pip-dimensions.ts` once. The development preview initially uses those same rem dimensions for its content area. Chrome controls placement, chrome, and size clamping. Idle content is the logo and iNoti; active content adds the question title, local detection time, and elapsed time. The shared view refreshes elapsed time once per second from Date.now() minus the detection timestamp, so delayed ticks catch up instead of drifting. Idle, question end, and PiP pagehide clear the interval; each new alert resets it. The timer uses aria-live=off to avoid announcing every tick. This is a display timer only, not detection polling. No resize calls, screen coordinates, history, auto-dismiss, sound, or stacking. PiP cannot outlive its opener. It is same-origin with the student page, not a separate extension-origin security boundary, so it contains no sensitive data.
 
