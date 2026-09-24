@@ -6,6 +6,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
+- Updated the shared logo across extension surfaces with the latest MediBang PNG export.
+
 - Redesigned PiP as a compact landscape card across idle, active, and ended states, with status badges, Google Material Symbols Rounded loaded through a Google Fonts stylesheet link, a single timing row, and side-by-side Go to Question/Answered actions. Requested height is now 8rem instead of 15rem; Chrome controls final size.
 
 - Matched the app to the logo with a purple/pink palette across the popup, PiP, monitoring control, and dev tester. Active alerts pulse a soft lavender circle that grows outward from the middle of the question title over the pink alert surface.

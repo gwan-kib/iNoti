@@ -52,8 +52,8 @@ it('simulates idle from active and ended, and keeps the pulse override across Pi
     click('question');
     if (from === 'ended') click('ended');
     click('idle');
-    expect(preview.body.children[0]!.children[1]!.textContent).toBe('Waiting for a question');
-    expect(pipDocument.body.children[0]!.children[1]!.textContent).toBe('Waiting for a question');
+    expect(preview.body.children[0]!.children[1]!.children[0]!.textContent).toBe('Waiting for a question');
+    expect(pipDocument.body.children[0]!.children[1]!.children[0]!.textContent).toBe('Waiting for a question');
     expect(elements['pip-status']!.textContent).toContain('idle');
     click('question');
     expect(pipDocument.body.attributes.get('data-question-active')).toBe('true');

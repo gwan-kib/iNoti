@@ -12,7 +12,8 @@
   --inoti-text-description: #705a7e;
   --inoti-border: #dfcfe9;
   --inoti-panel-shadow: rgba(77, 36, 112, .08);
-  --inoti-secondary-surface: #eee0f7;
+  --inoti-secondary-surface: #d28aff7a;
+  --inoti-status-monitoring-surface: #f0d9ff;
   --inoti-secondary-text: #533767;
   --inoti-preview-surface: #f8edf7;
   --inoti-log-surface: #291b38;

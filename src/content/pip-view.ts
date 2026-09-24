@@ -55,6 +55,9 @@ export function createPipView(
   const badge = document.createElement("span");
   badge.className = "status-badge";
   brand.append(identity, badge);
+  // Brand stays pinned at the top; this group centers below it.
+  const center = document.createElement("div");
+  center.className = "pip-center";
   const title = document.createElement("h1");
   title.className = "question-title";
   const titleText = document.createElement("span");
@@ -83,7 +86,7 @@ export function createPipView(
   const detail = document.createElement("p");
   detail.className = "status-detail";
   detail.textContent = "Monitoring stays on for the next question.";
-  main.append(brand, title, time, elapsed, detail);
+  center.append(title, time, elapsed, detail);
   const goToQuestion = document.createElement("button");
   goToQuestion.type = "button";
   goToQuestion.className = "go-to-question";
@@ -107,9 +110,14 @@ export function createPipView(
   answered.addEventListener("click", () => {
     if (!answered.hidden) answerQuestion();
   });
+  const actions = document.createElement("div");
+  actions.className = "pip-actions";
+  actions.append(goToQuestion, answered);
+  center.append(actions);
+  main.append(brand, center);
   document.head.append(symbols, style);
   if (import.meta.hot) liveStyles.add(style);
-  document.body.replaceChildren(main, goToQuestion, answered);
+  document.body.replaceChildren(main);
   const page = document.defaultView;
   let interval: number | undefined;
   const stopTimer = () => {
@@ -130,7 +138,7 @@ export function createPipView(
       titleText.textContent = "Waiting for a question";
       badge.textContent = "Monitoring";
       detail.hidden = false;
-      detail.textContent = "Monitoring is on. Keep working until the next alert.";
+      detail.textContent = "Monitoring is on. Do not close the iClicker tab.";
       time.hidden = elapsed.hidden = true;
       timeText.textContent = "";
       elapsedText.textContent = "";
@@ -171,7 +179,7 @@ export function createPipView(
       titleText.textContent = "Question ended";
       badge.textContent = "Monitoring";
       detail.hidden = false;
-      detail.textContent = "Monitoring stays on for the next question.";
+      detail.textContent = "Monitoring is on. Do not close the iClicker tab.";
       title.hidden = time.hidden = false;
       timeText.textContent = `Ended at ${new Date(endedAt).toLocaleTimeString()}`;
       time.setAttribute("aria-label", timeText.textContent);

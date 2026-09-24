@@ -5,6 +5,21 @@ import { createConfiguredPipView } from '../src/content/configured-pip-view';
 import { DocumentFake } from './dom-fake';
 
 afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); vi.unstubAllGlobals(); });
+// The brand row stays at the top; content and actions share the centered group.
+function parts(document: DocumentFake) {
+  const main = document.body.children[0]!;
+  const center = main.children[1]!;
+  const actions = center.children[4]!;
+  return {
+    brand: main.children[0]!,
+    title: center.children[0]!,
+    time: center.children[1]!,
+    elapsed: center.children[2]!,
+    detail: center.children[3]!,
+    goToQuestion: actions.children[0]!,
+    answered: actions.children[1]!,
+  };
+}
 function fixture(rootFontSize = () => 16) {
   const pip = Object.assign(new EventTarget(), { document: {} as Document, closed: false, close: vi.fn() });
   const requestWindow = vi.fn<() => Promise<Window>>();
@@ -63,18 +78,18 @@ it('feature-detects a callable requestWindow', () => {
 it('renders minimal idle content and local detection time without HTML insertion', () => {
   const document = new DocumentFake();
   const view = createPipView(document as unknown as Document);
+  const p = parts(document);
   view.idle();
-  const main = document.body.children[0]!;
-  expect(main.children[0]!.textContent).toBe('iNotiMonitoring');
-  expect(main.children[1]!.textContent).toBe('Waiting for a question');
+  expect(p.brand.textContent).toBe('iNotiMonitoring');
+  expect(p.title.textContent).toBe('Waiting for a question');
   view.question(1_700_000_000_000);
-  expect(main.children[1]!.children[0]!.textContent).toBe('iClicker question detected');
-  expect(main.children[1]!.hidden).toBe(false);
-  expect(main.children[0]!.textContent).toBe('iNotiNew Question');
-  expect(main.children[4]!.hidden).toBe(true);
-  expect(main.children[2]!.children[0]!.textContent).toBe(new Date(1_700_000_000_000).toLocaleTimeString());
+  expect(p.title.children[0]!.textContent).toBe('iClicker question detected');
+  expect(p.title.hidden).toBe(false);
+  expect(p.brand.textContent).toBe('iNotiNew Question');
+  expect(p.detail.hidden).toBe(true);
+  expect(p.time.children[0]!.textContent).toBe(new Date(1_700_000_000_000).toLocaleTimeString());
   view.idle();
-  expect(main.children[2]!.children[0]!.textContent).toBe('');
+  expect(p.time.children[0]!.textContent).toBe('');
 });
 it('cleans up when rendering fails, even if close emits pagehide synchronously', async () => {
   const pip = Object.assign(new EventTarget(), { document: {} as Document, closed: false, close: vi.fn() });
@@ -111,7 +126,7 @@ it('shows elapsed time, catches up after delayed ticks, and resets for the next 
   });
   const document = Object.assign(new DocumentFake(), { defaultView: page });
   const view = createPipView(document as unknown as Document);
-  const elapsed = document.body.children[0]!.children[3]!;
+  const elapsed = parts(document).elapsed;
   view.idle();
   expect(elapsed.hidden).toBe(true);
   expect(page.setInterval).not.toHaveBeenCalled();
@@ -146,7 +161,7 @@ it('replaces an existing timer and never shows negative elapsed time', () => {
   view.question(1000);
   view.question(2000);
   expect(page.clearInterval).toHaveBeenCalledExactlyOnceWith(7);
-  expect(document.body.children[0]!.children[3]!.textContent).toBe('0:00');
+  expect(parts(document).elapsed.textContent).toBe('0:00');
   view.idle();
 });
 
@@ -177,18 +192,18 @@ it('stops the elapsed timer and pulse on end, then restores the next alert', () 
   view.setPulseEnabled(true);
   view.question(Date.now());
   view.ended(1_700_000_000_000);
-  const main = document.body.children[0]!;
+  const p = parts(document);
   expect(page.clearInterval).toHaveBeenCalledExactlyOnceWith(7);
   expect(document.body.attributes.get('data-question-active')).toBe('false');
-  expect(main.children[1]!.textContent).toBe('Question ended');
-  expect(main.children[0]!.textContent).toBe('iNotiEnded');
-  expect(main.children[4]!.hidden).toBe(false);
-  expect(main.children[2]!.textContent).toBe(`Ended at ${new Date(1_700_000_000_000).toLocaleTimeString()}`);
-  expect(main.children[3]!.hidden).toBe(true);
-  expect(main.children[3]!.textContent).toBe('');
+  expect(p.title.textContent).toBe('Question ended');
+  expect(p.brand.textContent).toBe('iNotiMonitoring');
+  expect(p.detail.hidden).toBe(false);
+  expect(p.time.textContent).toBe(`Ended at ${new Date(1_700_000_000_000).toLocaleTimeString()}`);
+  expect(p.elapsed.hidden).toBe(true);
+  expect(p.elapsed.textContent).toBe('');
   view.question(Date.now());
-  expect(main.children[1]!.textContent).toBe('iClicker question detected');
-  expect(main.children[3]!.hidden).toBe(false);
+  expect(p.title.textContent).toBe('iClicker question detected');
+  expect(p.elapsed.hidden).toBe(false);
   expect(document.body.attributes.get('data-question-active')).toBe('true');
   expect(page.setInterval).toHaveBeenCalledTimes(2);
   view.idle();
@@ -199,7 +214,7 @@ it('shows Go to Question only for active alerts and focuses without altering the
   const document = new DocumentFake();
   const focus = vi.fn();
   const view = createPipView(document as unknown as Document, focus);
-  const button = document.body.children[1]!;
+  const button = parts(document).goToQuestion;
   expect(button.textContent).toBe('Go to Question');
   view.idle();
   expect(button.hidden).toBe(true);
@@ -226,7 +241,7 @@ it('shows Question Answered only for active alerts and reports the click', () =>
   const document = new DocumentFake();
   const answered = vi.fn();
   const view = createPipView(document as unknown as Document, () => {}, answered);
-  const button = document.body.children[2]!;
+  const button = parts(document).answered;
   expect(button.textContent).toBe('Answered');
   view.idle();
   expect(button.hidden).toBe(true);
@@ -248,7 +263,7 @@ it('forwards the answered control through the configured view', () => {
   const answered = vi.fn();
   const view = createConfiguredPipView(document as unknown as Document, answered);
   view.question(Date.now());
-  document.body.children[2]!.dispatchEvent(new Event('click'));
+  parts(document).answered.dispatchEvent(new Event('click'));
   expect(answered).toHaveBeenCalledOnce();
   view.idle();
 });
@@ -288,7 +303,7 @@ it('wires the configured view to focus the opener synchronously without closing 
   const document = Object.assign(new DocumentFake(), { defaultView: pip });
   const view = createConfiguredPipView(document as unknown as Document);
   view.question(Date.now());
-  document.body.children[1]!.dispatchEvent(new Event('click'));
+  parts(document).goToQuestion.dispatchEvent(new Event('click'));
   expect(opener.focus).toHaveBeenCalledOnce();
   expect(opener.close).not.toHaveBeenCalled();
   expect(pip.close).not.toHaveBeenCalled();
