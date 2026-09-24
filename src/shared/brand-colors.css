@@ -1,6 +1,8 @@
 /* Shared palette for extension pages, PiP, and the monitoring shadow root. */
 :root, :host {
   --inoti-surface: #f6f8fb;
+  --inoti-alert-surface: #e0f2e8;
+  --inoti-alert-pulse: #b5dfc8;
   --inoti-text: #182338;
   --inoti-brand: #25634c;
   --inoti-text-secondary: #46536a;

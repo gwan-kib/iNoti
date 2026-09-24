@@ -1,11 +1,12 @@
 import { logger, safeError } from '../shared/logging';
 import { pipDimensionsInPixels } from '../shared/pip-dimensions';
-import { createPipView, type PipView } from './pip-view';
+import { type PipView } from './pip-view';
+import { createConfiguredPipView } from './configured-pip-view';
 
 export interface DocumentPip {
   requestWindow(options: { width: number; height: number }): Promise<Window>;
 }
-export type MonitoringState = 'UNMONITORED' | 'MONITORING_IDLE' | 'MONITORING_QUESTION_ACTIVE';
+export type MonitoringState = 'UNMONITORED' | 'MONITORING_IDLE' | 'MONITORING_QUESTION_ACTIVE' | 'MONITORING_QUESTION_ENDED';
 export interface MonitoringStatus {
   state: MonitoringState;
   opening: boolean;
@@ -20,7 +21,7 @@ export function documentPip(page: Window): DocumentPip | undefined {
 export function createPipController(
   api: DocumentPip | undefined,
   changed: (status: MonitoringStatus) => void,
-  makeView: (document: Document) => PipView = createPipView,
+  makeView: (document: Document) => PipView = createConfiguredPipView,
   rootFontSize: () => number = () => parseFloat(getComputedStyle(document.documentElement).fontSize),
 ) {
   const log = logger('pip');
@@ -79,18 +80,18 @@ export function createPipController(
       }
     },
     question(detectedAt: number) {
-      if (!pip || !view || status.state !== 'MONITORING_IDLE') return;
+      if (!pip || !view || (status.state !== 'MONITORING_IDLE' && status.state !== 'MONITORING_QUESTION_ENDED')) return;
       if (pip.closed) { stop(); return; }
       view.question(detectedAt);
       update({ state: 'MONITORING_QUESTION_ACTIVE', opening: false });
       log('PiP -> question active');
     },
-    idle() {
+    ended(endedAt: number) {
       if (!pip || !view || status.state !== 'MONITORING_QUESTION_ACTIVE') return;
       if (pip.closed) { stop(); return; }
-      view.idle();
-      update({ state: 'MONITORING_IDLE', opening: false });
-      log('PiP -> idle');
+      view.ended(endedAt);
+      update({ state: 'MONITORING_QUESTION_ENDED', opening: false });
+      log('PiP -> question ended');
     },
   };
 }

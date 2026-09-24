@@ -6,7 +6,7 @@ A TypeScript/Vite MV3 extension with no framework or runtime dependencies. Route
 
 | Component | Responsibility |
 | --- | --- |
-| `manifest.json` | Chrome 116 minimum, exact student-site match, webNavigation permission, classic worker, local icon |
+| `manifest.json` | Chrome 116 minimum, exact student-site match, webNavigation and storage permissions, classic worker, local icon |
 | `src/content/detector.ts` | Pure route parser and same-class transition decision |
 | `src/content/monitor.ts` | Per-page baseline, shared hashchange/navigation evaluation, monitoring coordination, opener lifecycle |
 | `src/content/monitoring-control.ts` | Namespaced floating button in a closed shadow root, status and accessible stop/retry controls |
@@ -15,7 +15,7 @@ A TypeScript/Vite MV3 extension with no framework or runtime dependencies. Route
 | `src/shared/messages.ts` | Validated NAVIGATION_CHANGED contract |
 | `src/shared/logging.ts` | Privacy-safe content/worker/pip diagnostics |
 | `src/background/service-worker.ts` | Filtered navigation forwarding only; no session state or alert creation |
-| `src/popup/popup.ts` | Development toolbar popup; opens the extension-owned tester tab only |
+| `src/popup/popup.ts` | Alert-animation preference and link to the extension-owned tester tab |
 | `src/dev-testing/dev-testing.ts` | Development-only PiP state simulator and local event log; reuses the production PiP controller/view |
 
 ## Event flow and lifecycle
@@ -24,13 +24,19 @@ A TypeScript/Vite MV3 extension with no framework or runtime dependencies. Route
 2. The worker synchronously registers history/fragment listeners with a student-host filter. Before logging or forwarding it checks top frame, tab target, and exact HTTPS student origin. It forwards a supported hash or an empty unsupported marker to the originating document when available. No full URLs, arbitrary route content, or history are retained.
 3. The content receiver validates the contract and worker sender. It shares one evaluation function with hashchange event URLs. Previous state advances before rendering, preserving consecutive duplicate suppression in either source order.
 4. The button directly calls the controller's start method, which calls requestWindow before its first await. Only this user action opens PiP. An in-flight guard suppresses repeated clicks. Successful initialization always begins idle; events before completion are not replayed.
-5. Same-class WAITING/QUESTION_CLOSED to QUESTION_ACTIVE changes an already-open idle PiP to the alert with Date.now(). Repeated active events do nothing. Closed/results/waiting returns the same window to idle.
+5. Same-class WAITING/QUESTION_CLOSED to QUESTION_ACTIVE changes an already-open idle PiP to the alert with Date.now(). Repeated active events do nothing. Closed/results/waiting after an alerted question changes the same window to Question Ended with the local end-detection time. Duplicate end reports retain the original time; initial waiting/closed routes remain idle.
 6. PiP pagehide, the active button, leaving supported routes, changing class, or opener pagehide stops monitoring and clears references. A generation token closes stale pending opens after session exit. A late old-window close cannot stop a newer session. BFCache restoration establishes a fresh baseline without reopening PiP.
 7. Unsupported API or opening failure leaves monitoring inactive with a clear control state. Failure can be retried only by another click. No worker NEW_POLL contract or notification fallback remains.
 
-The toolbar popup and `dev-testing/` extension page are development tooling, not part of live detection. The popup opens `dev-testing/index.html`; that page can render the shared PiP view in an inline preview, open the real Document PiP surface from a user click, and manually drive idle/question/stop states. Once opened, the preview follows the actual PiP content viewport via a development-only resize listener, removed when monitoring stops. It never sends synthetic events into the content script or worker, so it cannot change or falsely validate iClicker detection.
+The toolbar popup saves the alert-animation preference and links to the development-only `dev-testing/` extension page. The popup opens `dev-testing/index.html`; that page can render the shared PiP view in an inline preview, open the real Document PiP surface from a user click, and manually drive idle/question/stop states. Once opened, the preview follows the actual PiP content viewport via a development-only resize listener, removed when monitoring stops. It never sends synthetic events into the content script or worker, so it cannot change or falsely validate iClicker detection.
 
-Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE -> MONITORING_IDLE, with any session-ending event returning to UNMONITORED. Opening is a transient guard, not active monitoring. Detection continues while unmonitored so enabling monitoring does not invent a question transition.
+Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE -> MONITORING_QUESTION_ENDED -> MONITORING_QUESTION_ACTIVE, with any session-ending event returning to UNMONITORED. Opening is a transient guard, not active monitoring. Detection continues while unmonitored so enabling monitoring does not invent a question transition.
+
+## Alert appearance preference
+
+`src/shared/alert-preference.ts` owns the Chrome storage boundary for the boolean `pulseAlerts` preference (default true). `configured-pip-view.ts` subscribes each PiP/preview view and detaches on pagehide. A live storage change wins over a pending initial read; disposal ignores late reads. Views remain solid until the preference loads, and on read failure. The localhost tester has no extension storage and uses the enabled default. The extension-owned tester follows the saved setting.
+
+Only active questions receive the green background. CSS smoothly pulses between shared palette colors over 2.4 seconds; disabling the preference or enabling system reduced motion leaves a solid green alert. Idle rendering removes the active state. The pulse uses no JavaScript animation timers, detection changes, or worker state.
 
 ## PiP and build
 
@@ -40,7 +46,7 @@ Static surface styles use `rem` lengths, converted at a default 16px root size, 
 
 `src/shared/brand-colors.css` is the shared color palette. Surface styles use its `--inoti-*` custom properties. Popup and tester styles import the packaged `shared/brand-colors.css`; PiP and monitoring-control styles bundle the same palette for injection into their dynamic document or shadow root. Change palette values there to recolor all consumers, then rebuild and reload.
 
-Request the footprint from `PIP_DIMENSIONS_REM` in `src/shared/pip-dimensions.ts` once. The development preview initially uses those same rem dimensions for its content area. Chrome controls placement, chrome, and size clamping. Idle content is the logo and iNoti; active content adds the question title and local time. No resize calls, screen coordinates, history, auto-dismiss, sound, or stacking. PiP cannot outlive its opener. It is same-origin with the student page, not a separate extension-origin security boundary, so it contains no sensitive data.
+Request the footprint from `PIP_DIMENSIONS_REM` in `src/shared/pip-dimensions.ts` once. The development preview initially uses those same rem dimensions for its content area. Chrome controls placement, chrome, and size clamping. Idle content is the logo and iNoti; active content adds the question title, local detection time, and elapsed time. The shared view refreshes elapsed time once per second from Date.now() minus the detection timestamp, so delayed ticks catch up instead of drifting. Idle, question end, and PiP pagehide clear the interval; each new alert resets it. The timer uses aria-live=off to avoid announcing every tick. This is a display timer only, not detection polling. No resize calls, screen coordinates, history, auto-dismiss, sound, or stacking. PiP cannot outlive its opener. It is same-origin with the student page, not a separate extension-origin security boundary, so it contains no sensitive data.
 
 Four standalone Vite IIFE builds emit content, worker, toolbar-popup, and dev-tester code. The content build clears dist and copies the manifest/icon; later builds preserve output and copy their local HTML/CSS. Production PiP DOM/CSS is still bundled into content.js; the dev tester bundles the same PiP controller/view code for isolated testing.
 

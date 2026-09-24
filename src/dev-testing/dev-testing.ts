@@ -1,5 +1,5 @@
 import { createPipController, documentPip, type MonitoringStatus } from '../content/pip-controller';
-import { createPipView } from '../content/pip-view';
+import { createConfiguredPipView as createPipView } from '../content/configured-pip-view';
 import { PIP_DIMENSIONS_REM } from '../shared/pip-dimensions';
 import { followPipSize } from './preview-size';
 
@@ -14,6 +14,7 @@ function statusText(status: MonitoringStatus, supported: boolean) {
   if (status.opening) return 'PiP: opening…';
   if (status.issue === 'failed') return 'PiP: opening failed — retry from Open PiP';
   if (status.state === 'MONITORING_IDLE') return 'PiP: open — idle';
+  if (status.state === 'MONITORING_QUESTION_ENDED') return 'PiP: open — question ended';
   if (status.state === 'MONITORING_QUESTION_ACTIVE') return 'PiP: open — question active';
   return 'PiP: available — not open';
 }
@@ -75,10 +76,11 @@ function initDevTester() {
     appendLog('simulated question active', { pipWasOpen: current.state !== 'UNMONITORED' });
   });
 
-  required<HTMLButtonElement>('idle').addEventListener('click', () => {
-    preview.idle();
-    controller.idle();
-    appendLog('simulated idle');
+  required<HTMLButtonElement>('ended').addEventListener('click', () => {
+    const endedAt = Date.now();
+    preview.ended(endedAt);
+    controller.ended(endedAt);
+    appendLog('simulated question ended');
   });
 
   required<HTMLButtonElement>('stop').addEventListener('click', () => {

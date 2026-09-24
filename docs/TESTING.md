@@ -33,7 +33,7 @@ After CSS sizing changes, check the popup, tester, PiP, and monitoring control a
 
 Confirm `dist/shared/brand-colors.css` exists for popup/tester stylesheet imports. After palette edits, rebuild and reload; check the popup, inline preview, real PiP, and on-page monitoring button for consistent colors and legible focus/disabled states.
 
-After building, dist must contain manifest.json, content.js, background.js, assets/inoti-logo.png, popup/{popup.html,popup.css,popup.js}, and dev-testing/{index.html,dev-testing.css,dev-testing.js}. Verify no legacy alert-window HTML/JS/CSS remains, including when building over an old dist. The first stage clears output. Verify only webNavigation permission, exact student-site content match, minimum_chrome_version 116, the toolbar popup points only to the extension-owned dev tester, and no remote dependencies. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
+After building, dist must contain manifest.json, content.js, background.js, assets/inoti-logo.png, popup/{popup.html,popup.css,popup.js}, and dev-testing/{index.html,dev-testing.css,dev-testing.js}. Verify no legacy alert-window HTML/JS/CSS remains, including when building over an old dist. The first stage clears output. Verify only webNavigation and storage permissions, exact student-site content match, minimum_chrome_version 116, the toolbar popup includes the pulse preference and links to the extension-owned dev tester, and no remote dependencies. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
 
 ## Hot reload smoke check
 
@@ -41,13 +41,31 @@ Run `npm run dev` and open the local tester. Switch the inline preview to a ques
 
 ## Development tester
 
-Change `PIP_DIMENSIONS_REM` in `src/shared/pip-dimensions.ts` to size the real PiP request and the initial inline preview in rem. Each user-started request converts the rem footprint using the opener root font size; verify 200 x 88 CSS pixels at 16px and 250 x 110 at 20px before browser clamping. Font changes do not resize an already-open PiP. Rebuild, reload the extension, and refresh the tester after editing. After **Open PiP**, verify the preview matches the actual PiP content viewport, including Chrome's size clamping, and follows manual window resizing. Closing PiP detaches the resize listener and retains the last preview size; reopening synchronizes again. The preview does not reproduce Chrome's title bar or window frame.
+Change `PIP_DIMENSIONS_REM` in `src/shared/pip-dimensions.ts` to size the real PiP request and the initial inline preview in rem. Each user-started request converts the rem footprint using the opener root font size; verify 160 x 160 CSS pixels at 16px and 200 x 200 at 20px before browser clamping. Font changes do not resize an already-open PiP. Rebuild, reload the extension, and refresh the tester after editing. After **Open PiP**, verify the preview matches the actual PiP content viewport, including Chrome's size clamping, and follows manual window resizing. Closing PiP detaches the resize listener and retains the last preview size; reopening synchronizes again. The preview does not reproduce Chrome's title bar or window frame.
 
 Both surfaces render `src/content/pip-view.ts` directly for markup, text, and idle/question rendering, with styles imported from `src/content/pip-view.css`. Edit `.question-title-text` or `.detection-time-text` in that stylesheet to style the named text spans; no separate tester view needs updating. The toolbar popup uses `src/popup/popup.css`, including `.popup-title-text`. The preview wrapper scrolls on narrow screens instead of shrinking the PiP viewport and adds no border or rounding to the view. **Open PiP** also uses the production controller for real window lifecycle testing; the inline preview's simulation buttons are not a browser lifecycle emulation.
 
-After building and reloading the unpacked extension, click the iNoti toolbar icon and choose **Open Dev Tester**. The tester must work without an iClicker tab. Confirm the inline preview can switch between idle and New iClicker Question, the displayed time updates locally, **Open PiP** opens the shared PiP view from the click, **Return to Idle** returns it to idle, and **Stop PiP** closes it. Confirm the on-page event log and DevTools `[iNoti][dev]` output contain only generic state/capability information. Clearing the log affects only the tester page.
+After building and reloading the unpacked extension, click the iNoti toolbar icon and choose **Open Dev Tester**. The tester must work without an iClicker tab. Confirm the inline preview can switch between idle and New iClicker Question, the displayed time updates locally, **Open PiP** opens the shared PiP view from the click, **End Question** shows Question Ended and the local end time, stops the elapsed timer, and removes pulsing, and **Stop PiP** closes it. Confirm the on-page event log and DevTools `[iNoti][dev]` output contain only generic state/capability information. Clearing the log affects only the tester page.
 
 The tester is not evidence that route detection, background delivery, reconnect behavior, or authenticated iClicker compatibility works. Those still require the real-browser matrix below. Optional local console captures belong under `dev-testing/logs/`, which is intentionally ignored by Git.
+
+## Question ended screen checks
+
+In the tester, open PiP, choose New Question, then End Question. Verify the neutral background, Question Ended title, local Ended at time, and hidden elapsed timer. In a controlled class, check both active-to-waiting and active-to-results routes. Repeated end reports must retain the first end time. The next question must restore the active title, pulse preference, and fresh elapsed timer in the same window. Initial waiting/closed routes and monitoring started on an already-active question must not invent an ended alert. Leaving the class or closing PiP still stops monitoring.
+
+`npm run check` passed lint, type-check, all 96 tests, and all four builds. Automated controller, route integration, and view tests cover ended transitions and cleanup. Live iClicker and visual browser verification remain pending; no connected browser or authenticated class session is available in this session.
+
+## Elapsed timer checks
+
+`npm run check` passed lint, type-check, all 94 tests, and all four builds for this update. The concurrent 10 x 10 rem footprint was preserved and its size expectations updated. No connected browser or controlled live class was available for visual/live verification.
+
+Automated tests cover immediate 0:00, delayed ticks, minute/hour formatting, reset on the next question, replacement of an existing interval, cleanup on idle/pagehide, and nonnegative elapsed time. In Chrome, simulate a question in the tester and confirm preview/PiP count up, stay readable at the clamped window size, and return to idle without a timer. Toggle pulsing while counting and verify no timer reset. Close/reopen PiP and verify the next alert starts fresh. Background the opener and verify the display catches up after delayed execution. A controlled live class is still needed to verify actual detection timing.
+
+## Alert background manual checks
+
+Reload the built extension and refresh the tester/student pages after the new storage permission is recognized. In the extension-owned tester, open PiP and simulate a question: both views should gently pulse green. Toggle **Pulse new-question background** off in the toolbar popup while the question remains active: both views should immediately become solid green without changing the detection time. Re-enable it, return to idle, and simulate the next question. Idle must never pulse. Close/reopen the popup and PiP and restart Chrome to check persistence. Enable OS reduced motion and confirm active alerts stay solid even with the toggle on. Check readability throughout the animation. The localhost tester uses the enabled default because it has no extension storage; test popup synchronization using the extension-owned tester.
+
+Automated preference tests cover defaults, malformed values, local live updates, stale initial reads, disposal, read/write failure, popup save rollback, and active/idle rendering. Browser animation, reduced-motion behavior, persistence across Chrome restarts, and live iClicker delivery still require the manual checks.
 
 ## Real unpacked Chrome manual matrix
 
@@ -68,7 +86,7 @@ All rows below are **pending for this PiP migration**.
 | Authorized instructor opens new poll from waiting | Existing PiP displays New iClicker Question and correct local detection time exactly once |
 | Duplicate hashchange and webNavigation reports | One alert update total |
 | Stay on same active poll | No repeat alert, new window, resize, or timer dismissal |
-| Poll ends/submitted/results route or waiting | Same PiP returns idle; no new alert or close |
+| Poll ends/submitted/results route or waiting | Same PiP shows Question Ended and its local end-detection time; no pulse, timer, new window, or close |
 | Next closed/waiting to active transition | Same PiP alerts again once |
 | Initial load/refresh on active poll | Start Monitoring; no automatic PiP or fake new question after click |
 | Manually close PiP | Monitoring stops; Start Monitoring returns; later polls do not alert until another click |
@@ -92,10 +110,12 @@ A route candidate with inactive monitoring intentionally produces no alert. If P
 
 ## Verification status
 
+Pulse preference update: `npm run check` passed lint, type-check, all 92 tests across nine files, and all four production builds. Initial sandbox execution hit Vite `spawn EPERM`; the approved run with process access passed. Browser inventory exposed no connected browsers or native apps, so animation, reduced-motion, real popup/PiP synchronization, and authenticated iClicker checks were not run.
+
 The migration has local automated verification on Windows with Node 22.17.1 and npm 11.12.1. On 2026-09-23, npm run lint, npm run typecheck, npm test (74 tests across five files), npm run build, and npm run check all passed. Artifact inspection confirmed the exact four-file package, narrow permissions/site match, Chrome 116 minimum, and no legacy alert delivery in source/bundles. Relative documentation links and whitespace were checked. Initial sandboxed Vite execution hit spawn EPERM; validation was rerun with the required process access. A nested local .kilo worktree initially confused lint discovery; configuration now isolates this checkout without changing that worktree.
 
 No real Chrome/iClicker PiP matrix rows were run in that implementation session. No authenticated, controlled instructor/student poll session was supplied for live transition verification. Cross-application/minimize visibility, actual content-script API access, layout, and background behavior remain manual checks. Earlier owner evidence established injection/worker startup but missed hashchange navigation on a prior build; it does not verify this migration. The development tester is also not a substitute for these checks. The current dev-tester/popup change still requires a fresh `npm run check`, unpacked-build inspection, and browser smoke test after this commit; hosted CI should be checked separately.
 
 ## Deferred work
 
-Sound, persistent settings, quiz support, cross-tab identity/deduplication, history, stacking, progress, auto-dismiss, positioning, click-to-focus, storage, telemetry, polling, DOM observation, and network interception remain absent. Recovery and full MVP release evidence remain future work.
+Sound, other persistent settings, quiz support, cross-tab identity/deduplication, history, stacking, progress, auto-dismiss, positioning, click-to-focus, session storage, telemetry, polling, DOM observation, and network interception remain absent. Recovery and full MVP release evidence remain future work.

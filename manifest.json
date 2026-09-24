@@ -5,7 +5,8 @@
   "version": "0.1.0",
   "description": "Desktop alerts when a supported iClicker class route enters a live poll.",
   "permissions": [
-    "webNavigation"
+    "webNavigation",
+    "storage"
   ],
   "icons": {
     "128": "assets/inoti-logo.png"

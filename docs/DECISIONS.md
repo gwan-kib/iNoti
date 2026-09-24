@@ -154,6 +154,16 @@ Consequences: refreshing requires another click and suppresses an initial active
 
 Evidence: [Chrome Document PiP documentation](https://developer.chrome.com/docs/web-platform/document-picture-in-picture) documents desktop support from Chrome 116, user activation, fixed initial dimensions, browser-controlled placement, opener lifetime, pagehide, and resize activation requirements. Synthetic tests cover lifecycle, UI rendering, safe failures, route safeguards, and source deduplication; they do not establish browser visibility. See [testing](TESTING.md).
 
+## D014: Local alert-animation preference
+
+Status: accepted and implemented at the owner's explicit request. Expands the popup scope only for pulse versus solid alert appearance.
+
+Choice: active-question backgrounds gently pulse by default, using a 2.4-second CSS cycle between light green palette colors. The popup can disable motion, retaining a solid green alert. System reduced-motion preferences also disable animation. Idle stays unchanged. Save only boolean `pulseAlerts` in `chrome.storage.local` and subscribe to local changes in open views. No session state is persisted, and the worker still only forwards navigation.
+
+Permission reason: add `storage` to retain the preference across popup closure/browser restarts and share changes with content-owned PiP. Page localStorage would belong to iClicker and extension-page localStorage cannot directly serve content scripts; an in-memory setting would be lost. No tabs permission, broader hosts, sync, or student data is needed. See [Chrome storage API](https://developer.chrome.com/docs/extensions/reference/api/storage).
+
+Verification: automated settings and rendering coverage plus the [manual checks](TESTING.md). Actual animation, popup/PiP synchronization, and live iClicker behavior remain browser verification items.
+
 ## Decisions still required
 
 - Per-question identity, cross-tab duplicate handling, and any future fingerprint policy.

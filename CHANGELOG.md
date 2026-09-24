@@ -17,6 +17,12 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Added
 
+- Question Ended screen with the local end-detection time, shown after an active alert closes and retained until the next question or monitoring stops.
+
+- Elapsed time since question detection in PiP and the shared dev preview, updated each second and cleared on idle/close.
+
+- Gentle green pulsing for active-question PiP alerts, with a popup toggle for a solid green background and automatic reduced-motion support. The storage permission saves only this local preference; open PiP and extension tester views update immediately.
+
 - Local hot-reloading UI tester via `npm run dev`, including live PiP stylesheet updates.
 
 - Development-only toolbar popup and extension-owned dev tester for manually previewing idle/question PiP states without an iClicker class. The tester includes an on-page safe event log and a Git-ignored local log-capture folder.

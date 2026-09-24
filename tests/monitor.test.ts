@@ -34,7 +34,7 @@ async function start(hash: string, supported = true) {
   const navigation = (hash: string) => receive({ type: 'NAVIGATION_CHANGED', hash });
   const click = () => button.dispatchEvent(new Event('click'));
   const open = async () => { click(); await Promise.resolve(); };
-  const active = () => pipDocument.body.children[0]?.children[1]?.hidden === false;
+  const active = () => pipDocument.body.attributes.get('data-question-active') === 'true';
   return { host, button, navigate, navigation, receive, click, open, active, requestWindow, pip, pipDocument, page, document };
 }
 
@@ -57,7 +57,7 @@ it('calls requestWindow synchronously once per user action, suppressing duplicat
   expect(app.active()).toBe(false);
   expect(app.button.textContent).toBe('Monitoring');
 });
-it.each([base, closed])('returns the same PiP to idle on question end: %s', async end => {
+it.each([base, closed])('shows the question end time in the same PiP: %s', async end => {
   const app = await start(base);
   await app.open();
   app.navigate(`${base}/poll`);
@@ -65,10 +65,21 @@ it.each([base, closed])('returns the same PiP to idle on question end: %s', asyn
   const time = app.pipDocument.body.children[0]!.children[2]!.children[0]!.textContent;
   app.navigate(`${base}/poll`);
   expect(app.pipDocument.body.children[0]!.children[2]!.children[0]!.textContent).toBe(time);
+  const now = vi.spyOn(Date, 'now').mockReturnValue(1_700_000_060_000);
   app.navigate(end);
   expect(app.active()).toBe(false);
+  const main = app.pipDocument.body.children[0]!;
+  expect(main.children[1]!.textContent).toBe('Question Ended');
+  expect(main.children[1]!.hidden).toBe(false);
+  const endedText = `Ended at ${new Date(Date.now()).toLocaleTimeString()}`;
+  expect(main.children[2]!.textContent).toBe(endedText);
+  now.mockReturnValue(1_700_000_120_000);
+  app.navigation(end);
+  app.navigate(base);
+  expect(main.children[2]!.textContent).toBe(endedText);
   app.navigate(`${base}/poll`);
   expect(app.active()).toBe(true);
+  expect(main.children[1]!.textContent).toBe('New iClicker Question');
   expect(app.requestWindow).toHaveBeenCalledTimes(1);
   expect(app.pip.close).not.toHaveBeenCalled();
 });

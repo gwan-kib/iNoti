@@ -19,9 +19,10 @@ if (import.meta.hot) {
 export interface PipView {
   idle(): void;
   question(detectedAt: number): void;
+  ended(endedAt: number): void;
 }
 
-export function createPipView(document: Document): PipView {
+export function createPipView(document: Document): PipView & { setPulseEnabled(enabled: boolean): void } {
   document.title = 'iNoti';
   document.documentElement.lang = 'en';
   const style = document.createElement('style');
@@ -47,20 +48,65 @@ export function createPipView(document: Document): PipView {
   const timeText = document.createElement('span');
   timeText.className = 'detection-time-text';
   time.append(timeText);
-  main.append(brand, title, time);
+  const elapsed = document.createElement('p');
+  elapsed.className = 'elapsed-time';
+  // Announce the question once, not every second as the timer changes.
+  elapsed.setAttribute('role', 'timer');
+  elapsed.setAttribute('aria-live', 'off');
+  const elapsedText = document.createElement('span');
+  elapsedText.className = 'elapsed-time-text';
+  elapsed.append(elapsedText);
+  main.append(brand, title, time, elapsed);
   document.head.append(style);
   if (import.meta.hot) liveStyles.add(style);
   document.body.replaceChildren(main);
+  const page = document.defaultView;
+  let interval: number | undefined;
+  const stopTimer = () => {
+    if (interval !== undefined) page?.clearInterval(interval);
+    interval = undefined;
+  };
+  page?.addEventListener('pagehide', stopTimer, { once: true });
   return {
+    setPulseEnabled(enabled) {
+      document.body.setAttribute('data-pulse', String(enabled));
+    },
     idle() {
-      title.hidden = time.hidden = true;
+      stopTimer();
+      document.body.setAttribute('data-question-active', 'false');
+      title.hidden = time.hidden = elapsed.hidden = true;
       timeText.textContent = '';
+      elapsedText.textContent = '';
       main.setAttribute('aria-label', 'iNoti monitoring: waiting for a new question');
     },
     question(detectedAt) {
-      title.hidden = time.hidden = false;
+      stopTimer();
+      titleText.textContent = 'New iClicker Question';
+      document.body.setAttribute('data-question-active', 'true');
+      title.hidden = time.hidden = elapsed.hidden = false;
       main.removeAttribute('aria-label');
       timeText.textContent = `Detected at ${new Date(detectedAt).toLocaleTimeString()}`;
+      const updateElapsed = () => {
+        // Recompute from the detection timestamp so delayed background ticks catch up.
+        const seconds = Math.max(0, Math.floor((Date.now() - detectedAt) / 1000));
+        const minutes = Math.floor(seconds / 60);
+        const clock = minutes < 60
+          ? `${minutes}:${String(seconds % 60).padStart(2, '0')}`
+          : `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+        elapsedText.textContent = `Elapsed: ${clock}`;
+      };
+      updateElapsed();
+      interval = page?.setInterval(updateElapsed, 1000);
+    },
+    ended(endedAt) {
+      stopTimer();
+      document.body.setAttribute('data-question-active', 'false');
+      main.removeAttribute('aria-label');
+      titleText.textContent = 'Question Ended';
+      title.hidden = time.hidden = false;
+      timeText.textContent = `Ended at ${new Date(endedAt).toLocaleTimeString()}`;
+      elapsed.hidden = true;
+      elapsedText.textContent = '';
     },
   };
 }

@@ -41,7 +41,7 @@ function evaluateHash(hash: string, source: 'hashchange' | 'webNavigation') {
   }
   previous = next;
   syncControl();
-  if (next.state !== 'QUESTION_ACTIVE') controller.idle();
+  if (next.state === 'WAITING' || next.state === 'QUESTION_CLOSED') controller.ended(Date.now());
   else if (notify) controller.question(Date.now());
 }
 

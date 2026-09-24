@@ -10,11 +10,11 @@ it('opens the extension-owned dev tester path', () => {
   expect(createTab).toHaveBeenCalledExactlyOnceWith({ url: 'chrome-extension://test/dev-testing/index.html' });
 });
 
-it('wires the toolbar popup without broadening extension permissions', () => {
+it('wires the toolbar popup with only navigation and preference storage permissions', () => {
   const manifest = JSON.parse(readFileSync(new URL('../manifest.json', import.meta.url), 'utf8')) as {
     permissions?: string[];
     action?: { default_popup?: string };
   };
   expect(manifest.action?.default_popup).toBe('popup/popup.html');
-  expect(manifest.permissions).toEqual(['webNavigation']);
+  expect(manifest.permissions).toEqual(['webNavigation', 'storage']);
 });
