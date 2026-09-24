@@ -1,5 +1,6 @@
 import { createPipController, documentPip, type MonitoringStatus } from '../content/pip-controller';
 import { createPipView } from '../content/pip-view';
+import { createMonitoringControl } from '../content/monitoring-control';
 import { watchPulsePreference } from '../shared/alert-preference';
 import { PIP_DIMENSIONS_REM } from '../shared/pip-dimensions';
 import { followPipSize } from './preview-size';
@@ -65,6 +66,20 @@ function initDevTester() {
     console.info('[iNoti][dev] ' + event, details ?? {});
   };
   const renderStatus = () => { statusElement.textContent = statusText(current, Boolean(api)); };
+
+  // Render the real on-page control inside a mock page in its own document, so
+  // each monitoring state can be inspected without an iClicker tab.
+  const panelFrame = required<HTMLIFrameElement>('panel-preview');
+  const panelDocument = panelFrame.contentDocument;
+  if (!panelDocument) throw new Error('Monitoring panel preview document unavailable');
+  const panelControl = createMonitoringControl(panelDocument, () => appendLog('monitoring panel toggle clicked'));
+  panelControl.show();
+  panelControl.render(current);
+  const showPanelState = (status: MonitoringStatus, state: string) => {
+    panelControl.render(status);
+    appendLog('monitoring panel state', { state });
+  };
+
   let stopFollowingSize: (() => void) | undefined;
   const controller = createPipController(api, (next) => {
     if (next.state === 'UNMONITORED') {
@@ -74,6 +89,7 @@ function initDevTester() {
     }
     current = next;
     renderStatus();
+    panelControl.render(next);
     appendLog('PiP state changed', { state: next.state, opening: next.opening, issue: next.issue ?? 'none' });
   }, (pipDocument, onAnswered) => {
     const view = createPipView(pipDocument, () => window.focus(), () => {
@@ -122,6 +138,19 @@ function initDevTester() {
     controller.stop();
     appendLog('stop requested');
   });
+
+  required<HTMLButtonElement>('panel-unmonitored').addEventListener('click', () =>
+    showPanelState({ state: 'UNMONITORED', opening: false }, 'not monitoring'));
+  required<HTMLButtonElement>('panel-idle').addEventListener('click', () =>
+    showPanelState({ state: 'MONITORING_IDLE', opening: false }, 'monitoring'));
+  required<HTMLButtonElement>('panel-question').addEventListener('click', () =>
+    showPanelState({ state: 'MONITORING_QUESTION_ACTIVE', opening: false }, 'question active'));
+  required<HTMLButtonElement>('panel-opening').addEventListener('click', () =>
+    showPanelState({ state: 'UNMONITORED', opening: true }, 'opening'));
+  required<HTMLButtonElement>('panel-unsupported').addEventListener('click', () =>
+    showPanelState({ state: 'UNMONITORED', opening: false, issue: 'unsupported' }, 'unsupported'));
+  required<HTMLButtonElement>('panel-failed').addEventListener('click', () =>
+    showPanelState({ state: 'UNMONITORED', opening: false, issue: 'failed' }, 'failed'));
 
   required<HTMLButtonElement>('clear-log').addEventListener('click', () => {
     logElement.replaceChildren();

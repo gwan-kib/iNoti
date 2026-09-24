@@ -21,7 +21,7 @@ CI runs equivalent checks; hosted CI results remain separate from local verifica
 - History/fragment forwarding, top-frame/exact-origin filtering, document targeting, unsupported sanitization, private error handling.
 - Supported-route control visibility, synchronous user-action PiP request, duplicate-click guard, idle startup, same-window alert/idle transitions, local time rendering.
 - Consecutive hashchange/webNavigation deduplication in both orders, malformed contracts, wrong-direction messages and untrusted navigation senders.
-- No automatic opening from question events, no alerts before start/after stop, close restoring Start Monitoring, class/session exit and opener pagehide/BFCache cleanup.
+- No automatic opening from question events, no alerts before start/after stop, close restoring Open Picture-in-Picture, class/session exit and opener pagehide/BFCache cleanup.
 - Unsupported API, sync/async request failures with explicit retry, late pending-open cleanup, and stale close events.
 - Toolbar popup wiring to the extension-owned dev tester and manifest permission regression coverage.
 
@@ -45,7 +45,7 @@ Change `PIP_DIMENSIONS_REM` in `src/shared/pip-dimensions.ts` to size the real P
 
 Both surfaces render `src/content/pip-view.ts` directly for markup, text, and idle/question rendering, with styles imported from `src/content/pip-view.css`. Edit `.question-title-text` or `.detection-time-text` in that stylesheet to style the named text spans; no separate tester view needs updating. The toolbar popup uses `src/popup/popup.css`, including `.popup-title-text`. The preview wrapper scrolls on narrow screens instead of shrinking the PiP viewport and adds no border or rounding to the view. **Open PiP** also uses the production controller for real window lifecycle testing; the inline preview's simulation buttons are not a browser lifecycle emulation.
 
-After building and reloading the unpacked extension, click the iNoti toolbar icon and choose **Open Dev Tester**. The tester must work without an iClicker tab. Confirm the inline preview can switch between idle and New iClicker Question, the displayed time updates locally, the active alert's **Go to Question** and **Question Answered** controls behave in both the preview and the real PiP, **Open PiP** opens the shared PiP view from the click, **End Question** shows Question Ended and the local end time, stops the elapsed timer, and removes pulsing, and **Stop PiP** closes it. Confirm the on-page event log and DevTools `[iNoti][dev]` output contain only generic state/capability information. Clearing the log affects only the tester page.
+After building and reloading the unpacked extension, click the iNoti toolbar icon and choose **Open Dev Tester**. The tester must work without an iClicker tab. Confirm the inline preview can switch between idle and New iClicker Question, the displayed time updates locally, the active alert's **Go to Question** and **Question Answered** controls behave in both the preview and the real PiP, **Open PiP** opens the shared PiP view from the click, **End Question** shows Question Ended and the local end time, stops the elapsed timer, and removes pulsing, and **Stop PiP** closes it. In the Monitoring panel section, confirm the embedded on-page control renders in a mock page and that **Not monitoring**, **Monitoring**, **Question active**, **Opening**, **Unsupported**, and **Failed** show the matching labels and disabled states, and that the panel also follows the real controller as **Open PiP** and **Stop PiP** are used. Confirm the on-page event log and DevTools `[iNoti][dev]` output contain only generic state/capability information. Clearing the log affects only the tester page.
 
 The tester is not evidence that route detection, background delivery, reconnect behavior, or authenticated iClicker compatibility works. Those still require the real-browser matrix below. Optional local console captures belong under `dev-testing/logs/`, which is intentionally ignored by Git.
 
@@ -87,9 +87,9 @@ All rows below are **pending for this PiP migration**.
 
 | Scenario | Expected result |
 | --- | --- |
-| Join supported waiting/closed/active class route | Small Start Monitoring control; keyboard accessible and does not cover important iClicker controls at normal/narrow widths |
+| Join supported waiting/closed/active class route | Small Open Picture-in-Picture control; keyboard accessible and does not cover important iClicker controls at normal/narrow widths |
 | Unsupported/home/quiz route | No monitoring control or question alert |
-| Click Start Monitoring / activate with keyboard | One PiP opens idle; no separate Chrome alert window |
+| Click Open Picture-in-Picture / activate with keyboard | One PiP opens idle; no separate Chrome alert window |
 | Rapid repeat clicks during opening | Only one request/window; no duplicate monitor |
 | Idle content | Logo and iNoti, legible at browser-clamped size |
 | Switch Chrome tabs | PiP remains visible above windows |
@@ -100,9 +100,9 @@ All rows below are **pending for this PiP migration**.
 | Stay on same active poll | No repeat alert, new window, resize, or timer dismissal |
 | Poll ends/submitted/results route or waiting | Same PiP shows Question Ended and its local end-detection time; no pulse, timer, new window, or close |
 | Next closed/waiting to active transition | Same PiP alerts again once |
-| Initial load/refresh on active poll | Start Monitoring; no automatic PiP or fake new question after click |
-| Manually close PiP | Monitoring stops; Start Monitoring returns; later polls do not alert until another click |
-| Click active Monitoring control | PiP closes and Start Monitoring returns |
+| Initial load/refresh on active poll | Open Picture-in-Picture; no automatic PiP or fake new question after click |
+| Manually close PiP | Monitoring stops; Open Picture-in-Picture returns; later polls do not alert until another click |
+| Click Close Picture-in-Picture | PiP closes and Open Picture-in-Picture returns |
 | Leave supported session/change class | PiP closes; new class requires a fresh click; unsupported pages hide the control |
 | Navigate away while PiP opening | Late opened window is closed; monitoring remains inactive |
 | Full refresh/close opener | PiP closes; no automatic reopening |
@@ -143,3 +143,7 @@ Redesign automated verification: `npm run check` passed lint, type-check, all 10
 Tester controls: click Idle from both active and ended; both views should return to waiting without closing PiP, and the next New Question should work. Toggle Pulse new-question background before/after opening PiP, stop/reopen, and verify both views retain the selection. Reload resets the override to the saved preference (or enabled on localhost). System reduced motion still prevents animation. Automated tester wiring covers idle transitions and pulse propagation; browser verification remains pending.
 
 Google Symbols check: inspect the PiP/preview HTML head for the Google Fonts stylesheet link, verify rounded schedule/hourglass glyphs load in both localhost and extension testers and live iClicker PiP, and check inherited CSP/network failures. Confirm times and controls remain usable if the font is unavailable. No browser is connected to verify remote font rendering in this session.
+
+Monitoring panel layout: verify a 15rem wide by 10rem tall panel vertically centered 5rem from the right edge on a supported iClicker route. Check Open Picture-in-Picture, opening, Close Picture-in-Picture, retry and unsupported labels and their matching explanation text, keyboard focus, and increased root font sizes. Automated tests cover each explanation and its `data-state`; confirm the copy carries no raw errors or page data. At widths at or below 21.5rem, confirm the 0.75rem right inset keeps it visible. Only the panel should intercept clicks. This placement still needs browser verification; no connected browser or authenticated session is available.
+
+Verify the panel reminder remains visible beside the Open/Close Picture-in-Picture action and does not itself toggle PiP when clicked. Route detection and the requirement to open PiP for visible notifications are unchanged.

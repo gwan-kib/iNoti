@@ -20,6 +20,8 @@ button:focus-visible { outline: 0.1875rem solid var(--inoti-focus); outline-offs
 .preview-label { margin-bottom: 0.5rem; color: var(--inoti-text-muted); font-size: 0.75rem; font-weight: 700; }
 /* Keep the shared PiP viewport exact; scroll the wrapper instead of shrinking or clipping it. */
 #preview { display: block; box-sizing: content-box; border: 0; }
+/* Mock page so the fixed monitoring panel previews at its real position. */
+#panel-preview { display: block; box-sizing: content-box; border: 0; width: 30rem; height: 13rem; max-width: 100%; background: var(--inoti-surface); }
 .event-log { min-height: 7.5rem; max-height: 18.75rem; overflow: auto; margin: 1rem 0 0; padding: 0.75rem 0.75rem 0.75rem 2.25rem; border-radius: 0.625rem; background: var(--inoti-log-surface); color: var(--inoti-log-text); font: 0.75rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .event-log:empty::before { content: "No events yet."; color: var(--inoti-log-muted); }
 code { font: .9em ui-monospace, SFMono-Regular, Consolas, monospace; }

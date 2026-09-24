@@ -43,6 +43,27 @@
     <section class="panel">
       <div class="panel-heading">
         <div>
+          <h2>Monitoring panel</h2>
+          <p>The on-page control shown on the iClicker tab. Buttons force each of its states.</p>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="panel-unmonitored" type="button"><span class="button-text">Not monitoring</span></button>
+        <button id="panel-idle" type="button"><span class="button-text">Monitoring</span></button>
+        <button id="panel-question" type="button"><span class="button-text">Question active</span></button>
+        <button id="panel-opening" type="button"><span class="button-text">Opening</span></button>
+        <button id="panel-unsupported" type="button"><span class="button-text">Unsupported</span></button>
+        <button id="panel-failed" type="button"><span class="button-text">Failed</span></button>
+      </div>
+      <div class="preview-wrap">
+        <div class="preview-label">On-page preview</div>
+        <iframe id="panel-preview" title="iNoti monitoring panel preview"></iframe>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
           <h2>Event log</h2>
           <p>Also written to DevTools as <code>[iNoti][dev]</code>. Keep captures free of student/session data.</p>
         </div>
