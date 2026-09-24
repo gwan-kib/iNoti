@@ -38,13 +38,13 @@ async function start(hash: string, supported = true) {
   return { host, button, navigate, navigation, receive, click, open, active, requestWindow, pip, pipDocument, page, document };
 }
 
-it('shows an isolated Open Picture-in-Picture control only on supported routes', async () => {
+it('shows an isolated Open notification window control only on supported routes', async () => {
   const app = await start('#/home');
   expect(app.host.isConnected).toBe(false);
   app.navigation(base);
   expect(app.host.isConnected).toBe(true);
-  expect(app.host.shadow!.children[1]!.children[1]!.textContent).toBe('Keep this iClicker page open so iNoti can detect new questions.');
-  expect(app.button.textContent).toBe('Open Picture-in-Picture');
+  expect(app.host.shadow!.children[1]!.children[1]!.textContent).toBe('Monitoring is on. Keep this iClicker page open so iNoti can detect new questions.');
+  expect(app.button.textContent).toBe('Open notification window');
   app.navigation('');
   expect(app.host.isConnected).toBe(false);
 });
@@ -56,7 +56,7 @@ it('calls requestWindow synchronously once per user action, suppressing duplicat
   expect(app.requestWindow).toHaveBeenCalledTimes(1);
   await Promise.resolve();
   expect(app.active()).toBe(false);
-  expect(app.button.textContent).toBe('Close Picture-in-Picture');
+  expect(app.button.textContent).toBe('Close notification window');
 });
 it.each([base, closed])('shows the question end time in the same PiP: %s', async end => {
   const app = await start(base);
@@ -100,7 +100,7 @@ it('never opens or alerts from question events before a click or after PiP close
   await app.open();
   expect(app.active()).toBe(false);
   app.pip.close();
-  expect(app.button.textContent).toBe('Open Picture-in-Picture');
+  expect(app.button.textContent).toBe('Open notification window');
   app.navigation(base); app.navigation(`${base}/poll`);
   expect(app.active()).toBe(false);
   expect(app.requestWindow).toHaveBeenCalledTimes(1);
@@ -118,7 +118,7 @@ it.each(['', '#/class/22222222-2222-4222-8222-222222222222/poll'])('stops on lea
   const app = await start(base); await app.open();
   app.navigation(next);
   expect(app.pip.close).toHaveBeenCalledTimes(1);
-  expect(app.button.textContent).toBe('Open Picture-in-Picture');
+  expect(app.button.textContent).toBe('Open notification window');
 });
 it('requires a fresh click after opener pagehide and BFCache restore', async () => {
   const app = await start(base); await app.open();
@@ -127,7 +127,7 @@ it('requires a fresh click after opener pagehide and BFCache restore', async () 
   expect(app.host.isConnected).toBe(false);
   app.page.location.hash = `${base}/poll`;
   app.page.dispatchEvent(new Event('pageshow'));
-  expect(app.button.textContent).toBe('Open Picture-in-Picture');
+  expect(app.button.textContent).toBe('Open notification window');
   app.navigation(`${base}/poll`);
   expect(app.requestWindow).toHaveBeenCalledTimes(1);
 });
@@ -158,7 +158,7 @@ it('active control stops monitoring and later transitions remain silent', async 
   const app = await start(base); await app.open();
   app.click();
   expect(app.pip.close).toHaveBeenCalledOnce();
-  expect(app.button.textContent).toBe('Open Picture-in-Picture');
+  expect(app.button.textContent).toBe('Open notification window');
   app.navigation(`${base}/poll`);
   expect(app.active()).toBe(false);
   expect(app.requestWindow).toHaveBeenCalledOnce();
@@ -170,5 +170,5 @@ it('shows an opening failure and permits explicit retry', async () => {
   expect(app.button.textContent).toContain('PiP failed');
   expect(app.button.disabled).toBe(false);
   await app.open();
-  expect(app.button.textContent).toBe('Close Picture-in-Picture');
+  expect(app.button.textContent).toBe('Close notification window');
 });

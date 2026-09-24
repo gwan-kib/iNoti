@@ -11,6 +11,8 @@
   height: 10rem;
   max-width: calc(100vw - 1.5rem);
   max-height: calc(100vh - 1.5rem);
+  border: 0.2rem solid var(--inoti-monitor-surface);
+  border-radius: 1rem;
   z-index: 2147483647;
 }
 

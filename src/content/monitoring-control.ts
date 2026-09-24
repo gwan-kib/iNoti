@@ -6,11 +6,11 @@ import { logger } from "../shared/logging";
 // Copy stays a normalized state/failure category: never surface arbitrary errors,
 // routes, or identifiers from the page.
 function explanationFor(status: MonitoringStatus, active: boolean): string {
-  if (status.issue === "unsupported") return "Picture-in-Picture needs desktop Chrome 123 or newer.";
-  if (status.issue === "failed") return "The Picture-in-Picture window could not open. Click the button to try again.";
-  if (status.opening) return "Opening the Picture-in-Picture window…";
+  if (status.issue === "unsupported") return "Notification window needs desktop Chrome 123 or newer.";
+  if (status.issue === "failed") return "The Notification window could not open. Click the button to try again.";
+  if (status.opening) return "Opening the Notification window…";
   if (status.state === "MONITORING_QUESTION_ACTIVE")
-    return "A new question is active in the Picture-in-Picture window.";
+    return "A new question is active in the Notification window.";
   if (status.state === "MONITORING_QUESTION_ENDED") return "The question ended. Monitoring stays on for the next one.";
   if (active) return "Monitoring is on. Keep this iClicker page open so iNoti can detect new questions.";
   return "Monitoring is on. Keep this iClicker page open so iNoti can detect new questions.";
@@ -71,10 +71,10 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
           : status.issue === "failed"
             ? "PiP failed - Try again"
             : status.opening
-              ? "Opening Picture-in-Picture..."
+              ? "Opening notification window..."
               : active
-                ? "Close Picture-in-Picture"
-                : "Open Picture-in-Picture";
+                ? "Close notification window"
+                : "Open notification window";
       button.title =
         status.issue === "unsupported"
           ? "Picture-in-Picture requires desktop Chrome 123+."

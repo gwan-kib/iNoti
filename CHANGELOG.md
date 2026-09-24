@@ -6,9 +6,11 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
+- Renamed the monitoring panel action to Open/Close notification window and updated its explanations and tooltips to say notification window instead of Picture-in-Picture.
+
 - The monitoring panel explanation now reflects the current state (monitoring, question active/ended, opening, unsupported, failed) via a `data-state` hook; failure copy stays a normalized category with no raw errors.
 
-- Added a keep-iClicker-open reminder to the panel and relabeled its action Open/Close Picture-in-Picture.
+- Added a keep-iClicker-open reminder to the panel and relabeled its action.
 
 - Changed the on-page monitoring control to a 15rem wide by 10rem tall panel, vertically centered and 5rem from the right edge, with a narrow-screen inset adjustment.
 
