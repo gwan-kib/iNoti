@@ -30,7 +30,7 @@ A TypeScript/Vite MV3 extension with no framework or runtime dependencies. Route
 
 The toolbar popup saves the alert-animation preference and links to the development-only `dev-testing/` extension page. The popup opens `dev-testing/index.html`; that page can render the shared PiP view in an inline preview, open the real Document PiP surface from a user click, and manually drive idle/question/stop states. Once opened, the preview follows the actual PiP content viewport via a development-only resize listener, removed when monitoring stops. It never sends synthetic events into the content script or worker, so it cannot change or falsely validate iClicker detection.
 
-Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE -> MONITORING_QUESTION_ENDED -> MONITORING_QUESTION_ACTIVE, with any session-ending event returning to UNMONITORED. Opening is a transient guard, not active monitoring. Detection continues while unmonitored so enabling monitoring does not invent a question transition.
+Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE -> MONITORING_QUESTION_ENDED -> MONITORING_QUESTION_ACTIVE, with any session-ending event returning to UNMONITORED. A manual answer returns MONITORING_QUESTION_ACTIVE -> MONITORING_IDLE. Opening is a transient guard, not active monitoring. Detection continues while unmonitored so enabling monitoring does not invent a question transition.
 
 ## Alert appearance preference
 
@@ -41,6 +41,10 @@ Only active questions receive the pink alert surface. On a 2.4-second CSS cycle 
 ## Return to the question
 
 The active alert shows Go to Question outside the status live region. `configured-pip-view.ts` supplies an opener-owned callback that synchronously calls `window.focus()` from the button click. Chrome 123+ supports focusing the Document PiP opener. The action does not close PiP, navigate, reset the timer, or change monitoring state. Idle and ended screens hide the button. The development tester focuses its own opener rather than an iClicker tab. No worker message, tab registry, or extra permission is needed.
+
+## Manual answer
+
+Question Answered sits below Go to Question for the active alert only. Its click reaches `pip-controller.ts` through the same opener-owned callback channel, calls `view.idle()`, and moves the controller from MONITORING_QUESTION_ACTIVE to MONITORING_IDLE without stopping monitoring. Treating the manual answer as idle, not ended, keeps the next detected question eligible; the route eventually reaching waiting/results is ignored while idle, so no synthetic ended screen appears. The callback still checks that a question is active and that PiP is open, so a stale click cannot change state after close.
 
 ## PiP and build
 

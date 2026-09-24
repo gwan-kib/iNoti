@@ -21,7 +21,7 @@ export function documentPip(page: Window): DocumentPip | undefined {
 export function createPipController(
   api: DocumentPip | undefined,
   changed: (status: MonitoringStatus) => void,
-  makeView: (document: Document) => PipView = createConfiguredPipView,
+  makeView: (document: Document, answerQuestion: () => void) => PipView = createConfiguredPipView,
   rootFontSize: () => number = () => parseFloat(getComputedStyle(document.documentElement).fontSize),
 ) {
   const log = logger('pip');
@@ -40,8 +40,18 @@ export function createPipController(
     old?.close();
     log('monitoring stopped');
   };
+  const answered = () => {
+    // Manual dismissal returns to idle while monitoring stays started; treating it
+    // as idle (not ended) keeps the next question detection eligible.
+    if (!pip || !view || status.state !== 'MONITORING_QUESTION_ACTIVE') return;
+    if (pip.closed) { stop(); return; }
+    view.idle();
+    update({ state: 'MONITORING_IDLE', opening: false });
+    log('PiP -> idle after answer');
+  };
   return {
     stop,
+    answered,
     async start() {
       if (status.opening || status.state !== 'UNMONITORED') return;
       log('start monitoring requested');
@@ -64,7 +74,7 @@ export function createPipController(
           log('PiP closed');
           stop();
         }, { once: true });
-        view = makeView(opened.document);
+        view = makeView(opened.document, answered);
         view.idle();
         update({ state: 'MONITORING_IDLE', opening: false });
         log('PiP opened');

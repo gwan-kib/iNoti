@@ -12,7 +12,7 @@ This is an unpacked development version, not a Chrome Web Store release. Use des
 4. Keep PiP open. A new supported poll transition displays the alert; closing/results or waiting after a detected question shows **Question Ended** with an **Ended at** time. This is when iNoti detected the end, not the instructor's exact end time. The screen stays until the next detected question or monitoring stops.
 5. Close PiP or click **Monitoring** to stop. Leaving the class also stops monitoring. After refreshing, click Start Monitoring again.
 
-**Go to Question** appears during an active alert. Click it to focus the original iClicker tab while PiP stays open; the elapsed timer and monitoring continue.
+**Go to Question** appears during an active alert. Click it to focus the original iClicker tab while PiP stays open; the elapsed timer and monitoring continue. **Question Answered** appears below it and returns PiP to its idle monitoring screen once you have answered; monitoring stays started and the next detected question alerts as usual.
 
 Document PiP is an always-on-top browser surface. Chrome controls its position and may clamp its size; iNoti requests one small footprint for idle and alert content. Visibility across tabs, minimizing Chrome, and application switching must still be verified for this build on your system. If the API is unavailable, the control explains this. There is no separate-tab, popup-window, or native-notification fallback.
 

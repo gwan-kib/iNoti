@@ -28,7 +28,11 @@ function initDevTester() {
   const previewDocument = previewFrame.contentDocument;
   if (!previewDocument) throw new Error('Inline preview document unavailable');
 
-  const preview = createPipView(previewDocument);
+  const preview = createPipView(previewDocument, () => {
+    preview.idle();
+    controller.answered();
+    appendLog('question answered');
+  });
   preview.idle();
 
   const api = documentPip(window);
@@ -52,8 +56,8 @@ function initDevTester() {
     current = next;
     renderStatus();
     appendLog('PiP state changed', { state: next.state, opening: next.opening, issue: next.issue ?? 'none' });
-  }, (pipDocument) => {
-    const view = createPipView(pipDocument);
+  }, (pipDocument, onAnswered) => {
+    const view = createPipView(pipDocument, onAnswered);
     if (pipDocument.defaultView) {
       stopFollowingSize = followPipSize(previewFrame, pipDocument.defaultView);
     }

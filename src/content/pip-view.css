@@ -103,7 +103,7 @@ main {
   position: relative;
   z-index: 1;
   flex-shrink: 0;
-  margin: 0 1rem 1rem;
+  margin: 0 1rem 0.5rem;
   padding: 0.5rem 0.625rem;
   border: 0;
   border-radius: 0.5rem;
@@ -115,6 +115,22 @@ main {
 .go-to-question-text { font-size: 0.8125rem; font-weight: 650; }
 .go-to-question:hover { filter: brightness(.95); }
 .go-to-question:focus-visible { outline: 0.1875rem solid var(--inoti-focus); outline-offset: 0.125rem; }
+.question-answered {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  margin: 0 1rem 1rem;
+  padding: 0.5rem 0.625rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--inoti-secondary-surface);
+  color: var(--inoti-secondary-text);
+  font: inherit;
+  cursor: pointer;
+}
+.question-answered-text { font-size: 0.8125rem; font-weight: 650; }
+.question-answered:hover { filter: brightness(.97); }
+.question-answered:focus-visible { outline: 0.1875rem solid var(--inoti-focus); outline-offset: 0.125rem; }
 [hidden] {
   display: none;
 }

@@ -218,6 +218,64 @@ it('shows Go to Question only for active alerts and focuses without altering the
   expect(button.hidden).toBe(true);
 });
 
+it('shows Question Answered only for active alerts and reports the click', () => {
+  const document = new DocumentFake();
+  const answered = vi.fn();
+  const view = createPipView(document as unknown as Document, () => {}, answered);
+  const button = document.body.children[2]!;
+  expect(button.textContent).toBe('Question Answered');
+  view.idle();
+  expect(button.hidden).toBe(true);
+  button.dispatchEvent(new Event('click'));
+  expect(answered).not.toHaveBeenCalled();
+  view.question(Date.now());
+  expect(button.hidden).toBe(false);
+  button.dispatchEvent(new Event('click'));
+  expect(answered).toHaveBeenCalledOnce();
+  view.ended(Date.now());
+  expect(button.hidden).toBe(true);
+  button.dispatchEvent(new Event('click'));
+  expect(answered).toHaveBeenCalledOnce();
+});
+
+it('forwards the answered control through the configured view', () => {
+  vi.stubGlobal('chrome', undefined);
+  const document = new DocumentFake();
+  const answered = vi.fn();
+  const view = createConfiguredPipView(document as unknown as Document, answered);
+  view.question(Date.now());
+  document.body.children[2]!.dispatchEvent(new Event('click'));
+  expect(answered).toHaveBeenCalledOnce();
+  view.idle();
+});
+
+it('returns to idle after an answer and keeps the next question eligible', async () => {
+  const pip = Object.assign(new EventTarget(), { document: {} as Document, closed: false, close: vi.fn() });
+  const changed = vi.fn();
+  const view = { idle: vi.fn(), question: vi.fn(), ended: vi.fn() };
+  let onAnswered!: () => void;
+  const controller = createPipController({ requestWindow: async () => pip as unknown as Window }, changed, (_document, answer) => { onAnswered = answer; return view; }, () => 16);
+  await controller.start();
+  controller.question(100);
+  onAnswered();
+  expect(view.idle).toHaveBeenCalledTimes(2);
+  expect(changed).toHaveBeenLastCalledWith({ state: 'MONITORING_IDLE', opening: false });
+  controller.question(200);
+  expect(view.question).toHaveBeenLastCalledWith(200);
+});
+
+it('ignores an answer when no question is active', async () => {
+  const pip = Object.assign(new EventTarget(), { document: {} as Document, closed: false, close: vi.fn() });
+  const changed = vi.fn();
+  const view = { idle: vi.fn(), question: vi.fn(), ended: vi.fn() };
+  let onAnswered!: () => void;
+  const controller = createPipController({ requestWindow: async () => pip as unknown as Window }, changed, (_document, answer) => { onAnswered = answer; return view; }, () => 16);
+  await controller.start();
+  onAnswered();
+  expect(view.idle).toHaveBeenCalledOnce();
+  expect(changed).toHaveBeenLastCalledWith({ state: 'MONITORING_IDLE', opening: false });
+});
+
 it('wires the configured view to focus the opener synchronously without closing PiP', () => {
   const opener = { focus: vi.fn(), close: vi.fn() };
   vi.stubGlobal('window', opener);

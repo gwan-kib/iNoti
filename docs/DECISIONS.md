@@ -170,6 +170,14 @@ Status: accepted and implemented at the owner's request. Active alerts expose Go
 
 Evidence: [Chrome Document PiP documentation](https://developer.chrome.com/docs/web-platform/document-picture-in-picture#focus_the_opener_window) documents opener focusing from Chrome 123. This supersedes the deferred click-focus scope and Chrome 116 minimum of D013.
 
+## D016: Manual answer returns PiP to idle
+
+Status: accepted and implemented at the owner's request. Adds one control to the active alert only.
+
+Choice: show Question Answered below Go to Question during an active question. The click calls `view.idle()` and moves the controller from MONITORING_QUESTION_ACTIVE to MONITORING_IDLE without stopping monitoring, closing PiP, or navigating. It is deliberately idle rather than ended so the next detected question stays eligible and the later route change to waiting/results does not synthesize an ended screen. Idle and ended screens hide the button, and the callback ignores the click unless a question is active and PiP is open.
+
+Consequences: the manual answer is local to the PiP session; it does not submit, grade, or otherwise interact with iClicker, and no answer content is read or sent. The worker, detection, permissions, and storage are unchanged. Layout and readability of the second button require the existing manual browser checks.
+
 ## Decisions still required
 
 - Per-question identity, cross-tab duplicate handling, and any future fingerprint policy.

@@ -22,7 +22,7 @@ export interface PipView {
   ended(endedAt: number): void;
 }
 
-export function createPipView(document: Document, focusQuestion: () => void = () => {}): PipView & { setPulseEnabled(enabled: boolean): void } {
+export function createPipView(document: Document, focusQuestion: () => void = () => {}, answerQuestion: () => void = () => {}): PipView & { setPulseEnabled(enabled: boolean): void } {
   document.title = 'iNoti';
   document.documentElement.lang = 'en';
   const style = document.createElement('style');
@@ -68,9 +68,20 @@ export function createPipView(document: Document, focusQuestion: () => void = ()
   goToQuestion.addEventListener('click', () => {
     if (!goToQuestion.hidden) focusQuestion();
   });
+  const answered = document.createElement('button');
+  answered.type = 'button';
+  answered.className = 'question-answered';
+  answered.hidden = true;
+  const answeredText = document.createElement('span');
+  answeredText.className = 'question-answered-text';
+  answeredText.textContent = 'Question Answered';
+  answered.append(answeredText);
+  answered.addEventListener('click', () => {
+    if (!answered.hidden) answerQuestion();
+  });
   document.head.append(style);
   if (import.meta.hot) liveStyles.add(style);
-  document.body.replaceChildren(main, goToQuestion);
+  document.body.replaceChildren(main, goToQuestion, answered);
   const page = document.defaultView;
   let interval: number | undefined;
   const stopTimer = () => {
@@ -84,6 +95,7 @@ export function createPipView(document: Document, focusQuestion: () => void = ()
     },
     idle() {
       goToQuestion.hidden = true;
+      answered.hidden = true;
       stopTimer();
       document.body.setAttribute('data-question-active', 'false');
       title.hidden = time.hidden = elapsed.hidden = true;
@@ -93,6 +105,7 @@ export function createPipView(document: Document, focusQuestion: () => void = ()
     },
     question(detectedAt) {
       goToQuestion.hidden = false;
+      answered.hidden = false;
       stopTimer();
       titleText.textContent = 'New iClicker Question';
       document.body.setAttribute('data-question-active', 'true');
@@ -113,6 +126,7 @@ export function createPipView(document: Document, focusQuestion: () => void = ()
     },
     ended(endedAt) {
       goToQuestion.hidden = true;
+      answered.hidden = true;
       stopTimer();
       document.body.setAttribute('data-question-active', 'false');
       main.removeAttribute('aria-label');
