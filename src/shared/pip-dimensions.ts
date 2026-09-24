@@ -1,2 +1,10 @@
-// Shared by the real PiP request and the development preview.
-export const PIP_DIMENSIONS = { width: 200, height: 150 } as const;
+// Shared rem footprint; browser window APIs still require numeric CSS pixels.
+export const PIP_DIMENSIONS_REM = { width: 12.5, height: 5.5 } as const;
+
+export function pipDimensionsInPixels(rootFontSize: number) {
+  const size = Number.isFinite(rootFontSize) && rootFontSize > 0 ? rootFontSize : 16;
+  return {
+    width: Math.round(PIP_DIMENSIONS_REM.width * size),
+    height: Math.round(PIP_DIMENSIONS_REM.height * size),
+  };
+}

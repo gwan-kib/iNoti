@@ -43,6 +43,7 @@ export default defineConfig(({ mode }) => {
   const build = builds[target];
   return {
     publicDir: false,
+    server: { host: '127.0.0.1', port: 5173, strictPort: true, open: '/src/dev-testing/index.html' },
     build: {
       target: 'es2022',
       outDir: 'dist',
@@ -56,6 +57,15 @@ export default defineConfig(({ mode }) => {
       },
     },
     plugins: [{
+      name: 'dev-tester-source-entry',
+      apply: 'serve',
+      transformIndexHtml(html, context) {
+        if (context.path !== '/src/dev-testing/index.html') return html;
+        // Serve the same tester HTML from source; packaged extension paths stay unchanged.
+        return html.replace('<script src="./dev-testing.js"></script>', '<script type="module" src="./dev-testing.ts"></script>')
+          .replaceAll('../assets/inoti-logo.png', '/assets/inoti-logo.png');
+      },
+    }, {
       name: 'extension-assets',
       generateBundle() {
         for (const [sourceName, fileName] of build.assets) {

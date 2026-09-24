@@ -1,6 +1,6 @@
 import { createPipController, documentPip, type MonitoringStatus } from '../content/pip-controller';
 import { createPipView } from '../content/pip-view';
-import { PIP_DIMENSIONS } from '../shared/pip-dimensions';
+import { PIP_DIMENSIONS_REM } from '../shared/pip-dimensions';
 import { followPipSize } from './preview-size';
 
 function required<T extends HTMLElement>(id: string): T {
@@ -22,8 +22,8 @@ function initDevTester() {
   const statusElement = required<HTMLElement>('pip-status');
   const logElement = required<HTMLOListElement>('event-log');
   const previewFrame = required<HTMLIFrameElement>('preview');
-  previewFrame.style.width = `${PIP_DIMENSIONS.width}px`;
-  previewFrame.style.height = `${PIP_DIMENSIONS.height}px`;
+  previewFrame.style.width = `${PIP_DIMENSIONS_REM.width}rem`;
+  previewFrame.style.height = `${PIP_DIMENSIONS_REM.height}rem`;
   const previewDocument = previewFrame.contentDocument;
   if (!previewDocument) throw new Error('Inline preview document unavailable');
 

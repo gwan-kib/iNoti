@@ -9,6 +9,7 @@
     "npm": ">=10 <12"
   },
   "scripts": {
+    "dev": "vite --mode ui-dev",
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

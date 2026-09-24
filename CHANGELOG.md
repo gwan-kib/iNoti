@@ -6,6 +6,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
+- Converted static CSS pixel lengths to rem units so typography and spacing follow the root font size. The requested PiP footprint also scales from rem at each user-started open.
+
 - Applied the iNoti logo to the extension icon, popup, tester, PiP, and monitoring control.
 
 - Replaced the focused Chrome popup alert with user-started Document PiP monitoring. One window switches between minimal idle status and a new-question alert with local detection time.
@@ -14,6 +16,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 - Declared desktop Chrome 116 minimum; retained only webNavigation permission and exact student-site access.
 
 ### Added
+
+- Local hot-reloading UI tester via `npm run dev`, including live PiP stylesheet updates.
 
 - Development-only toolbar popup and extension-owned dev tester for manually previewing idle/question PiP states without an iClicker class. The tester includes an on-page safe event log and a Git-ignored local log-capture folder.
 - Route-based detection with initial-active baseline and consecutive duplicate suppression across hashchange and filtered webNavigation history/fragment events.

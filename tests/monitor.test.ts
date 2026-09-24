@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { DocumentFake } from './dom-fake';
-import { PIP_DIMENSIONS } from '../src/shared/pip-dimensions';
+import { pipDimensionsInPixels } from '../src/shared/pip-dimensions';
 
 const base = '#/class/11111111-1111-4111-8111-111111111111';
 const closed = `${base}/question/22222222-2222-4222-8222-222222222222`;
@@ -15,6 +15,7 @@ async function start(hash: string, supported = true) {
   const requestWindow = vi.fn().mockResolvedValue(pip);
   const page = Object.assign(new EventTarget(), { location: { hash }, documentPictureInPicture: supported ? { requestWindow } : undefined });
   const addListener = vi.fn();
+  vi.stubGlobal('getComputedStyle', () => ({ fontSize: '16px' }));
   vi.stubGlobal('document', document);
   vi.stubGlobal('window', page);
   vi.stubGlobal('chrome', { runtime: { id: 'test-extension', onMessage: { addListener } } });
@@ -49,7 +50,7 @@ it('shows an isolated Start Monitoring control only on supported routes', async 
 it('calls requestWindow synchronously once per user action, suppressing duplicate pending clicks', async () => {
   const app = await start(base);
   app.click();
-  expect(app.requestWindow).toHaveBeenCalledExactlyOnceWith(PIP_DIMENSIONS);
+  expect(app.requestWindow).toHaveBeenCalledExactlyOnceWith(pipDimensionsInPixels(16));
   app.click();
   expect(app.requestWindow).toHaveBeenCalledTimes(1);
   await Promise.resolve();

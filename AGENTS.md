@@ -19,6 +19,8 @@
 
 ## UI styling
 
+- Use `rem` instead of `px` for static CSS lengths, including font sizes, spacing, borders, shadows, dimensions, and media-query breakpoints. Convert existing pixel values using 16px = 1rem; do not fix the root font size in pixels. Keep unitless zero/line-height and responsive units such as `%`, `vw`, `vh`, and `em` where appropriate. Define the requested PiP footprint in rem and convert it to numeric CSS pixels at the browser API boundary using the opener root font size. Runtime viewport measurements remain in CSS pixels for an exact PiP/preview size match; document these exceptions.
+
 - Define reusable colors in `src/shared/brand-colors.css` as named CSS custom properties. Whenever possible, use these variables in surface styles instead of hardcoding hex, RGB/HSL, or named colors elsewhere. Add new palette entries there, including shadow colors; keep the shared palette available in extension pages, PiP documents, and isolated shadow roots.
 
 - Keep each surface's static styles in its own CSS file, including the popup and PiP. Whenever possible, do not write CSS inline in HTML, style attributes, or TypeScript template strings. Dynamic measured dimensions may be set in code. For dynamic PiP documents or shadow roots, inject CSS imported from a separate file when needed and explain why.

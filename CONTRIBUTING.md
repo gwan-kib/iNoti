@@ -27,6 +27,7 @@ Use `npm ci` for reproducible installation from `package-lock.json`. Use `npm in
 
 | Command | Purpose |
 | --- | --- |
+| `npm run dev` | Local hot-reloading UI tester at http://127.0.0.1:5173/src/dev-testing/index.html |
 | `npm run lint` | ESLint recommended JavaScript and TypeScript rules; warnings fail the check |
 | `npm run typecheck` | Strict TypeScript validation without emitting files |
 | `npm test` | Vitest single run of route, transition, messaging, PiP, and development-tool wiring tests |
@@ -40,6 +41,12 @@ Vite builds an unpacked MV3 extension into `dist/`: the manifest/icon, content a
 Vitest has real application tests with no no-tests allowance. Synthetic checks establish route policy, monitoring lifecycle, mocked PiP opening, DOM rendering, and safe logging; they do not establish authenticated iClicker compatibility or always-on-top visibility. Test discovery is scoped to tests/ and lint excludes the local .kilo worktree directory so unrelated nested checkouts are not validated as this package.
 
 CI uses the same Node line, `npm ci`, and the four individual validation scripts with npm caching. Hosted CI results must be checked after pushing; local success does not establish a successful GitHub Actions run.
+
+## Hot-reloading UI development
+
+Run `npm run dev` once and leave the terminal running. Vite opens the local tester at http://127.0.0.1:5173/src/dev-testing/index.html. Save source edits to see updates without rebuilding: tester CSS updates directly, and PiP CSS updates in the inline preview and any open PiP window while preserving their current state. HTML and TypeScript changes reload the tester; click **Open PiP** again if needed. Stop the server with Ctrl+C.
+
+This local tester uses the shared production PiP view/controller but does not load the extension worker or iClicker content script. It needs no extension permissions. Use `npm run build`, reload the unpacked extension, and refresh iClicker for actual extension behavior. Production builds contain no development server or hot-reload client.
 
 ## Load unpacked for development
 

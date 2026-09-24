@@ -4,12 +4,12 @@ import { createPipView } from '../src/content/pip-view';
 import { DocumentFake } from './dom-fake';
 
 afterEach(() => vi.restoreAllMocks());
-function fixture() {
+function fixture(rootFontSize = () => 16) {
   const pip = Object.assign(new EventTarget(), { document: {} as Document, closed: false, close: vi.fn() });
   const requestWindow = vi.fn<() => Promise<Window>>();
   const changed = vi.fn();
   const view = { idle: vi.fn(), question: vi.fn() };
-  const controller = createPipController({ requestWindow }, changed, () => view);
+  const controller = createPipController({ requestWindow }, changed, () => view, rootFontSize);
   return { pip, requestWindow, changed, view, controller };
 }
 it('discards pending opens after stop without claiming monitoring started', async () => {
@@ -77,8 +77,22 @@ it('cleans up when rendering fails, even if close emits pagehide synchronously',
   const pip = Object.assign(new EventTarget(), { document: {} as Document, closed: false, close: vi.fn() });
   pip.close.mockImplementation(() => pip.dispatchEvent(new Event('pagehide')));
   const changed = vi.fn();
-  const controller = createPipController({ requestWindow: async () => pip as unknown as Window }, changed, () => { throw new Error('private'); });
+  const controller = createPipController({ requestWindow: async () => pip as unknown as Window }, changed, () => { throw new Error('private'); }, () => 16);
   await controller.start();
   expect(pip.close).toHaveBeenCalledOnce();
   expect(changed).toHaveBeenLastCalledWith({ state: 'UNMONITORED', opening: false, issue: 'failed' });
+});
+
+it('converts rem dimensions synchronously on each user-started open', async () => {
+  let fontSize = 16;
+  const f = fixture(() => fontSize);
+  f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
+  const first = f.controller.start();
+  expect(f.requestWindow).toHaveBeenLastCalledWith({ width: 200, height: 88 });
+  await first;
+  f.controller.stop();
+  fontSize = 20;
+  const second = f.controller.start();
+  expect(f.requestWindow).toHaveBeenLastCalledWith({ width: 250, height: 110 });
+  await second;
 });

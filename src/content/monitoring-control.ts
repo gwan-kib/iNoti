@@ -8,7 +8,7 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
   host.id = 'inoti-monitoring-control';
   // Shadow DOM isolates our button from the site's generated styles. Only the button
   // captures pointer input; no page-sized overlay obstructs iClicker controls.
-  host.style.cssText = 'all:initial;position:fixed;right:12px;bottom:12px;z-index:2147483647;max-width:calc(100vw - 24px);';
+  host.style.cssText = 'all:initial;position:fixed;right:0.75rem;bottom:0.75rem;z-index:2147483647;max-width:calc(100vw - 1.5rem);';
   const root = host.attachShadow({ mode: 'closed' });
   const style = document.createElement('style');
   // The closed shadow root needs its own copy of the shared palette and styles.

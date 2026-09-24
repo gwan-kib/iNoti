@@ -29,13 +29,19 @@ Small EventTarget/DOM fakes and injected window/view boundaries keep tests depen
 
 ## Build inspection
 
+After CSS sizing changes, check the popup, tester, PiP, and monitoring control at default and increased browser font sizes and narrow viewports. Static lengths use `rem`; verify text wrapping, focus outlines, and control visibility. The shadow control inherits the host document root size. The preview must still match the actual PiP content viewport in CSS pixels.
+
 Confirm `dist/shared/brand-colors.css` exists for popup/tester stylesheet imports. After palette edits, rebuild and reload; check the popup, inline preview, real PiP, and on-page monitoring button for consistent colors and legible focus/disabled states.
 
 After building, dist must contain manifest.json, content.js, background.js, assets/inoti-logo.png, popup/{popup.html,popup.css,popup.js}, and dev-testing/{index.html,dev-testing.css,dev-testing.js}. Verify no legacy alert-window HTML/JS/CSS remains, including when building over an old dist. The first stage clears output. Verify only webNavigation permission, exact student-site content match, minimum_chrome_version 116, the toolbar popup points only to the extension-owned dev tester, and no remote dependencies. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
 
+## Hot reload smoke check
+
+Run `npm run dev` and open the local tester. Switch the inline preview to a question, open real PiP, and edit `src/content/pip-view.css`: both views should update styles without resetting their state. Edit tester CSS to check its live styling. HTML/TypeScript changes should reload the page; reopen PiP with a click. After stopping the server, confirm `npm run check` still builds the standalone extension. Localhost testing does not establish live iClicker compatibility.
+
 ## Development tester
 
-Change `PIP_DIMENSIONS` in `src/shared/pip-dimensions.ts` to size the real PiP request and the initial inline preview. Rebuild, reload the extension, and refresh the tester after editing. After **Open PiP**, verify the preview matches the actual PiP content viewport, including Chrome's size clamping, and follows manual window resizing. Closing PiP detaches the resize listener and retains the last preview size; reopening synchronizes again. The preview does not reproduce Chrome's title bar or window frame.
+Change `PIP_DIMENSIONS_REM` in `src/shared/pip-dimensions.ts` to size the real PiP request and the initial inline preview in rem. Each user-started request converts the rem footprint using the opener root font size; verify 200 x 88 CSS pixels at 16px and 250 x 110 at 20px before browser clamping. Font changes do not resize an already-open PiP. Rebuild, reload the extension, and refresh the tester after editing. After **Open PiP**, verify the preview matches the actual PiP content viewport, including Chrome's size clamping, and follows manual window resizing. Closing PiP detaches the resize listener and retains the last preview size; reopening synchronizes again. The preview does not reproduce Chrome's title bar or window frame.
 
 Both surfaces render `src/content/pip-view.ts` directly for markup, text, and idle/question rendering, with styles imported from `src/content/pip-view.css`. Edit `.question-title-text` or `.detection-time-text` in that stylesheet to style the named text spans; no separate tester view needs updating. The toolbar popup uses `src/popup/popup.css`, including `.popup-title-text`. The preview wrapper scrolls on narrow screens instead of shrinking the PiP viewport and adds no border or rounding to the view. **Open PiP** also uses the production controller for real window lifecycle testing; the inline preview's simulation buttons are not a browser lifecycle emulation.
 

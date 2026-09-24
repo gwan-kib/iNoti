@@ -34,11 +34,13 @@ Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE
 
 ## PiP and build
 
+Static surface styles use `rem` lengths, converted at a default 16px root size, and retain relative viewport/percentage units. The on-page shadow control follows the iClicker document root font size; standalone extension and PiP documents follow their own root. The PiP footprint is defined in rem and converted using the opener root font size at each user-started open. The API receives rounded CSS pixels; measured preview dimensions remain CSS pixels to preserve the exact viewport match.
+
 `assets/inoti-logo.png` is the original shared logo, used for the extension icon, popup, tester header, and extension-page favicons. PiP and the monitoring control import an inline copy through `src/shared/brand-logo.ts`, avoiding web-accessible resources or new permissions. Decorative images accompany existing accessible text labels.
 
 `src/shared/brand-colors.css` is the shared color palette. Surface styles use its `--inoti-*` custom properties. Popup and tester styles import the packaged `shared/brand-colors.css`; PiP and monitoring-control styles bundle the same palette for injection into their dynamic document or shadow root. Change palette values there to recolor all consumers, then rebuild and reload.
 
-Request the footprint from `PIP_DIMENSIONS` in `src/shared/pip-dimensions.ts` once. The development preview uses those same dimensions for its content area. Chrome controls placement, chrome, and size clamping. Idle content is the logo and iNoti; active content adds the question title and local time. No resize calls, screen coordinates, history, auto-dismiss, sound, or stacking. PiP cannot outlive its opener. It is same-origin with the student page, not a separate extension-origin security boundary, so it contains no sensitive data.
+Request the footprint from `PIP_DIMENSIONS_REM` in `src/shared/pip-dimensions.ts` once. The development preview initially uses those same rem dimensions for its content area. Chrome controls placement, chrome, and size clamping. Idle content is the logo and iNoti; active content adds the question title and local time. No resize calls, screen coordinates, history, auto-dismiss, sound, or stacking. PiP cannot outlive its opener. It is same-origin with the student page, not a separate extension-origin security boundary, so it contains no sensitive data.
 
 Four standalone Vite IIFE builds emit content, worker, toolbar-popup, and dev-tester code. The content build clears dist and copies the manifest/icon; later builds preserve output and copy their local HTML/CSS. Production PiP DOM/CSS is still bundled into content.js; the dev tester bundles the same PiP controller/view code for isolated testing.
 
