@@ -1,38 +1,194 @@
 @import "../shared/brand-colors.css";
 
-:root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--inoti-text); background: var(--inoti-page); }
-* { box-sizing: border-box; }
-body { margin: 0; }
-.shell { width: min(57.5rem, calc(100% - 2rem)); margin: 2rem auto 3.5rem; }
-header { margin-bottom: 1.25rem; }
-.eyebrow { margin: 0 0 0.375rem; color: var(--inoti-brand); font-size: 0.75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-h1 { margin: 0 0 0.5rem; font-size: clamp(1.75rem, 4vw, 2.375rem); }
-h2 { margin: 0 0 0.25rem; font-size: 1.125rem; }
-p { margin: 0; color: var(--inoti-text-description); line-height: 1.5; }
-.panel { margin-top: 1.125rem; padding: 1.25rem; border: 0.0625rem solid var(--inoti-border); border-radius: 0.875rem; background: var(--inoti-on-brand); box-shadow: 0 0.5rem 1.75rem var(--inoti-panel-shadow); }
-.panel-heading { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
-.controls { display: flex; flex-wrap: wrap; gap: 0.625rem; margin: 1.125rem 0; }
-button { border: 0; border-radius: 0.5625rem; padding: 0.625rem 0.875rem; background: var(--inoti-brand); color: var(--inoti-on-brand); font: inherit; font-weight: 650; cursor: pointer; }
-button.secondary { background: var(--inoti-secondary-surface); color: var(--inoti-secondary-text); }
-button:hover { filter: brightness(.96); }
-button:focus-visible { outline: 0.1875rem solid var(--inoti-focus); outline-offset: 0.125rem; }
-.preview-wrap { display: inline-block; max-width: 100%; overflow: auto; padding: 0.75rem; border-radius: 0.75rem; background: var(--inoti-preview-surface); }
-.preview-label { margin-bottom: 0.5rem; color: var(--inoti-text-muted); font-size: 0.75rem; font-weight: 700; }
+:root {
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: var(--inoti-text);
+  background: var(--inoti-page);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+.shell {
+  width: min(57.5rem, calc(100% - 2rem));
+  margin: 2rem auto 3.5rem;
+}
+header {
+  margin-bottom: 1.25rem;
+}
+.eyebrow {
+  margin: 0 0 0.375rem;
+  color: var(--inoti-brand);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.75rem, 4vw, 2.375rem);
+}
+h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.125rem;
+}
+p {
+  margin: 0;
+  color: var(--inoti-text-description);
+  line-height: 1.5;
+}
+.panel {
+  margin-top: 1.125rem;
+  padding: 1.25rem;
+  border: 0.0625rem solid var(--inoti-border);
+  border-radius: 0.875rem;
+  background: var(--inoti-on-brand);
+  box-shadow: 0 0.5rem 1.75rem var(--inoti-panel-shadow);
+}
+.panel-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin: 1.125rem 0;
+}
+button {
+  border: 0;
+  border-radius: 0.5625rem;
+  padding: 0.625rem 0.875rem;
+  background: var(--inoti-brand);
+  color: var(--inoti-on-brand);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+button.secondary {
+  background: var(--inoti-secondary-surface);
+  color: var(--inoti-secondary-text);
+}
+button:hover {
+  filter: brightness(0.96);
+}
+button:focus-visible {
+  outline: 0.1875rem solid var(--inoti-focus);
+  outline-offset: 0.125rem;
+}
+.preview-wrap {
+  display: inline-block;
+  max-width: 100%;
+  overflow: auto;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: var(--inoti-preview-surface);
+}
+.preview-label {
+  margin-bottom: 0.5rem;
+  color: var(--inoti-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
 /* Keep the shared PiP viewport exact; scroll the wrapper instead of shrinking or clipping it. */
-#preview { display: block; box-sizing: content-box; border: 0; }
+#preview {
+  display: block;
+  box-sizing: content-box;
+  border: 0;
+}
 /* Mock page so the fixed monitoring panel previews at its real position. */
-#panel-preview { display: block; box-sizing: content-box; border: 0; width: 30rem; height: 13rem; max-width: 100%; background: var(--inoti-surface); }
-.event-log { min-height: 7.5rem; max-height: 18.75rem; overflow: auto; margin: 1rem 0 0; padding: 0.75rem 0.75rem 0.75rem 2.25rem; border-radius: 0.625rem; background: var(--inoti-log-surface); color: var(--inoti-log-text); font: 0.75rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; }
-.event-log:empty::before { content: "No events yet."; color: var(--inoti-log-muted); }
-code { font: .9em ui-monospace, SFMono-Regular, Consolas, monospace; }
-@media (max-width: 35rem) { .shell { width: min(100% - 1.25rem, 57.5rem); margin-top: 1.125rem; } .panel { padding: 1rem; } .panel-heading { flex-direction: column; } }
+#panel-preview {
+  display: block;
+  box-sizing: content-box;
+  border: 0;
+  width: fit-content;
+  height: fit-content;
+  max-width: 100%;
+  background: var(--inoti-surface);
+}
+.event-log {
+  min-height: 7.5rem;
+  max-height: 18.75rem;
+  overflow: auto;
+  margin: 1rem 0 0;
+  padding: 0.75rem 0.75rem 0.75rem 2.25rem;
+  border-radius: 0.625rem;
+  background: var(--inoti-log-surface);
+  color: var(--inoti-log-text);
+  font:
+    0.75rem/1.55 ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+}
+.event-log:empty::before {
+  content: "No events yet.";
+  color: var(--inoti-log-muted);
+}
+code {
+  font:
+    0.9em ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+}
+@media (max-width: 35rem) {
+  .shell {
+    width: min(100% - 1.25rem, 57.5rem);
+    margin-top: 1.125rem;
+  }
+  .panel {
+    padding: 1rem;
+  }
+  .panel-heading {
+    flex-direction: column;
+  }
+}
 
-.brand { display: flex; align-items: center; gap: 0.5rem; }
-.brand-logo { width: 2.5rem; height: 2.5rem; object-fit: contain; flex-shrink: 0; }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.brand-logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 
-.pulse-option { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; }
-.pulse-option input { width: 1rem; height: 1rem; margin: 0; accent-color: var(--inoti-brand); }
-.pulse-option input:focus-visible { outline: 0.125rem solid var(--inoti-focus); outline-offset: 0.125rem; }
-.pulse-option-text { font-size: 0.875rem; font-weight: 650; }
-.pulse-help { margin-bottom: 1rem; }
-.pulse-help-text { font-size: 0.75rem; }
+.pulse-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.pulse-option input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--inoti-brand);
+}
+.pulse-option input:focus-visible {
+  outline: 0.125rem solid var(--inoti-focus);
+  outline-offset: 0.125rem;
+}
+.pulse-option-text {
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+.pulse-help {
+  margin-bottom: 1rem;
+}
+.pulse-help-text {
+  font-size: 0.75rem;
+}
