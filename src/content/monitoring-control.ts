@@ -34,7 +34,7 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
       label.textContent = status.issue === 'unsupported' ? 'iNoti: Document PiP unavailable'
         : status.issue === 'failed' ? 'PiP failed · Start Monitoring again'
         : status.opening ? 'Starting Monitoring…' : active ? 'Monitoring' : 'Start Monitoring';
-      button.title = status.issue === 'unsupported' ? 'Monitoring requires desktop Chrome 116+ with Document Picture-in-Picture available.'
+      button.title = status.issue === 'unsupported' ? 'Monitoring requires desktop Chrome 123+ with Document Picture-in-Picture available.'
         : status.issue === 'failed' ? 'Could not open Picture-in-Picture. Click to try again.'
           : active ? 'Stop monitoring' : 'Open iNoti Picture-in-Picture';
       button.setAttribute('aria-label', status.issue === 'failed' ? 'Could not open Picture-in-Picture. Start Monitoring again'

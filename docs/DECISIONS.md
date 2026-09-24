@@ -164,9 +164,15 @@ Permission reason: add `storage` to retain the preference across popup closure/b
 
 Verification: automated settings and rendering coverage plus the [manual checks](TESTING.md). Actual animation, popup/PiP synchronization, and live iClicker behavior remain browser verification items.
 
+## D015: Focus the opener while retaining PiP
+
+Status: accepted and implemented at the owner's request. Active alerts expose Go to Question; idle and ended screens hide it. Use the opener's synchronous window.focus() within the click's user activation, without closing PiP or changing routes/state. Raise the Chrome minimum to 123 for this feature. No tabs permission or worker-mediated focus is needed. The tester focuses its own opener. Real Chrome focus and retained visibility require manual verification.
+
+Evidence: [Chrome Document PiP documentation](https://developer.chrome.com/docs/web-platform/document-picture-in-picture#focus_the_opener_window) documents opener focusing from Chrome 123. This supersedes the deferred click-focus scope and Chrome 116 minimum of D013.
+
 ## Decisions still required
 
 - Per-question identity, cross-tab duplicate handling, and any future fingerprint policy.
 - Stale cross-tab event ordering, dedupe retention, and delivery retries.
 - Persistent preference defaults and the supported OS verification matrix.
-- Audio implementation, focus actions without broad tabs access, and measured discard limitations.
+- Audio implementation and measured discard limitations.

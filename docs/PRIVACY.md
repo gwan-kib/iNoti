@@ -20,4 +20,6 @@ Static content-script access is exactly `https://student.iclicker.com/*`. No not
 
 ## Remaining work
 
-Memory Saver/discard, background detection, real layout, and application-switch visibility require the [manual matrix](TESTING.md). No automatic discard override or recovery is implemented. Session storage/recovery, sound, focus actions, and cross-tab coordination remain deferred. Any new permission requires a written reason, narrower-alternative review, a decision, and matching manifest/README/privacy changes. Keep fixtures synthetic.
+Memory Saver/discard, background detection, real layout, and application-switch visibility require the [manual matrix](TESTING.md). No automatic discard override or recovery is implemented. Session storage/recovery, sound and cross-tab coordination remain deferred. Any new permission requires a written reason, narrower-alternative review, a decision, and matching manifest/README/privacy changes. Keep fixtures synthetic.
+
+Go to Question uses a user-clicked `window.focus()` call to the existing opener. It does not inspect tabs, navigate, close PiP, or add permissions.

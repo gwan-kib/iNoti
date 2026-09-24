@@ -13,7 +13,7 @@
 - Use filtered webNavigation history/fragment events plus `hashchange`, feeding one content-script evaluation function. Keep previous-route state in the page, not the disposable worker. Initial active routes establish a baseline; only same-class waiting/closed to active transitions notify.
 - Do not invent DOM selectors or add DOM observation, polling, or network/WebSocket interception without new evidence and authorization.
 - Keep Chrome APIs at component boundaries and notification delivery out of the detector. Phase 1 is single-tab only; do not prematurely add question fingerprints or cross-tab registries.
-- Treat the worker as disposable and register listeners synchronously. It currently stores no session state. Session storage/recovery, broader toolbar settings, sound, click focus, and quiz support remain later work. The owner-authorized popup pulse preference saves only a local boolean and updates open PiP views; the dev-tester link remains development tooling.
+- Treat the worker as disposable and register listeners synchronously. It currently stores no session state. Session storage/recovery, broader toolbar settings, sound and quiz support remain later work. The owner-authorized popup pulse preference saves only a local boolean and updates open PiP views; the dev-tester link remains development tooling.
 - Use one user-started Document PiP surface owned by the page. Never open PiP from question events; close means stop monitoring. Use a fixed requested footprint, no positioning/automatic resize or fallback alerts. Only webNavigation and storage are requested; storage is limited to the alert-animation preference. The toolbar popup must not add broad tabs permission.
 - Keep `[iNoti][content]`, `[iNoti][worker]`, and `[iNoti][pip]` logs useful and private: source, normalized states, boolean decisions, failure categories only. Never dump raw hashes, sender objects, payloads, or arbitrary errors. Filter navigation to top-frame exact `https://student.iclicker.com` before logging/forwarding; do not collect history or add speculative observers.
 
@@ -50,3 +50,5 @@
 - Keep evidence, proposals, accepted decisions, and implemented behavior distinct. Record unresolved research explicitly.
 - If using an optional PR and documentation is not affected, mark it not applicable and explain why. Direct commits need no separate documentation-impact form.
 - Report what changed, what was verified, and what remains unverified. Never infer live iClicker behavior from synthetic tests alone.
+
+- The owner-authorized active-alert Go to Question button synchronously focuses the opener without closing PiP. Keep this permission-free and do not navigate or reload iClicker. Chrome 123+ is required.

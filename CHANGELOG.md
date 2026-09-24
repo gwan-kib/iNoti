@@ -17,6 +17,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Added
 
+- Active-alert Go to Question button focuses the existing iClicker tab without closing PiP or resetting monitoring. Chrome 123+ is now required for opener focusing; no permission added.
+
 - Question Ended screen with the local end-detection time, shown after an active alert closes and retained until the next question or monitoring stops.
 
 - Elapsed time since question detection in PiP and the shared dev preview, updated each second and cleared on idle/close.

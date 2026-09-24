@@ -1,6 +1,9 @@
 @import "../shared/brand-colors.css";
 
 body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   margin: 0;
   background: var(--inoti-surface);
   color: var(--inoti-text);
@@ -28,7 +31,7 @@ body[data-question-active="true"][data-pulse="true"] {
 
 main {
   box-sizing: border-box;
-  min-height: 100vh;
+  flex: 1;
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -68,6 +71,20 @@ main {
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
+.go-to-question {
+  flex-shrink: 0;
+  margin: 0 1rem 1rem;
+  padding: 0.5rem 0.625rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--inoti-brand);
+  color: var(--inoti-on-brand);
+  font: inherit;
+  cursor: pointer;
+}
+.go-to-question-text { font-size: 0.8125rem; font-weight: 650; }
+.go-to-question:hover { filter: brightness(.95); }
+.go-to-question:focus-visible { outline: 0.1875rem solid var(--inoti-focus); outline-offset: 0.125rem; }
 [hidden] {
   display: none;
 }

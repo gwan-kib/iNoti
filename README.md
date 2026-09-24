@@ -4,7 +4,7 @@ iNoti is an early Chrome extension for students using iClicker. Start monitoring
 
 ## Availability and usage
 
-This is an unpacked development version, not a Chrome Web Store release. Use desktop Chrome 116 or newer with Document Picture-in-Picture available. Real Chrome/iClicker verification of this monitoring experience is still pending.
+This is an unpacked development version, not a Chrome Web Store release. Use desktop Chrome 123 or newer with Document Picture-in-Picture available. Real Chrome/iClicker verification of this monitoring experience is still pending.
 
 1. Follow the [build and load-unpacked instructions](CONTRIBUTING.md).
 2. Open one iClicker student tab and join a supported class.
@@ -12,11 +12,13 @@ This is an unpacked development version, not a Chrome Web Store release. Use des
 4. Keep PiP open. A new supported poll transition displays the alert; closing/results or waiting after a detected question shows **Question Ended** with an **Ended at** time. This is when iNoti detected the end, not the instructor's exact end time. The screen stays until the next detected question or monitoring stops.
 5. Close PiP or click **Monitoring** to stop. Leaving the class also stops monitoring. After refreshing, click Start Monitoring again.
 
+**Go to Question** appears during an active alert. Click it to focus the original iClicker tab while PiP stays open; the elapsed timer and monitoring continue.
+
 Document PiP is an always-on-top browser surface. Chrome controls its position and may clamp its size; iNoti requests one small footprint for idle and alert content. Visibility across tabs, minimizing Chrome, and application switching must still be verified for this build on your system. If the API is unavailable, the control explains this. There is no separate-tab, popup-window, or native-notification fallback.
 
 New-question alerts gently pulse green by default. Open the iNoti toolbar popup and turn off **Pulse new-question background** for a solid green alert. Changes apply to an open PiP immediately and are saved on this device. System reduced-motion preferences also keep the background solid. Idle and ended screens do not pulse. The elapsed timer stops and hides when the question ends.
 
-You still answer questions yourself in iClicker. Sound, other settings, quiz alerts, click-to-focus iClicker, and cross-tab deduplication are not implemented.
+You still answer questions yourself in iClicker. Sound, other settings, quiz alerts, and cross-tab deduplication are not implemented.
 
 ### Development tester
 

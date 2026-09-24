@@ -6,7 +6,7 @@ A TypeScript/Vite MV3 extension with no framework or runtime dependencies. Route
 
 | Component | Responsibility |
 | --- | --- |
-| `manifest.json` | Chrome 116 minimum, exact student-site match, webNavigation and storage permissions, classic worker, local icon |
+| `manifest.json` | Chrome 123 minimum, exact student-site match, webNavigation and storage permissions, classic worker, local icon |
 | `src/content/detector.ts` | Pure route parser and same-class transition decision |
 | `src/content/monitor.ts` | Per-page baseline, shared hashchange/navigation evaluation, monitoring coordination, opener lifecycle |
 | `src/content/monitoring-control.ts` | Namespaced floating button in a closed shadow root, status and accessible stop/retry controls |
@@ -37,6 +37,10 @@ Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE
 `src/shared/alert-preference.ts` owns the Chrome storage boundary for the boolean `pulseAlerts` preference (default true). `configured-pip-view.ts` subscribes each PiP/preview view and detaches on pagehide. A live storage change wins over a pending initial read; disposal ignores late reads. Views remain solid until the preference loads, and on read failure. The localhost tester has no extension storage and uses the enabled default. The extension-owned tester follows the saved setting.
 
 Only active questions receive the green background. CSS smoothly pulses between shared palette colors over 2.4 seconds; disabling the preference or enabling system reduced motion leaves a solid green alert. Idle rendering removes the active state. The pulse uses no JavaScript animation timers, detection changes, or worker state.
+
+## Return to the question
+
+The active alert shows Go to Question outside the status live region. `configured-pip-view.ts` supplies an opener-owned callback that synchronously calls `window.focus()` from the button click. Chrome 123+ supports focusing the Document PiP opener. The action does not close PiP, navigate, reset the timer, or change monitoring state. Idle and ended screens hide the button. The development tester focuses its own opener rather than an iClicker tab. No worker message, tab registry, or extra permission is needed.
 
 ## PiP and build
 

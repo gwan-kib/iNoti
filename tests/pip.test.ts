@@ -1,9 +1,10 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { createPipController, documentPip } from '../src/content/pip-controller';
 import { createPipView } from '../src/content/pip-view';
+import { createConfiguredPipView } from '../src/content/configured-pip-view';
 import { DocumentFake } from './dom-fake';
 
-afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); });
+afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); vi.unstubAllGlobals(); });
 function fixture(rootFontSize = () => 16) {
   const pip = Object.assign(new EventTarget(), { document: {} as Document, closed: false, close: vi.fn() });
   const requestWindow = vi.fn<() => Promise<Window>>();
@@ -186,5 +187,49 @@ it('stops the elapsed timer and pulse on end, then restores the next alert', () 
   expect(main.children[3]!.hidden).toBe(false);
   expect(document.body.attributes.get('data-question-active')).toBe('true');
   expect(page.setInterval).toHaveBeenCalledTimes(2);
+  view.idle();
+});
+
+
+it('shows Go to Question only for active alerts and focuses without altering the alert', () => {
+  const document = new DocumentFake();
+  const focus = vi.fn();
+  const view = createPipView(document as unknown as Document, focus);
+  const button = document.body.children[1]!;
+  expect(button.textContent).toBe('Go to Question');
+  view.idle();
+  expect(button.hidden).toBe(true);
+  button.dispatchEvent(new Event('click'));
+  expect(focus).not.toHaveBeenCalled();
+  view.question(Date.now());
+  expect(button.hidden).toBe(false);
+  const text = document.body.textContent;
+  button.dispatchEvent(new Event('click'));
+  expect(focus).toHaveBeenCalledOnce();
+  expect(document.body.textContent).toBe(text);
+  expect(document.body.attributes.get('data-question-active')).toBe('true');
+  view.ended(Date.now());
+  expect(button.hidden).toBe(true);
+  button.dispatchEvent(new Event('click'));
+  expect(focus).toHaveBeenCalledOnce();
+  view.question(Date.now());
+  expect(button.hidden).toBe(false);
+  view.idle();
+  expect(button.hidden).toBe(true);
+});
+
+it('wires the configured view to focus the opener synchronously without closing PiP', () => {
+  const opener = { focus: vi.fn(), close: vi.fn() };
+  vi.stubGlobal('window', opener);
+  vi.stubGlobal('chrome', undefined);
+  const pip = Object.assign(new EventTarget(), { setInterval: vi.fn(() => 1), clearInterval: vi.fn(), close: vi.fn() });
+  const document = Object.assign(new DocumentFake(), { defaultView: pip });
+  const view = createConfiguredPipView(document as unknown as Document);
+  view.question(Date.now());
+  document.body.children[1]!.dispatchEvent(new Event('click'));
+  expect(opener.focus).toHaveBeenCalledOnce();
+  expect(opener.close).not.toHaveBeenCalled();
+  expect(pip.close).not.toHaveBeenCalled();
+  expect(pip.clearInterval).not.toHaveBeenCalled();
   view.idle();
 });
