@@ -1,4 +1,4 @@
-// Build-time switch for development-only accordance's.
+// Build-time switch for development-only affordances.
 //
 // Set to true to show the toolbar popup's "Dev tester" button; set to false and
 // the button is removed from the popup DOM entirely (not merely hidden), so a

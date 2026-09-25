@@ -6,6 +6,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
+- Removed the monitoring panel's Close notification window action; while the window is open the panel hides its button entirely, so the window's title bar is the only close control.
+
 - Added `DEV_TESTING_ENABLED` in `src/shared/dev-settings.ts` to gate the toolbar popup's **Dev tester** button; when it is `false` the button is removed from the DOM instead of hidden.
 
 - Replaced the toolbar popup's on/off switches with plain checkboxes; the pulse and sound preferences both default to on.

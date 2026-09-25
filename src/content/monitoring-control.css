@@ -66,16 +66,23 @@
   font-feature-settings: "liga";
   -webkit-font-smoothing: antialiased;
 }
-.monitoring-settings:hover { filter: brightness(0.96); }
-.monitoring-settings-status { font-size: 0.6875rem; color: var(--inoti-text-secondary); }
-.monitoring-settings-notice { display: flex; align-items: flex-start; gap: 0.25rem; }
-.monitoring-settings-notice[hidden] { display: none; }
+.monitoring-settings-status {
+  font-size: 0.6875rem;
+  color: var(--inoti-text-secondary);
+}
+.monitoring-settings-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+.monitoring-settings-notice[hidden] {
+  display: none;
+}
 .monitoring-settings-dismiss {
   display: grid;
   place-items: center;
   margin: 0;
   padding: 0.125rem;
-  background: var(--inoti-surface);
   color: var(--inoti-text-secondary);
 }
 .monitoring-explanation {
@@ -111,7 +118,10 @@ button:focus-visible {
   outline: 0.1875rem solid var(--inoti-monitor-focus);
   outline-offset: 0.1875rem;
 }
-button:not(:disabled):hover { filter: brightness(0.96); }
+button[hidden] { display: none; }
+button:not(:disabled):hover {
+  filter: brightness(0.96);
+}
 button:disabled {
   cursor: default;
   background: var(--inoti-text-secondary);

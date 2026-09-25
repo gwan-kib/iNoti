@@ -194,7 +194,7 @@ Preferences: local `soundEnabled` (default true) and `selectedSoundId` (default 
 
 Alternatives: keeping the window as the monitoring switch (rejected — defeats the required behavior); a separate sound-specific dedupe path (rejected — risks sound and PiP disagreeing); native notifications or external audio (out of scope and privacy-negative); picking sounds from arbitrary user storage (rejected — paths must come only from the registry).
 
-Consequences: the panel now shows Open/Close notification window and monitoring-first copy. `minimum_chrome_version` stays 123 (getContexts/offscreen are supported). Sound while the iClicker tab is backgrounded or Chrome is minimized is an intended target but must be manually verified; a discarded/frozen page is a separate lifecycle concern and is not conflated with ordinary background tabs.
+Consequences: the panel shows an Open notification window button that is removed while the window is open, plus monitoring-first copy. `minimum_chrome_version` stays 123 (getContexts/offscreen are supported). Sound while the iClicker tab is backgrounded or Chrome is minimized is an intended target but must be manually verified; a discarded/frozen page is a separate lifecycle concern and is not conflated with ordinary background tabs.
 
 Evidence: automated tests cover monitoring/window separation, the single acceptance point and duplicate suppression, registry and preference fallback, worker offscreen lifecycle and disabled-sound skip, and offscreen playback/replay/rejection. Live browser, background/minimized, and Memory Saver checks remain manual.
 

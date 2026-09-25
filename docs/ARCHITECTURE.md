@@ -4,24 +4,24 @@
 
 A TypeScript/Vite MV3 extension with no framework or runtime dependencies. Route parsing is unchanged. Monitoring is page-owned and automatic: while a supported class route is observed, the page keeps evaluating new questions whether or not the optional notification window is open.
 
-| Component | Responsibility |
-| --- | --- |
-| `manifest.json` | Chrome 123 minimum, exact student-site match, webNavigation/storage/offscreen permissions, classic worker, local icon |
-| `src/content/detector.ts` | Pure route parser and same-class transition decision |
-| `src/content/monitor.ts` | Per-page route baseline, shared hashchange/navigation evaluation, monitoring lifecycle, and the single new-question acceptance point |
-| `src/content/monitoring-control.ts` | Namespaced 15rem wide by 10rem tall panel in a closed shadow root; reports monitoring plus window state and toggles only the window |
-| `src/content/pip-controller.ts` | Optional-window API detection, user-gesture request, pending-open guard, PiP reference, window state, close and cleanup. It never decides monitoring |
-| `src/content/pip-view.ts` and `pip-view.css` | Generic idle/alert DOM and local time rendering, with a separate stylesheet bundled for injection into the dynamic PiP document |
-| `src/shared/new-question.ts` | The one accepted-new-question fan-out to sound and the optional PiP window |
-| `src/shared/messages.ts` | Validated NAVIGATION_CHANGED, NEW_QUESTION_DETECTED, and PLAY_SOUND contracts |
-| `src/shared/sounds.ts` | Central sound registry; the only source of sound file paths and ids |
-| `src/shared/sound-preference.ts` | Local `soundEnabled`/`selectedSoundId` schema and lenient fallback |
-| `src/shared/sound-request.ts` | Content/tester → worker sound request; sends no path or user data |
-| `src/shared/logging.ts` | Privacy-safe content/worker/pip/offscreen diagnostics |
-| `src/background/service-worker.ts` | Filtered navigation forwarding plus new-question sound delivery through the offscreen document; no session state |
-| `src/offscreen/offscreen.ts` | Plays a validated registered sound id through `chrome.runtime.getURL` |
-| `src/popup/popup.ts` | Alert-animation and sound preferences, plus a link to the extension-owned tester tab |
-| `src/dev-testing/dev-testing.ts` | Development-only PiP state simulator and local event log; reuses the production PiP controller/view and the production sound request |
+| Component                                    | Responsibility                                                                                                                                       |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `manifest.json`                              | Chrome 123 minimum, exact student-site match, webNavigation/storage/offscreen permissions, classic worker, local icon                                |
+| `src/content/detector.ts`                    | Pure route parser and same-class transition decision                                                                                                 |
+| `src/content/monitor.ts`                     | Per-page route baseline, shared hashchange/navigation evaluation, monitoring lifecycle, and the single new-question acceptance point                 |
+| `src/content/monitoring-control.ts`          | Namespaced 15rem wide by 10rem tall panel in a closed shadow root; reports monitoring plus window state and toggles only the window                  |
+| `src/content/pip-controller.ts`              | Optional-window API detection, user-gesture request, pending-open guard, PiP reference, window state, close and cleanup. It never decides monitoring |
+| `src/content/pip-view.ts` and `pip-view.css` | Generic idle/alert DOM and local time rendering, with a separate stylesheet bundled for injection into the dynamic PiP document                      |
+| `src/shared/new-question.ts`                 | The one accepted-new-question fan-out to sound and the optional PiP window                                                                           |
+| `src/shared/messages.ts`                     | Validated NAVIGATION_CHANGED, NEW_QUESTION_DETECTED, and PLAY_SOUND contracts                                                                        |
+| `src/shared/sounds.ts`                       | Central sound registry; the only source of sound file paths and ids                                                                                  |
+| `src/shared/sound-preference.ts`             | Local `soundEnabled`/`selectedSoundId` schema and lenient fallback                                                                                   |
+| `src/shared/sound-request.ts`                | Content/tester → worker sound request; sends no path or user data                                                                                    |
+| `src/shared/logging.ts`                      | Privacy-safe content/worker/pip/offscreen diagnostics                                                                                                |
+| `src/background/service-worker.ts`           | Filtered navigation forwarding plus new-question sound delivery through the offscreen document; no session state                                     |
+| `src/offscreen/offscreen.ts`                 | Plays a validated registered sound id through `chrome.runtime.getURL`                                                                                |
+| `src/popup/popup.ts`                         | Alert-animation and sound preferences, plus a link to the extension-owned tester tab                                                                 |
+| `src/dev-testing/dev-testing.ts`             | Development-only PiP state simulator and local event log; reuses the production PiP controller/view and the production sound request                 |
 
 ## Event flow and lifecycle
 
@@ -95,7 +95,7 @@ The worker remains disposable. Failed navigation delivery is not replayed; no DO
 
 The compact PiP requests a 18rem by 8rem landscape viewport (288 by 128 CSS pixels at a 16px opener root), subject to Chrome clamping. Idle, active, and ended states share the brand/status header pinned to the top row, keeping its identity-left, badge-right spacing. The title, timing pair, detail text, and side-by-side actions form one group centered vertically in the space below the brand. Active alerts pair local detection time with elapsed time in one centered row. Google Material Symbols Rounded are loaded through a Google Fonts stylesheet `<link>` in each generated PiP/preview HTML head, subset to schedule and hourglass_empty. Decorative CSS ligatures use that font. The link suppresses the referrer. Icons require access to Google Fonts and permission from the inherited page CSP; there is no bundled SVG fallback. The toolbar popup loads the same font through a static subsetted `<link>` (blur_circular, volume_up, music_note, expand_more, play_arrow, open_in_new) for its setting cards, select chevron, and action buttons, replacing the previous inline SVGs. Every icon glyph in the app is the rounded variant rendered as `<span class="material-symbols-rounded">icon_name</span>`; surface CSS (`popup.css`, `pip-view.css`) sets family and size on that class, and new surfaces must load the Rounded stylesheet link instead of inlining SVG.
 
-The on-page monitoring panel contains branding, a state-specific explanation, and a semantic Open/Close notification window button, sized 15rem by 10rem, vertically centered and inset 5rem from the right viewport edge. Its static positioning and appearance live in `monitoring-control.css`. The brand row stays pinned at the top, the button is anchored to the bottom, and the explanation fills and centers in the remaining space. The button toggles only the optional window: while the window is open it reads Close notification window, and closing it leaves monitoring active. The explanation combines the two independent concerns: with the window closed it reads "iNoti is monitoring this class. Open the notification window for visual alerts."; with the window open it reads "iNoti is monitoring this class. Visual alerts are open."; unmonitored, opening, unsupported, and failed states have their own normalized copy. A new question does not change the panel copy; the window carries the per-question alert. Failure copy never surfaces raw errors, routes, question content, or identifiers, and each state carries a `data-state` hook. On viewports at or below 21.5rem wide, the right inset becomes 0.75rem to keep it reachable. Viewport maximum dimensions constrain it on very small screens.
+The on-page monitoring panel contains branding, a state-specific explanation, and an Open notification window button, sized 15rem by 10rem, vertically centered and inset 5rem from the right viewport edge. Its static positioning and appearance live in `monitoring-control.css`. The brand row stays pinned at the top, the button is anchored to the bottom, and the explanation fills and centers in the remaining space. The button only opens the optional window: while the window is open the button is removed (`hidden`), so the window's title bar is the only close control, and closing it leaves monitoring active. The explanation combines the two independent concerns: with the window closed it reads "iNoti is monitoring this class. Open the notification window for visual alerts."; with the window open it reads "iNoti is monitoring this class. Do not close the iClicker tab.; unmonitored, opening, unsupported, and failed states have their own normalized copy. A new question does not change the panel copy; the window carries the per-question alert. Failure copy never surfaces raw errors, routes, question content, or identifiers, and each state carries a `data-state` hook. On viewports at or below 21.5rem wide, the right inset becomes 0.75rem to keep it reachable. Viewport maximum dimensions constrain it on very small screens.
 
 The on-page button describes opening or closing the visual window, never starting or stopping route detection: monitoring runs whenever a supported class route is observed, independent of the window.
 

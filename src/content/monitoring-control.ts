@@ -21,7 +21,7 @@ function explanationFor({ monitoring, pip }: MonitoringPanelStatus): string {
   if (!monitoring) return "Open a supported iClicker class to monitor for new questions.";
   // Monitoring is deliberately not tied to the window: the copy states both.
   if (pip.state === "CLOSED") return "iNoti is monitoring this class. Open the notification window for visual alerts.";
-  return "iNoti is monitoring this class. Visual alerts are open.";
+  return "iNoti is monitoring this class. Do not close the iClicker tab.";
 }
 
 // Lets the stylesheet target each state without separate elements.
@@ -131,7 +131,10 @@ export function createMonitoringControl(document: Document, toggle: () => void, 
       symbols.remove();
     },
     render(status: MonitoringPanelStatus) {
+      // The window is closed from its own title bar, so the panel offers no close
+      // action: remove the button entirely while the window is open.
       const open = status.pip.state !== "CLOSED";
+      button.hidden = open;
       button.disabled = status.pip.opening || status.pip.issue === "unsupported";
       label.textContent =
         status.pip.issue === "unsupported"
@@ -140,22 +143,17 @@ export function createMonitoringControl(document: Document, toggle: () => void, 
             ? "PiP failed - Try again"
             : status.pip.opening
               ? "Opening notification window..."
-              : open
-                ? "Close notification window"
-                : "Open notification window";
+              : "Open notification window";
       button.title =
         status.pip.issue === "unsupported"
           ? "Notification window needs desktop Chrome 123+."
           : status.pip.issue === "failed"
             ? "Could not open the Notification window. Click to try again."
-            : open
-              ? "Close the notification window"
-              : "Open the notification window for visual alerts";
+            : "Open the notification window for visual alerts";
       button.setAttribute(
         "aria-label",
         status.pip.issue === "failed" ? "Could not open the Notification window. Try again" : label.textContent,
       );
-      button.setAttribute("aria-pressed", String(open));
       explanation.textContent = explanationFor(status);
       explanation.setAttribute("data-state", stateKey(status));
     },
