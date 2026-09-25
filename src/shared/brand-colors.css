@@ -23,4 +23,8 @@
   --inoti-monitor-focus: #edabd3;
   --inoti-control-shadow: rgba(63, 29, 88, .2);
   --inoti-on-brand: #ffffff;
+  --inoti-popup-text: #1c1545;
+  --inoti-popup-border: #e9dff7;
+  --inoti-popup-icon-surface: #f0e7fc;
+  --inoti-popup-switch-off: #cfcbdf;
 }

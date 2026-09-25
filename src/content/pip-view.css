@@ -113,7 +113,7 @@ body[data-question-active="true"] .status-badge {
 .elapsed-time-text {
   font-size: 0.75rem;
 }
-.material-symbol {
+.material-symbols-rounded {
   order: -1;
   flex-shrink: 0;
   width: 1rem;

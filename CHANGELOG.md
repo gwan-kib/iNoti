@@ -6,6 +6,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
+- Restyled the toolbar popup with lavender preference cards, icon tiles, switches, short toggle descriptions, and stacked Preview sound / Dev tester buttons; removed the sound-dropdown helper text.
+
 - Monitoring is now page-owned and independent of the notification window: a supported class route is monitored automatically, and closing the window (or its title bar, or the panel) closes only the visual surface instead of stopping monitoring.
 
 - Added sound alerts that play once per genuinely new question even when the notification window is closed, through an MV3 offscreen audio document. Sound is enabled by default and can be turned off in the popup; disabling sound keeps monitoring and visual alerts working and does not create the offscreen document.
@@ -17,6 +19,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 - Added a **Play test sound** button to the popup that previews the selected chime through the same worker → offscreen path, even while sound is turned off.
 
 - The monitoring panel action is now an Open/Close notification window toggle with monitoring-first copy; the button is no longer hidden while the window is open.
+
+- Replaced the toolbar popup's inline SVG icons with the rounded Google Material Symbols variant, loaded through a subsetted Google Fonts stylesheet link like the PiP icons. Every icon in the app now renders as `<span class="material-symbols-rounded">icon_name</span>`.
 
 - The Question ended screen now returns the notification window to its waiting state about two minutes after the question ends; a new question, a manual answer, or closing the window cancels that timeout.
 

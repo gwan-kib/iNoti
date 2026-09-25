@@ -29,6 +29,7 @@ CI runs equivalent checks; hosted CI results remain separate from local verifica
 - Offscreen player: registered ids resolve to the expected extension URL, invalid messages/ids do not play, replay stops the previous chime, and rejected `play()` promises are handled.
 - Unsupported API, sync/async request failures with explicit retry, late pending-open cleanup, and stale close events.
 - Toolbar popup wiring to the extension-owned dev tester and manifest permission regression coverage.
+- Icon rule guard: the popup HTML and PiP view use `material-symbols-rounded` with the Rounded Google Fonts link and no inline SVG.
 
 Small EventTarget/DOM fakes and injected window/view boundaries keep tests dependency-free. These do not emulate user activation enforcement, isolated-world API exposure, CSP, layout, browser size clamping, always-on-top behavior, real audio output, or background/minimized execution. Removed NEW_POLL worker sender tests belonged to the deleted receiver; active worker-origin/navigation sender validation remains covered.
 
@@ -38,7 +39,7 @@ After CSS sizing changes, check the popup, tester, PiP, and monitoring control a
 
 Confirm `dist/shared/brand-colors.css` exists for popup/tester stylesheet imports. After palette edits, rebuild and reload; check the popup, inline preview, real PiP, and on-page monitoring button for consistent colors and legible focus/disabled states.
 
-After building, dist must contain manifest.json, content.js, background.js, assets/inoti-logo.png, assets/sounds/default-chime.wav, popup/{popup.html,popup.css,popup.js}, dev-testing/{index.html,dev-testing.css,dev-testing.js}, and offscreen/{offscreen.html,offscreen.js}. Verify no legacy alert-window HTML/JS/CSS or generation scripts remain, including when building over an old dist. The first stage clears output and copies the whole `assets/sounds/` directory. Verify only webNavigation, storage, and offscreen permissions, exact student-site content match, minimum_chrome_version 123, the toolbar popup includes the pulse and sound preferences and links to the extension-owned dev tester, and no remote scripts. PiP icons load the Google Fonts stylesheet and font; sound uses only the bundled local asset. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
+After building, dist must contain manifest.json, content.js, background.js, assets/inoti-logo.png, assets/sounds/default-chime.wav, popup/{popup.html,popup.css,popup.js}, dev-testing/{index.html,dev-testing.css,dev-testing.js}, and offscreen/{offscreen.html,offscreen.js}. Verify no legacy alert-window HTML/JS/CSS or generation scripts remain, including when building over an old dist. The first stage clears output and copies the whole `assets/sounds/` directory. Verify only webNavigation, storage, and offscreen permissions, exact student-site content match, minimum_chrome_version 123, the toolbar popup includes the pulse and sound preferences and links to the extension-owned dev tester, and no remote scripts (icon fonts load over a Google Fonts stylesheet link, not a script). PiP and popup icons load that stylesheet and font; sound uses only the bundled local asset. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
 
 ## Hot reload smoke check
 
@@ -86,7 +87,7 @@ Automated preference tests cover defaults, malformed values, local live updates,
 
 ## Sound preference checks
 
-Open the toolbar popup and confirm **Notification sound** lists Default Chime, Soft Bell, Bright Ping, and Calm Echo, with Default Chime selected on a fresh profile. Pick each option and click **Play test sound** to confirm the selected chime previews; confirm the preview also plays while **Sound notification** is off (it is an explicit user action), then close and reopen the popup and confirm the selection persists. In the extension-owned tester, set the same dropdown and click **Test sound** after each change; the selected chime should play once through the offscreen document while sound is on. Tamper with `chrome.storage.local` (`selectedSoundId`) to an unknown value in DevTools and confirm the next load falls back to Default Chime rather than requesting a missing file. Turn **Sound notification** off and confirm **Test sound** logs `sound disabled` in the worker with no offscreen document created, then re-enable and confirm the next question or **Test sound** plays again. Actual audible output still requires a machine with working audio and is not established by the automated tests.
+Open the toolbar popup and confirm **Sound** lists Default Chime, Soft Bell, Bright Ping, and Calm Echo, with Default Chime selected on a fresh profile. Pick each option and click **Preview sound** to confirm the selected chime previews; confirm the preview also plays while **Play sound** is off (it is an explicit user action), then close and reopen the popup and confirm the selection persists. In the extension-owned tester, set the same dropdown and click **Test sound** after each change; the selected chime should play once through the offscreen document while sound is on. Tamper with `chrome.storage.local` (`selectedSoundId`) to an unknown value in DevTools and confirm the next load falls back to Default Chime rather than requesting a missing file. Turn **Sound notification** off and confirm **Test sound** logs `sound disabled` in the worker with no offscreen document created, then re-enable and confirm the next question or **Test sound** plays again. Actual audible output still requires a machine with working audio and is not established by the automated tests.
 
 ## Real unpacked Chrome manual matrix
 
@@ -96,7 +97,7 @@ All rows below are **pending real-browser verification**.
 
 | Scenario | Expected result |
 | --- | --- |
-| Enable **Sound notification**, join a supported class, leave the window closed | Monitoring runs automatically; panel reads `iNoti is monitoring this class. Open the notification window for visual alerts.` |
+| Enable **Play sound**, join a supported class, leave the window closed | Monitoring runs automatically; panel reads `iNoti is monitoring this class. Open the notification window for visual alerts.` |
 | Authorized instructor opens a new poll from waiting with the window closed | Exactly one sound plays; no window opens; no page navigation or fallback alert |
 | Open the window, then a new poll from waiting | Exactly one sound and one visual alert with the correct local detection time |
 | Duplicate hashchange + webNavigation reports for one transition | One sound and one alert update total |
@@ -107,8 +108,8 @@ All rows below are **pending real-browser verification**.
 | Open the window during an already-active question | No sound replay and no retroactive alert; the window starts idle |
 | Close the window (panel or title bar) | Only the window closes; monitoring continues; next new question still sounds |
 | Reopen the window | No sound merely because it opened |
-| Disable **Sound notification** while monitoring stays active | No sound; monitoring and visual alerts continue; no offscreen audio document is created |
-| Re-enable **Sound notification** | The next new question plays a sound again |
+| Disable **Play sound** while monitoring stays active | No sound; monitoring and visual alerts continue; no offscreen audio document is created |
+| Re-enable **Play sound** | The next new question plays a sound again |
 | Unsupported/home/quiz route | No monitoring panel, question alert, or sound |
 | Leave supported session/change class | Old window closes; the old session stops alerting; unsupported pages hide the control |
 | Navigate away while the window is opening | Late opened window is closed |
@@ -156,8 +157,14 @@ Redesign automated verification: `npm run check` passed lint, type-check, all 10
 
 Tester controls: click Idle from both active and ended; both views should return to waiting without closing PiP, and the next New Question should work. Toggle Pulse new-question background before/after opening PiP, stop/reopen, and verify both views retain the selection. Reload resets the override to the saved preference (or enabled on localhost). System reduced motion still prevents animation. Automated tester wiring covers idle transitions and pulse propagation; browser verification remains pending.
 
-Google Symbols check: inspect the PiP/preview HTML head for the Google Fonts stylesheet link, verify rounded schedule/hourglass glyphs load in both localhost and extension testers and live iClicker PiP, and check inherited CSP/network failures. Confirm times and controls remain usable if the font is unavailable. No browser is connected to verify remote font rendering in this session.
+Google Symbols check: confirm every icon in the app uses the rounded variant `<span class="material-symbols-rounded">icon_name</span>` with no inline SVGs remaining. Inspect the PiP/preview and popup HTML heads for the `Material+Symbols+Rounded` Google Fonts stylesheet link, verify rounded schedule/hourglass glyphs load in both localhost and extension testers and live iClicker PiP, and that the popup renders its blur_circular/volume_up/music_note/expand_more/play_arrow/open_in_new symbols instead of ligature text. Check inherited CSP/network failures, and confirm times, controls, and popup settings remain usable if the font is unavailable. No browser is connected to verify remote font rendering in this session.
 
 Monitoring panel layout: verify a 15rem wide by 10rem tall panel vertically centered 5rem from the right edge on a supported iClicker route. Confirm the brand row is pinned to the top, the button is anchored to the bottom, and the explanation centers vertically in the remaining space across all copy lengths. Check Open/Close notification window, opening, retry, unsupported, and unmonitored labels and their matching explanation text, keyboard focus, and increased root font sizes. Confirm the button remains visible while the window is open and reads Close notification window. Automated tests cover each explanation and its `data-state`; confirm the copy carries no raw errors or page data. At widths at or below 21.5rem, confirm the 0.75rem right inset keeps it visible. Only the panel should intercept clicks. This placement still needs browser verification; no connected browser or authenticated session is available.
 
 Verify the monitoring copy states that iNoti is monitoring independently and that the button only opens/closes the visual window. Route detection and the requirement to open the window for visual notifications are unchanged; sound does not require the window.
+
+## Popup appearance
+
+Check the Alert Preferences popup for the lavender card layout, one-sentence descriptions under Pulse background and Play sound, a Sound dropdown with no helper paragraph, and stacked Preview sound / Dev tester buttons. Verify keyboard focus, switch toggling with Space, saved values after reopening, all four sound choices, and preference failure messages. Confirm the compact layout fits without clipping at normal and increased display scaling. Visual browser verification is pending: no connected browser or native app was available during this change.
+
+Popup restyle automated verification: `npm run check` passed lint, type-check, all 145 tests across 13 files, and all five production builds. The initial sandbox run hit Vite's process-spawn restriction; the run with process access passed.

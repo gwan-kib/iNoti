@@ -1,29 +1,43 @@
 @import "../shared/brand-colors.css";
 
-:root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--inoti-text); background: var(--inoti-surface); }
-body { margin: 0; min-width: 17.5rem; }
-main { padding: 1.125rem; }
-.brand { color: var(--inoti-brand); font-weight: 700; }
-.eyebrow { margin: 0.75rem 0 0.125rem; color: var(--inoti-text-muted); font-size: 0.6875rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.popup-title { margin: 0 0 0.5rem; font-size: inherit; }
-.popup-title-text { font-size: 1.25rem; }
-p { margin: 0 0 1rem; color: var(--inoti-text-secondary); font-size: 0.8125rem; line-height: 1.45; }
-button { width: 100%; border: 0; border-radius: 0.5625rem; padding: 0.625rem 0.75rem; background: var(--inoti-brand); color: var(--inoti-on-brand); font: inherit; font-weight: 650; cursor: pointer; }
-button:hover { filter: brightness(.96); }
-button:focus-visible { outline: 0.1875rem solid var(--inoti-focus); outline-offset: 0.125rem; }
-
-.brand { display: flex; align-items: center; gap: 0.5rem; }
-.brand-logo { width: 1.75rem; height: 1.75rem; object-fit: contain; flex-shrink: 0; }
-.toggle-setting { display: flex; align-items: center; gap: 0.5rem; margin: 0.875rem 0 0.5rem; }
-.toggle-setting input { accent-color: var(--inoti-brand); width: 1rem; height: 1rem; margin: 0; }
-.toggle-setting input:focus-visible { outline: 0.1875rem solid var(--inoti-focus); outline-offset: 0.125rem; }
-.toggle-label { font-size: 0.875rem; font-weight: 600; }
-.sound-choice { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin: 0.875rem 0 0.5rem; }
-.sound-choice-label-text { font-size: 0.875rem; font-weight: 600; }
-.sound-choice select { flex: 0 1 auto; min-width: 0; max-width: 9.5rem; padding: 0.3125rem 0.375rem; border: 0.0625rem solid var(--inoti-border); border-radius: 0.5rem; background: var(--inoti-on-brand); color: var(--inoti-text); font: inherit; font-size: 0.8125rem; }
-.sound-choice select:focus-visible { outline: 0.1875rem solid var(--inoti-focus); outline-offset: 0.125rem; }
-.sound-test { margin-top: 0.5rem; border: 0.0625rem solid var(--inoti-border); background: var(--inoti-secondary-surface); color: var(--inoti-secondary-text); }
-.sound-test:hover { filter: brightness(0.97); }
-.tools-title { margin: 1rem 0 0.5rem; font-size: inherit; }
-.tools-title-text { font-size: 1rem; }
+:root { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--inoti-popup-text); background: var(--inoti-page); }
+* { box-sizing: border-box; }
+body { margin: 0; width: 25rem; padding: 0.875rem; }
+main { padding: 1.25rem 1rem; border: 0.0625rem solid var(--inoti-popup-border); border-radius: 1rem; background: var(--inoti-surface); box-shadow: 0 0.25rem 1.25rem var(--inoti-panel-shadow); }
+.brand { display: flex; align-items: center; gap: 0.625rem; margin: 0 0.25rem 1rem; color: var(--inoti-brand); }
+.brand-logo { width: 2.75rem; height: 2.75rem; object-fit: contain; flex-shrink: 0; }
+.brand-text { font-size: 1.375rem; font-weight: 750; }
+.popup-title { margin: 0 0.25rem 1rem; line-height: 1.2; }
+.popup-title-text { font-size: 1.75rem; font-weight: 750; letter-spacing: -0.04em; }
+.settings { display: grid; gap: 0.5625rem; }
+.setting-card { display: flex; align-items: center; gap: 0.625rem; padding: 0.75rem; border: 0.0625rem solid var(--inoti-popup-border); border-radius: 0.8125rem; }
+.setting-icon { display: grid; place-items: center; flex: 0 0 2.5rem; height: 2.5rem; border-radius: 0.6875rem; color: var(--inoti-brand); background: var(--inoti-popup-icon-surface); }
+.material-symbols-rounded { font-family: "Material Symbols Rounded"; font-size: 1.375rem; font-weight: 400; font-style: normal; line-height: 1; letter-spacing: normal; text-transform: none; white-space: nowrap; word-wrap: normal; direction: ltr; font-feature-settings: "liga"; -webkit-font-smoothing: antialiased; }
+.setting-copy { flex: 1; min-width: 0; }
+.toggle-label, .sound-choice-label-text { font-size: 0.9375rem; font-weight: 700; }
+.toggle-label { cursor: pointer; }
+.setting-description { margin: 0.25rem 0 0; font-size: 0.6875rem; line-height: 1.45; color: var(--inoti-text-secondary); }
+/* Keep native checkbox behavior and keyboard access while drawing the switch. */
+.setting-switch { appearance: none; position: relative; flex: 0 0 2.625rem; width: 2.625rem; height: 1.5rem; margin: 0; border: 0.0625rem solid var(--inoti-popup-switch-off); border-radius: 2rem; background: var(--inoti-popup-switch-off); cursor: pointer; }
+.setting-switch::before { content: ""; position: absolute; top: 0.125rem; left: 0.125rem; width: 1.125rem; height: 1.125rem; border-radius: 50%; background: var(--inoti-on-brand); box-shadow: 0 0.0625rem 0.1875rem var(--inoti-control-shadow); }
+.setting-switch:checked { border-color: var(--inoti-brand); background: var(--inoti-brand); }
+.setting-switch:checked::before { transform: translateX(1.125rem); }
+.setting-switch:disabled, select:disabled { opacity: 0.55; cursor: wait; }
+.sound-choice-label { flex: 1; }
+.select-wrap { position: relative; width: 9.25rem; }
+.sound-choice select { appearance: none; width: 100%; padding: 0.5625rem 1.75rem 0.5625rem 0.625rem; border: 0.0625rem solid var(--inoti-popup-border); border-radius: 0.625rem; background: var(--inoti-on-brand); color: var(--inoti-popup-text); font: inherit; font-size: 0.8125rem; cursor: pointer; }
+.select-chevron { position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 1.125rem; }
+.popup-actions { display: grid; gap: 0.5625rem; margin-top: 1rem; }
+button { display: flex; align-items: center; justify-content: center; gap: 0.625rem; width: 100%; border: 0; border-radius: 0.75rem; padding: 0.8125rem; background: var(--inoti-brand); color: var(--inoti-on-brand); font: inherit; cursor: pointer; }
+.button-text { font-size: 1.0625rem; font-weight: 700; }
+.button-icon { flex-shrink: 0; }
+.sound-test { background: var(--inoti-secondary-surface); color: var(--inoti-brand); }
+button:hover { filter: brightness(0.96); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 0.1875rem solid var(--inoti-focus); outline-offset: 0.1875rem; }
+.preference-status { margin: 0.75rem 0 0; color: var(--inoti-text-secondary); font-size: 0.75rem; line-height: 1.45; }
 .preference-status:empty { display: none; }
+@media (forced-colors: active) {
+  .setting-switch { appearance: auto; }
+  .setting-switch::before { display: none; }
+  button { border: 0.0625rem solid; }
+}

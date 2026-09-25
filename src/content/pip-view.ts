@@ -69,7 +69,7 @@ export function createPipView(
   const timeText = document.createElement("span");
   timeText.className = "detection-time-text";
   const clockIcon = document.createElement("span");
-  clockIcon.className = "material-symbol clock-icon";
+  clockIcon.className = "material-symbols-rounded clock-icon";
   clockIcon.setAttribute("aria-hidden", "true");
   time.append(timeText, clockIcon);
   const elapsed = document.createElement("p");
@@ -80,7 +80,7 @@ export function createPipView(
   const elapsedText = document.createElement("span");
   elapsedText.className = "elapsed-time-text";
   const timerIcon = document.createElement("span");
-  timerIcon.className = "material-symbol timer-icon";
+  timerIcon.className = "material-symbols-rounded timer-icon";
   timerIcon.setAttribute("aria-hidden", "true");
   elapsed.append(elapsedText, timerIcon);
   const detail = document.createElement("p");

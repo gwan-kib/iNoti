@@ -5,27 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="../assets/inoti-logo.png">
   <title>iNoti</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=blur_circular,volume_up,music_note,expand_more,play_arrow,open_in_new&display=block" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="./popup.css">
 </head>
 <body>
   <main>
     <div class="brand"><img class="brand-logo" src="../assets/inoti-logo.png" alt=""><span class="brand-text">iNoti</span></div>
-    <p class="eyebrow"><span class="eyebrow-text">Development build</span></p>
-    <h1 class="popup-title"><span class="popup-title-text">Alert appearance</span></h1>
-    <label class="toggle-setting" for="pulse-alerts"><input id="pulse-alerts" type="checkbox" disabled aria-describedby="pulse-description"><span class="toggle-label">Pulse new-question background</span></label>
-    <p id="pulse-description"><span class="popup-description-text">Turn off for a solid alert color. Reduced-motion preferences also disable pulsing.</span></p>
-    <label class="toggle-setting" for="sound-alerts"><input id="sound-alerts" type="checkbox" disabled aria-describedby="sound-description"><span class="toggle-label">Sound notification</span></label>
-    <p id="sound-description"><span class="popup-description-text">Play a sound when a new iClicker question is detected.</span></p>
-    <div class="sound-choice">
-      <label class="sound-choice-label" for="sound-choice"><span class="sound-choice-label-text">Notification sound</span></label>
-      <select id="sound-choice" disabled aria-describedby="sound-choice-description"></select>
+    <h1 class="popup-title"><span class="popup-title-text">Alert Preferences</span></h1>
+    <div class="settings">
+      <div class="setting-card">
+        <span class="setting-icon" aria-hidden="true"><span class="material-symbols-rounded">blur_circular</span></span>
+        <div class="setting-copy">
+          <label class="toggle-label" for="pulse-alerts"><span>Pulse iNoti background</span></label>
+          <p id="pulse-description" class="setting-description"><span>When a new iClicker question is detected</span></p>
+        </div>
+        <input class="setting-switch" id="pulse-alerts" type="checkbox" role="switch" disabled aria-describedby="pulse-description">
+      </div>
+      <div class="setting-card">
+        <span class="setting-icon" aria-hidden="true"><span class="material-symbols-rounded">volume_up</span></span>
+        <div class="setting-copy">
+          <label class="toggle-label" for="sound-alerts"><span>Play sound</span></label>
+          <p id="sound-description" class="setting-description"><span>When a new iClicker question is detected</span></p>
+        </div>
+        <input class="setting-switch" id="sound-alerts" type="checkbox" role="switch" disabled aria-describedby="sound-description">
+      </div>
+      <div class="setting-card sound-choice">
+        <span class="setting-icon" aria-hidden="true"><span class="material-symbols-rounded">music_note</span></span>
+        <label class="sound-choice-label" for="sound-choice"><span class="sound-choice-label-text">Sound</span></label>
+        <div class="select-wrap">
+          <select id="sound-choice" disabled></select>
+          <span class="material-symbols-rounded select-chevron" aria-hidden="true">expand_more</span>
+        </div>
+      </div>
     </div>
-    <button id="test-sound" class="sound-test" type="button"><span class="button-text">Play test sound</span></button>
-    <p id="sound-choice-description"><span class="popup-description-text">Plays the selected chime for each detected question; use Play test sound to preview it.</span></p>
     <p id="preference-status" class="preference-status" role="status"></p>
-    <h2 class="tools-title"><span class="tools-title-text">Testing tools</span></h2>
-    <p class="popup-description"><span class="popup-description-text">Open the isolated tester to preview alert states without joining an iClicker class.</span></p>
-    <button id="open-dev-tester" type="button"><span class="button-text">Open Dev Tester</span></button>
+    <div class="popup-actions">
+      <button id="test-sound" class="sound-test" type="button"><span class="material-symbols-rounded button-icon" aria-hidden="true">play_arrow</span><span class="button-text">Preview sound</span></button>
+      <button id="open-dev-tester" type="button"><span class="material-symbols-rounded button-icon" aria-hidden="true">open_in_new</span><span class="button-text">Dev tester</span></button>
+    </div>
   </main>
   <script src="./popup.js"></script>
 </body>
