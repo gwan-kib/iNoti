@@ -2,7 +2,7 @@
 
 ## Change
 
-Roadmap phase or related issue (if any):
+Related issue (if any):
 
 Describe the problem and resulting behavior. Distinguish implemented behavior from proposed design.
 
@@ -35,7 +35,7 @@ Permission changes and privacy impact (write “none” if none):
 
 ## Scope and remaining risks
 
-- [ ] Change stays within the MVP, or the project owner explicitly authorized post-MVP scope (no issue required).
+- [ ] Change stays focused, or the project owner explicitly authorized a larger scope (no issue required).
 - [ ] Known limitations, unverified assumptions, and remaining risks are listed below.
 
-MVP impact / remaining risks:
+Scope impact / remaining risks:

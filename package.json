@@ -1,8 +1,9 @@
 {
   "name": "inoti",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
-  "description": "Route-based iClicker monitoring with a development PiP tester",
+  "description": "iClicker question notifications with sound and an optional Picture-in-Picture alert.",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=22.13.0 <23",

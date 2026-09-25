@@ -3,10 +3,10 @@
   "minimum_chrome_version": "123",
   "name": "iNoti",
   "version": "0.1.0",
-  "description": "Visual/audio notifications for iClicker questions.",
+  "description": "Visual & audio notifications for iClicker questions.",
   "permissions": ["webNavigation", "storage", "offscreen"],
   "icons": {
-    "128": "assets/inoti-logo.png"
+    "128": "assets/icon-128.png"
   },
   "background": {
     "service_worker": "background.js"

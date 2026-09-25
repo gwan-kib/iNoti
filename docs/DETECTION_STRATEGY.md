@@ -2,7 +2,7 @@
 
 ## Confirmed project evidence
 
-The project owner supplied the following observations for revised Phase 1. They replace the previously required investigation spike; they are not a claim that this checkout has passed an authenticated browser test.
+The project owner supplied the following observations for the route detector. They replace the earlier investigation spike; they are not a claim that this checkout has passed an authenticated browser test.
 
 Supported origin: `https://student.iclicker.com`.
 

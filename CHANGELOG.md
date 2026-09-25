@@ -1,10 +1,12 @@
 # Changelog
 
-No version has been released. The development manifest version 0.1.0 is for unpacked loading.
+## 0.1.0
 
-## Unreleased
+Current release. The manifest version is 0.1.0.
 
 ### Changed
+
+- Replaced the old 128px bell icon with the iNoti logo scaled to 128 × 128 for the extension icon.
 
 - Left-aligned the popup brand in a header row and added GitHub repository and LinkedIn profile link buttons (brand-logo SVGs) to its right.
 
@@ -76,6 +78,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 - Declared desktop Chrome 116 minimum; retained only webNavigation permission and exact student-site access.
 
 ### Added
+
+- Released iNoti under the [MIT License](LICENSE).
 
 - `npm run dev` now hot-updates the monitoring-panel CSS in place and serves a live **Popup preview** frame from `src/popup/`, so popup CSS/HTML/script edits update without a rebuild. Development-server only; production output is unchanged.
 

@@ -8,13 +8,13 @@ For each future record include an ID, status (proposed, accepted, or superseded)
 
 Status: accepted design direction; popup and coordination remain later work.
 
-Reliable question alerts are the MVP. Use a content script for iClicker interpretation, a disposable service worker for coordination and delivery, and a popup for current status/settings. Use TypeScript, a lightweight build, and plain HTML/CSS instead of a UI framework for the small popup.
+Reliable question alerts are the core goal. Use a content script for iClicker interpretation, a disposable service worker for coordination and delivery, and a popup for current status/settings. Use TypeScript, a lightweight build, and plain HTML/CSS instead of a UI framework for the small popup.
 
 This keeps detector changes isolated and avoids depending on an open popup or long-lived worker globals. Cross-browser packaging and advanced notification UI remain deferred. Tooling is recorded in D008.
 
 ## D002: Evidence-based DOM observation first
 
-Status: superseded by D009. The historical DOM-first strategy below is not used by Phase 1.
+Status: superseded by D009. The historical DOM-first strategy below is not used by the current implementation.
 
 Prefer stable local identifiers, semantic attributes, and structural signals with narrow event-driven observation. Avoid generated CSS classes, continuous polling, and undocumented network APIs as the default.
 
@@ -22,7 +22,7 @@ DOM assumptions can still change, so centralize them, document observed evidence
 
 ## D003: Worker-owned cross-tab deduplication
 
-Status: deferred hardening direction; no cross-tab gate is implemented in Phase 1.
+Status: deferred hardening direction; no cross-tab gate is implemented.
 
 Per-tab suppression alone cannot prevent two tabs from alerting for the same question. The worker owns a registry and a duplicate gate scoped by session/question identity. Store reconstructable runtime metadata in ephemeral extension storage to survive worker suspension.
 
@@ -42,7 +42,7 @@ Status: superseded by D011; native delivery is no longer implemented.
 
 Native notifications support alerting while another application is active. Keep them separate from detection and tie actions to session/question identity. Request interaction persistence where supported without promising OS-independent placement or duration.
 
-Injected overlays work inside a page; positioned browser windows are not equivalent to desktop toasts. Arbitrary desktop overlays may require a native companion. Custom positioning is a separate post-MVP decision.
+Injected overlays work inside a page; positioned browser windows are not equivalent to desktop toasts. Arbitrary desktop overlays may require a native companion. Custom positioning is a separate future decision.
 
 ## D006: Offscreen audio for the bundled notification sound
 
@@ -56,7 +56,7 @@ Evidence: offscreen player, worker delivery, registry, and preference tests; bui
 
 ## D007: Minimum permissions and no default discard override
 
-Status: accepted constraints; current Phase 1 permissions are defined in D012, D014, D016, and D017. Storage is implemented for local preferences; offscreen is implemented only for the bundled sound (D006).
+Status: accepted constraints; current permissions are defined in D012, D014, D016, and D017. Storage is implemented for local preferences; offscreen is implemented only for the bundled sound (D006).
 
 Request only currently needed access: D011 removed notifications; D012 adds webNavigation for SPA observation; D014 adds storage for local preferences; D006/D017 add offscreen for the bundled notification sound. Do not default to `<all_urls>`, `tabs`, `scripting`, or `webRequest`; document a specific unmet capability before adding a permission.
 
@@ -64,15 +64,15 @@ Do not disable tab discarding by default. If evidence justifies an active-sessio
 
 ## D008: Minimal Node, TypeScript, and Vite tooling
 
-Status: accepted and implemented for Phase 0; hosted CI execution remains unverified.
+Status: accepted and implemented; hosted CI execution remains unverified.
 
-Context: contributors need reproducible local checks and equivalent CI before application behavior exists. Phase 0 must not introduce an extension skeleton or fake tests.
+Context: contributors need reproducible local checks and equivalent CI. Tooling must not introduce an extension skeleton or fake tests.
 
 Choice: Node 22.13+ within 22.x, selected by `.nvmrc`, with npm 10 or 11 and a committed npm lockfile. Use TypeScript 5.9, ESLint 10 with typescript-eslint, Vitest 5, and Vite 8. Exact direct dependency versions are pinned in `package.json`. TypeScript 5.9 stays within typescript-eslint's supported peer range. Use strict ES2022/bundler settings with DOM types and no compiler output. ESLint covers real configuration files and future source; Vitest runs once in Node with explicit imports. GitHub Actions runs the same scripts after `npm ci` and caches npm downloads.
 
-Alternatives: a UI framework, extension-specific plugin, or monorepo would add unnecessary infrastructure. Vite supports the planned plain HTML/CSS and TypeScript direction. D013 now defines the current Phase 1 delivery and packaging.
+Alternatives: a UI framework, extension-specific plugin, or monorepo would add unnecessary infrastructure. Vite supports the plain HTML/CSS and TypeScript direction. D013 now defines the current delivery and packaging.
 
-Consequences: production output remains `dist/`, ignored by Git. Phase 0 originally used `tooling/index.html` and allowed zero tests. Revised Phase 1 removes both, adds Chrome API types and real tests, and emits the MV3 package. The build target does not establish the minimum supported Chrome version.
+Consequences: production output remains `dist/`, ignored by Git. Early tooling used `tooling/index.html` and allowed zero tests. The current implementation removes both, adds Chrome API types and real tests, and emits the MV3 package. The build target does not establish the minimum supported Chrome version.
 
 Evidence: dependency compatibility was checked against npm metadata; [Vite's build documentation](https://vite.dev/guide/build) describes library builds. Local results and browser/hosted-CI limitations are recorded in [testing](TESTING.md).
 
@@ -90,7 +90,7 @@ Consequences: refresh avoids duplicate alerts, but an already-active question is
 
 Evidence: supplied project observations and synthetic parser, transition, and content-script tests. Real-session behavior of this build remains unverified.
 
-## D010: Minimal Phase 1 MV3 delivery and permissions (historical)
+## D010: Minimal MV3 delivery and permissions (historical)
 
 Status: delivery, permission, and packaging choices superseded by D011. The original decision below is retained as history, not current behavior.
 

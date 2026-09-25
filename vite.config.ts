@@ -33,6 +33,7 @@ const builds = {
     output: "content.js",
     assets: [
       ["./manifest.json", "manifest.json"],
+      ["./assets/icon-128.png", "assets/icon-128.png"],
       ["./assets/inoti-logo.png", "assets/inoti-logo.png"],
       ["./src/shared/brand-colors.css", "shared/brand-colors.css"],
       ...soundAssets,

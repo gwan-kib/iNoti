@@ -2,8 +2,8 @@
 
 ## Scope and priorities
 
-- Read README.md and the relevant technical documents before changes. Phase 1 uses route detection with page-owned monitoring and an optional user-started Document Picture-in-Picture surface plus offscreen sound alerts; distinguish automated results from unverified browser behavior and later features.
-- Stay inside the MVP unless the project owner explicitly authorizes post-MVP work. An issue is not required. Question detection, duplicate prevention, and recovery take priority over UI polish.
+- Read README.md and the relevant technical documents before changes. iNoti uses route detection with page-owned monitoring and an optional user-started Document Picture-in-Picture surface plus offscreen sound alerts; distinguish automated results from unverified browser behavior and deferred features.
+- Keep changes focused and do not expand the extension's scope unless the project owner explicitly authorizes it. An issue is not required. Question detection, duplicate prevention, and recovery take priority over UI polish.
 - Inspect the checkout and existing changes before editing. Preserve unrelated work and keep changes focused on the requested task.
 - Follow CONTRIBUTING.md for the solo workflow: work on `main` by default, keep changes focused, validate, and update documentation. Do not require individual issues, feature branches, or PRs; use them only when requested or useful.
 
@@ -12,7 +12,7 @@
 - Keep iClicker route parsing centralized in `src/content/detector.ts`; use the confirmed route evidence in docs/DETECTION_STRATEGY.md. The previous live investigation spike is superseded.
 - Use filtered webNavigation history/fragment events plus `hashchange`, feeding one content-script evaluation function. Keep previous-route state in the page, not the disposable worker. Initial active routes establish a baseline; only same-class waiting/closed to active transitions notify.
 - Do not invent DOM selectors or add DOM observation, polling, or network/WebSocket interception without new evidence and authorization.
-- Keep Chrome APIs at component boundaries and alert delivery out of the detector. Phase 1 is single-tab only; do not prematurely add question fingerprints or cross-tab registries.
+- Keep Chrome APIs at component boundaries and alert delivery out of the detector. iNoti is single-tab only; do not add question fingerprints or cross-tab registries without new evidence and authorization.
 - Monitoring is page-owned and automatic: while a supported class route is observed, monitoring continues whether or not the notification window is open. Never make PiP visibility a monitoring condition. The one acceptance point (`createNewQuestionAlerts`) fans out to sound and PiP after the existing `isNewPoll` decision; do not add a separate sound-specific dedupe.
 - Treat the worker as disposable and register listeners synchronously. It stores no session state and recreates the offscreen audio document on demand. Session storage/recovery, quiz support, and broader settings remain later work. The popup pulse and sound preferences save local booleans; the dev-tester link remains development tooling.
 - Use one user-started Document PiP surface owned by the page as an optional visual notification layer. Never open PiP from question events; closing it only closes the window and must not stop monitoring. Use a fixed requested footprint, no positioning/automatic resize or fallback alerts. Only webNavigation, storage, and the offscreen permission for audio playback are requested; storage holds the alert-animation and sound preferences only. The toolbar popup must not add broad tabs permission.
@@ -43,7 +43,7 @@
 - Add or update tests whenever detection, state transitions, deduplication, messaging, settings, or recovery changes. Use docs/TESTING.md to choose relevant automated and manual checks.
 - Before a code change is considered complete, run the documented lint, type-check, test, and production-build commands. Browser-dependent behavior also needs applicable manual verification.
 - **Current command status:** run `npm run check` for lint, type-check, real Vitest tests, and the unpacked extension build. Exact setup and individual commands are in CONTRIBUTING.md and docs/TESTING.md; CI runs equivalent checks. Do not create placeholder tests or reinstate the no-tests allowance.
-- For documentation-only changes, check required files, relative links, consistency with the revised roadmap and checkout, and whitespace. Report browser checks not run with the concrete environment limitation; mocks and the development tester do not establish live iClicker compatibility.
+- For documentation-only changes, check required files, relative links, consistency with the rest of the documentation and checkout, and whitespace. Report browser checks not run with the concrete environment limitation; mocks and the development tester do not establish live iClicker compatibility.
 
 ## Documentation maintenance
 

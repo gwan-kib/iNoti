@@ -1,10 +1,10 @@
 # Contributing
 
-Start with [README.md](README.md) for scope and status and [AGENTS.md](AGENTS.md) for implementation constraints. This checkout implements the minimal Phase 1 route-to-notification path; later MVP features remain pending.
+Start with [README.md](README.md) to see what iNoti does and [AGENTS.md](AGENTS.md) for implementation constraints.
 
 ## Solo development workflow
 
-1. Choose the next small task from the [development roadmap](docs/ROADMAP.md). No individual issue is required. Stay within the MVP unless the project owner explicitly expands scope.
+1. Pick one focused improvement or bug fix, or propose one. No individual issue is required. Keep the change scoped and do not expand the extension's behavior without the project owner's agreement.
 2. Work directly on `main` by default. Use a separate branch or PR only when useful for an experiment, a larger change, or collaboration; neither is required for every feature.
 3. Implement one focused change. Ground detector changes in evidence and add or update relevant tests and fixtures before notification polish.
 4. Run `npm run check` before committing a completed code change, plus applicable browser checks. Review the diff and update affected documentation with the code.
@@ -54,11 +54,11 @@ This local tester uses the shared production PiP view/controller but does not lo
 2. Open `chrome://extensions` in Chrome and enable **Developer mode**.
 3. Choose **Load unpacked** and select this checkout's `dist/` directory.
 4. Confirm the updated build has `webNavigation`, `storage`, and `offscreen` permissions enabled, check the iNoti card for errors, and inspect the service worker for startup errors.
-5. For UI-only testing, click the iNoti toolbar icon and choose **Dev tester**. The extension-owned tab can preview idle/question states, open the same Document PiP surface, and exercise the production sound request without an iClicker class. That popup button is gated by `DEV_TESTING_ENABLED` in `src/shared/dev-settings.ts`; set it to `false` to remove the button from the popup entirely.
+5. For UI-only testing, click the iNoti toolbar icon and choose **Dev testing**. The extension-owned tab can preview idle/question states, open the same Document PiP surface, and exercise the production sound request without an iClicker class. That popup button is gated by `DEV_TESTING_ENABLED` in `src/shared/dev-settings.ts`; set it to `false` to remove the button from the popup entirely.
 6. For live detection testing, open or refresh `https://student.iclicker.com/` so the static content script starts. Use a single tab and join a supported class page; monitoring starts automatically and sound is played on each new question. The notification window is optional and does not control monitoring.
 7. After code changes, rebuild, reload iNoti on the extensions page, and refresh any student or dev-tester tabs. Loading while already on a poll intentionally produces no alert.
 
-Follow the manual scenarios in docs/TESTING.md and record browser/OS versions and actual results. This development build is not a Web Store release; no live-session verification is implied by a successful build. For documentation-only changes, inspect text, relative links, required files, consistency, and whitespace.
+Follow the manual scenarios in docs/TESTING.md and record browser/OS versions and actual results. The unpacked build used for development is not the published package; no live-session verification is implied by a successful build. For documentation-only changes, inspect text, relative links, required files, consistency, and whitespace.
 
 For diagnosis, open the student page's DevTools console and the extension service-worker console before starting an instructor poll. Enable Info-level console messages and filter by `[iNoti]`. Look for [iNoti][pip] open, state, close, and failure events in the content context. The dev tester also writes `[iNoti][dev]` events and mirrors them in its on-page event log. `src/shared/logging.ts` has a single `DEBUG` constant, currently enabled for this testing phase; set it to false and rebuild to silence production diagnostic output. Logs deliberately omit raw URLs, UUIDs, payloads, and unrecognized error text. If you save local captures, put them under `dev-testing/logs/`; that directory is ignored except for its placeholder. See docs/TESTING.md for expected log stages.
 
@@ -81,7 +81,7 @@ README.md is primarily for users, with links to technical documentation near the
 | Production limitation                          | README limitations/troubleshooting and the relevant technical document                                   |
 | No documentation impact                        | No extra paperwork; if using a PR, mark documentation not applicable and explain why                     |
 
-Repository documentation becomes the maintained source of truth once implementation begins. Keep the original plan linked in docs/ROADMAP.md for context, but do not leave corrected behavior only in an external document.
+Repository documentation is the maintained source of truth. Do not leave corrected behavior only in an external document.
 
 ## Fixtures, comments, and privacy
 
