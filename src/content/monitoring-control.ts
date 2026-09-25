@@ -4,6 +4,22 @@ import { type PipStatus } from "./pip-controller";
 import { logger } from "../shared/logging";
 import { requestSettingsPopup } from "../shared/settings-request";
 
+// Inline styles live in the closed shadow root, so they need explicit HMR to
+// hot-update the panel without reloading the page or its state.
+const liveStyles = new Set<HTMLStyleElement>();
+let currentStyles = controlStyles;
+if (import.meta.hot) {
+  import.meta.hot.accept("./monitoring-control.css?inline", (updated) => {
+    if (!updated) return;
+    currentStyles = updated.default;
+    for (const style of liveStyles) {
+      if (style.isConnected) style.textContent = updated.default;
+      else liveStyles.delete(style);
+    }
+  });
+  import.meta.hot.dispose(() => liveStyles.clear());
+}
+
 export interface MonitoringPanelStatus {
   // True while this page is observing a supported iClicker class/session. It is
   // independent of the optional notification window.
@@ -57,7 +73,8 @@ export function createMonitoringControl(
   symbols.setAttribute("referrerpolicy", "no-referrer");
   const style = document.createElement("style");
   // The closed shadow root needs its own copy of the shared palette and styles.
-  style.textContent = controlStyles;
+  style.textContent = currentStyles;
+  if (import.meta.hot) liveStyles.add(style);
   const panel = document.createElement("section");
   panel.className = "monitoring-panel";
   panel.setAttribute("aria-label", "iNoti notifications");
@@ -140,6 +157,7 @@ export function createMonitoringControl(
     hide() {
       host.remove();
       symbols.remove();
+      liveStyles.delete(style);
     },
     render(status: MonitoringPanelStatus) {
       // The window is closed from its own title bar, so the panel offers no close

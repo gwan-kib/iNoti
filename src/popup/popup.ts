@@ -153,9 +153,11 @@ function initPopup() {
     void bindSoundSetting(soundInput, status, storage);
   const soundChoice =
     document.querySelector<HTMLSelectElement>("#sound-choice");
-  if (soundChoice && status && storage) {
+  if (soundChoice) {
+    // Options come from the registry, so the select renders even without storage
+    // (for example the localhost popup preview).
     populateSoundOptions(soundChoice);
-    void bindSoundChoice(soundChoice, status, storage);
+    if (status && storage) void bindSoundChoice(soundChoice, status, storage);
   }
   const testSound = document.querySelector<HTMLButtonElement>("#test-sound");
   if (testSound)
@@ -171,6 +173,12 @@ function initPopup() {
       window.close();
     },
   );
+}
+
+if (import.meta.hot) {
+  // Dev only: import the stylesheet as a module so `npm run dev` hot-updates the
+  // served popup preview. Production uses the <link> and this block is removed.
+  void import("./popup.css");
 }
 
 if (typeof document !== "undefined") {

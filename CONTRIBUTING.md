@@ -44,7 +44,7 @@ CI uses the same Node line, `npm ci`, and the four individual validation scripts
 
 ## Hot-reloading UI development
 
-Run `npm run dev` once and leave the terminal running. Vite opens the local tester at http://127.0.0.1:5173/src/dev-testing/index.html. Save source edits to see updates without rebuilding: tester CSS updates directly, and PiP CSS updates in the inline preview and any open PiP window while preserving their current state. HTML and TypeScript changes reload the tester; click **Open PiP** again if needed. Stop the server with Ctrl+C.
+Run `npm run dev` once and leave the terminal running. Vite opens the local tester at http://127.0.0.1:5173/src/dev-testing/index.html. Save source edits to see updates without rebuilding: tester CSS updates directly, PiP CSS updates in the inline preview and any open PiP window, and monitoring-panel CSS updates in the mock panel while preserving their current state. The tester also embeds a live **Popup preview** frame served from `src/popup/`, so popup HTML/CSS/script edits reload that frame too. Other HTML and TypeScript changes reload the tester; click **Open PiP** again if needed. Stop the server with Ctrl+C.
 
 This local tester uses the shared production PiP view/controller but does not load the extension worker or iClicker content script. It needs no extension permissions. Use `npm run build`, reload the unpacked extension, and refresh iClicker for actual extension behavior. Production builds contain no development server or hot-reload client.
 

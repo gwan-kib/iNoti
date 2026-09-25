@@ -6,6 +6,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
+- Left-aligned the popup brand in a header row and added GitHub repository and LinkedIn profile link buttons (brand-logo SVGs) to its right.
+
 - Renamed the five non-default sound choices to Bubble, Locked, Motion detected, Chime, and Aura in popup order. Their stored ids and audio files remain the same.
 
 - Switched Default to the former Start tone and renamed the remaining choices with sound-based names: Bubble, Pop, Bell, Tone, and Ring. Previous Start, Success, and Timer selections resolve to the matching sounds.
@@ -74,6 +76,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 - Declared desktop Chrome 116 minimum; retained only webNavigation permission and exact student-site access.
 
 ### Added
+
+- `npm run dev` now hot-updates the monitoring-panel CSS in place and serves a live **Popup preview** frame from `src/popup/`, so popup CSS/HTML/script edits update without a rebuild. Development-server only; production output is unchanged.
 
 - Bundled `assets/sounds/default.wav` with a build step that copies the whole sounds directory to `dist/assets/sounds/`, an `offscreen/` audio document build, and the `offscreen` permission.
 

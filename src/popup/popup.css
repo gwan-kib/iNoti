@@ -21,13 +21,44 @@ body {
 main {
   border-radius: 1rem;
 }
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0.25rem 1rem;
+}
 .brand {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 0.625rem;
-  margin: 0 0.25rem 1rem;
   color: var(--inoti-brand);
+}
+.popup-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.social-link {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 999px;
+  color: var(--inoti-brand);
+}
+.social-link svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: currentColor;
+}
+.social-link:hover {
+  color: var(--inoti-brand);
+  background: var(--inoti-popup-icon-surface);
+}
+.social-link:focus-visible {
+  outline: 0.1875rem solid var(--inoti-focus);
+  outline-offset: 0.125rem;
 }
 .brand-logo {
   width: 2.75rem;

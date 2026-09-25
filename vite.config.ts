@@ -10,6 +10,22 @@ const soundAssets = readdirSync(path("./assets/sounds")).map(
   (name) => [`./assets/sounds/${name}`, `assets/sounds/${name}`] as const,
 );
 
+// Injected into the served tester page only, so `npm run dev` also shows a live
+// popup frame that hot-updates. The packaged tester HTML is not affected.
+const popupPreviewPanel = `
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Popup preview</h2>
+            <p>Live toolbar popup served from source. Edits to the popup HTML, CSS, or script reload this frame.</p>
+          </div>
+        </div>
+        <div class="preview-wrap">
+          <iframe class="popup-preview-frame" title="iNoti popup preview" src="/src/popup/popup.html"></iframe>
+        </div>
+      </section>
+`;
+
 const builds = {
   content: {
     entry: "./src/content/monitor.ts",
@@ -92,17 +108,27 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       {
-        name: "dev-tester-source-entry",
+        name: "ui-source-entries",
         apply: "serve",
         transformIndexHtml(html, context) {
+          // Serve the tester and popup HTML from source during `npm run dev` so
+          // both hot-update. Packaged extension paths stay unchanged.
+          if (context.path === "/src/popup/popup.html") {
+            return html
+              .replace(
+                '<script src="./popup.js"></script>',
+                '<script type="module" src="./popup.ts"></script>',
+              )
+              .replaceAll("../assets/inoti-logo.png", "/assets/inoti-logo.png");
+          }
           if (context.path !== "/src/dev-testing/index.html") return html;
-          // Serve the same tester HTML from source; packaged extension paths stay unchanged.
           return html
             .replace(
               '<script src="./dev-testing.js"></script>',
               '<script type="module" src="./dev-testing.ts"></script>',
             )
-            .replaceAll("../assets/inoti-logo.png", "/assets/inoti-logo.png");
+            .replaceAll("../assets/inoti-logo.png", "/assets/inoti-logo.png")
+            .replace("</main>", `${popupPreviewPanel}</main>`);
         },
       },
       {

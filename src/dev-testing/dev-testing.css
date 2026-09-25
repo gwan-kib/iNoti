@@ -115,6 +115,15 @@ button:focus-visible {
   max-width: 100%;
   background: var(--inoti-surface);
 }
+/* `npm run dev` injects a live toolbar-popup frame served from source. */
+.popup-preview-frame {
+  display: block;
+  width: 25rem;
+  max-width: 100%;
+  height: 34rem;
+  border: 0;
+  background: var(--inoti-page);
+}
 .event-log {
   min-height: 7.5rem;
   max-height: 18.75rem;

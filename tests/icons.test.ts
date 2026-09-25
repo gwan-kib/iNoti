@@ -3,18 +3,20 @@ import { expect, it } from "vitest";
 import { createPipView } from "../src/content/pip-view";
 import { DocumentFake } from "./dom-fake";
 
-// Guards the "rounded Material Symbols only" rule from AGENTS.md: no inline SVG
-// and the material-symbols-rounded class everywhere a glyph is rendered.
+// Guards the "rounded Material Symbols only" rule from AGENTS.md, with the
+// documented exception for third-party brand logos used as labeled link buttons.
 
-it("keeps the popup on the rounded Google Fonts symbol link with no inline SVG", () => {
+it("keeps the popup on the rounded Google Fonts link with only brand-logo SVGs", () => {
   const html = readFileSync(
     new URL("../src/popup/popup.html", import.meta.url),
     "utf8",
   );
   expect(html).toContain("family=Material+Symbols+Rounded");
   expect(html).toContain('class="material-symbols-rounded"');
-  expect(html).not.toContain("<svg");
   expect(html).not.toMatch(/class="material-symbol"/);
+  expect(html.match(/<svg/g) ?? []).toHaveLength(2);
+  expect(html).toContain("https://github.com/gwan-kib/iNoti");
+  expect(html).toContain("https://www.linkedin.com/in/gwantanakiboigo/");
 });
 
 it("renders PiP icons with the rounded symbol class", () => {
