@@ -5,7 +5,7 @@ import { pipDimensionsInPixels } from "../src/shared/pip-dimensions";
 const base = "#/class/11111111-1111-4111-8111-111111111111";
 const closed = `${base}/question/22222222-2222-4222-8222-222222222222`;
 const monitoringCopy = "iNoti is monitoring this class. Open the notification window for visual alerts.";
-const alertsOpenCopy = "iNoti is monitoring this class. Do not close the iClicker tab.;
+const alertsOpenCopy = "iNoti is monitoring this class. Do not close the iClicker tab.";
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();

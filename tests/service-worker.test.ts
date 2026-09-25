@@ -129,7 +129,7 @@ it("ignores malformed sound/new-question requests and untrusted senders", () => 
   const log = vi.spyOn(console, "info").mockImplementation(() => {});
   for (const message of [
     null,
-    { type: "PLAY_SOUND", target: "offscreen", soundId: "default-chime" },
+    { type: "PLAY_SOUND", target: "offscreen", soundId: "default" },
     { type: "NEW_QUESTION_DETECTED", extra: "private" },
   ]) {
     expect(messageListener()(message, contentSender)).toBe(false);
@@ -154,7 +154,7 @@ it("plays the registered default sound for an accepted new question", async () =
     expect(runtimeSendMessage).toHaveBeenCalledWith({
       type: "PLAY_SOUND",
       target: "offscreen",
-      soundId: "default-chime",
+      soundId: "default",
     }),
   );
   expect(storageGet).toHaveBeenCalledWith(["soundEnabled", "selectedSoundId"]);
@@ -201,14 +201,14 @@ it("prevents concurrent offscreen creation for simultaneous requests", async () 
 it("plays a manual preview even when sound is disabled", async () => {
   storageGet.mockResolvedValue({
     soundEnabled: false,
-    selectedSoundId: "soft-bell",
+    selectedSoundId: "bubble",
   });
   messageListener()({ type: "PREVIEW_SOUND" }, testerSender);
   await vi.waitFor(() =>
     expect(runtimeSendMessage).toHaveBeenCalledWith({
       type: "PLAY_SOUND",
       target: "offscreen",
-      soundId: "soft-bell",
+      soundId: "bubble",
     }),
   );
   expect(createDocument).toHaveBeenCalledTimes(1);
@@ -218,7 +218,7 @@ it("ignores malformed and untrusted preview requests", () => {
   const log = vi.spyOn(console, "info").mockImplementation(() => {});
   expect(
     messageListener()(
-      { type: "PREVIEW_SOUND", soundId: "soft-bell" },
+      { type: "PREVIEW_SOUND", soundId: "bubble" },
       testerSender,
     ),
   ).toBe(false);
@@ -238,7 +238,7 @@ it("falls back to the default sound id for an unknown persisted value", async ()
     expect(runtimeSendMessage).toHaveBeenCalledWith({
       type: "PLAY_SOUND",
       target: "offscreen",
-      soundId: "default-chime",
+      soundId: "default",
     }),
   );
 });

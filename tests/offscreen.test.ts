@@ -19,10 +19,12 @@ function player(audio = audioFixture()) {
 }
 
 it.each([
-  ["default-chime", "assets/sounds/default-chime.wav"],
-  ["soft-bell", "assets/sounds/soft-bell.wav"],
-  ["bright-ping", "assets/sounds/bright-ping.wav"],
-  ["calm-echo", "assets/sounds/calm-echo.wav"],
+  ["default", "assets/sounds/default.wav"],
+  ["bubble", "assets/sounds/bubble.wav"],
+  ["pop", "assets/sounds/pop.wav"],
+  ["success", "assets/sounds/success.wav"],
+  ["start", "assets/sounds/start.wav"],
+  ["timer", "assets/sounds/timer.wav"],
 ])("plays registered sound %s through its extension URL", (soundId, path) => {
   const { player: subject, getUrl, createAudio } = player();
   subject.handleMessage({ type: "PLAY_SOUND", target: "offscreen", soundId });
@@ -35,7 +37,7 @@ it.each([
 it.each([
   { type: "NEW_QUESTION_DETECTED" },
   { type: "PLAY_SOUND", target: "offscreen", soundId: "../../etc/passwd" },
-  { type: "PLAY_SOUND", target: "page", soundId: "default-chime" },
+  { type: "PLAY_SOUND", target: "page", soundId: "default" },
   null,
 ])("ignores an invalid or unregistered message %j", (message) => {
   const { player: subject, getUrl, createAudio } = player();
@@ -56,12 +58,12 @@ it("stops the previous chime so a rapid next question restarts cleanly", () => {
   subject.handleMessage({
     type: "PLAY_SOUND",
     target: "offscreen",
-    soundId: "default-chime",
+    soundId: "default",
   });
   subject.handleMessage({
     type: "PLAY_SOUND",
     target: "offscreen",
-    soundId: "default-chime",
+    soundId: "default",
   });
   expect(first.pause).toHaveBeenCalledOnce();
   expect(second.play).toHaveBeenCalledOnce();
@@ -75,7 +77,7 @@ it("handles a rejected play promise without throwing", async () => {
   subject.handleMessage({
     type: "PLAY_SOUND",
     target: "offscreen",
-    soundId: "default-chime",
+    soundId: "default",
   });
   await Promise.resolve();
   expect(JSON.stringify(log.mock.calls)).not.toContain("private");

@@ -86,7 +86,7 @@ it("previews monitoring/window panel states and exercises the production questio
   const pip = Object.assign(new EventTarget(), { document: pipDocument, closed: false, close: vi.fn() });
   const requestWindow = vi.fn().mockResolvedValue(pip);
   const sendMessage = vi.fn().mockResolvedValue(undefined);
-  const storageGet = vi.fn().mockResolvedValue({ soundEnabled: true, selectedSoundId: "default-chime" });
+  const storageGet = vi.fn().mockResolvedValue({ soundEnabled: true, selectedSoundId: "default" });
   const storageSet = vi.fn().mockResolvedValue(undefined);
   vi.stubGlobal("document", doc);
   vi.stubGlobal(
@@ -107,7 +107,7 @@ it("previews monitoring/window panel states and exercises the production questio
   const panelLabel = () => panelButton().children[0]!.textContent;
   const panelExplanation = () => panelDocument.body.children[0]!.shadow!.children[1]!.children[1]!;
   const monitoringCopy = "iNoti is monitoring this class. Open the notification window for visual alerts.";
-  const alertsOpenCopy = "iNoti is monitoring this class. Do not close the iClicker tab.;
+  const alertsOpenCopy = "iNoti is monitoring this class. Do not close the iClicker tab.";
 
   // Default tester state: monitoring with the window closed.
   expect(panelButton().hidden).toBe(false);
@@ -178,7 +178,7 @@ it("previews monitoring/window panel states and exercises the production questio
   expect(pipDocument.body.attributes.get("data-pulse")).toBe("true");
 
   // Sound section loads the saved preference and exercises the real request path.
-  await vi.waitFor(() => expect(elements["sound-status"]!.textContent).toContain("Default Chime"));
+  await vi.waitFor(() => expect(elements["sound-status"]!.textContent).toContain("Default"));
   expect(elements["sound-alerts"]!.checked).toBe(true);
   const soundToggle = elements["sound-alerts"]!;
   soundToggle.checked = false;
@@ -189,16 +189,18 @@ it("previews monitoring/window panel states and exercises the production questio
   // The sound picker is populated from the registry and saves the selected id.
   const soundChoice = elements["sound-choice"]!;
   expect(soundChoice.children.map((option) => option.textContent)).toEqual([
-    "Default Chime",
-    "Soft Bell",
-    "Bright Ping",
-    "Calm Echo",
+    "Default",
+    "Bubble",
+    "Pop",
+    "Success",
+    "Start",
+    "Timer",
   ]);
-  expect(soundChoice.value).toBe("default-chime");
-  soundChoice.value = "soft-bell";
+  expect(soundChoice.value).toBe("default");
+  soundChoice.value = "bubble";
   soundChoice.dispatchEvent(new Event("change"));
-  await vi.waitFor(() => expect(storageSet).toHaveBeenCalledWith({ selectedSoundId: "soft-bell" }));
-  expect(elements["sound-status"]!.textContent).toContain("Soft Bell");
+  await vi.waitFor(() => expect(storageSet).toHaveBeenCalledWith({ selectedSoundId: "bubble" }));
+  expect(elements["sound-status"]!.textContent).toContain("Bubble");
 
   sendMessage.mockClear();
   click("test-sound");

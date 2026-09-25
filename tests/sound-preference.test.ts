@@ -19,21 +19,21 @@ it.each([undefined, true, false, "false", 1])(
 it("resolves the selected sound and falls back for unknown ids", () => {
   expect(soundPreferences({})).toEqual({
     enabled: true,
-    soundId: "default-chime",
+    soundId: "default",
   });
   expect(
     soundPreferences({
       [SOUND_ENABLED_KEY]: false,
-      [SELECTED_SOUND_KEY]: "default-chime",
+      [SELECTED_SOUND_KEY]: "default",
     }),
-  ).toEqual({ enabled: false, soundId: "default-chime" });
-  expect(soundPreferences({ [SELECTED_SOUND_KEY]: "soft-bell" })).toEqual({
+  ).toEqual({ enabled: false, soundId: "default" });
+  expect(soundPreferences({ [SELECTED_SOUND_KEY]: "bubble" })).toEqual({
     enabled: true,
-    soundId: "soft-bell",
+    soundId: "bubble",
   });
   expect(
     soundPreferences({ [SELECTED_SOUND_KEY]: "../../etc/passwd" }),
-  ).toEqual({ enabled: true, soundId: "default-chime" });
+  ).toEqual({ enabled: true, soundId: "default" });
 });
 
 function fixture() {
@@ -96,7 +96,7 @@ it("keeps the sound toggle disabled if loading fails", async () => {
 
 it("loads and saves the selected sound through the shared key", async () => {
   const storage = fixture();
-  storage.local.get.mockResolvedValue({ [SELECTED_SOUND_KEY]: "soft-bell" });
+  storage.local.get.mockResolvedValue({ [SELECTED_SOUND_KEY]: "bubble" });
   const select = new ElementFake();
   const status = new ElementFake();
   await bindSoundChoice(
@@ -104,12 +104,12 @@ it("loads and saves the selected sound through the shared key", async () => {
     status as unknown as HTMLElement,
     storage,
   );
-  expect(select.value).toBe("soft-bell");
-  select.value = "calm-echo";
+  expect(select.value).toBe("bubble");
+  select.value = "success";
   select.dispatchEvent(new Event("change"));
   await vi.waitFor(() => expect(select.disabled).toBe(false));
   expect(storage.local.set).toHaveBeenCalledWith({
-    selectedSoundId: "calm-echo",
+    selectedSoundId: "success",
   });
 });
 
@@ -125,12 +125,12 @@ it("falls back to the default sound and rolls back a failed selection write", as
     status as unknown as HTMLElement,
     storage,
   );
-  expect(select.value).toBe("default-chime");
+  expect(select.value).toBe("default");
   storage.local.set.mockRejectedValue(new Error("private"));
-  select.value = "bright-ping";
+  select.value = "pop";
   select.dispatchEvent(new Event("change"));
   await vi.waitFor(() => expect(select.disabled).toBe(false));
-  expect(select.value).toBe("default-chime");
+  expect(select.value).toBe("default");
   expect(status.textContent).toContain("Could not save");
   expect(status.textContent).not.toContain("private");
 });
