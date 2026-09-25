@@ -11,11 +11,16 @@ function player(audio = audioFixture()) {
   return { player: createOffscreenPlayer(getUrl, createAudio), getUrl, createAudio, audio };
 }
 
-it('plays a registered id through its extension URL', () => {
+it.each([
+  ['default-chime', 'assets/sounds/default-chime.wav'],
+  ['soft-bell', 'assets/sounds/soft-bell.wav'],
+  ['bright-ping', 'assets/sounds/bright-ping.wav'],
+  ['calm-echo', 'assets/sounds/calm-echo.wav'],
+])('plays registered sound %s through its extension URL', (soundId, path) => {
   const { player: subject, getUrl, createAudio } = player();
-  subject.handleMessage({ type: 'PLAY_SOUND', target: 'offscreen', soundId: 'default-chime' });
-  expect(getUrl).toHaveBeenCalledExactlyOnceWith('assets/sounds/default-chime.wav');
-  expect(createAudio).toHaveBeenCalledExactlyOnceWith('chrome-extension://test-extension/assets/sounds/default-chime.wav');
+  subject.handleMessage({ type: 'PLAY_SOUND', target: 'offscreen', soundId });
+  expect(getUrl).toHaveBeenCalledExactlyOnceWith(path);
+  expect(createAudio).toHaveBeenCalledExactlyOnceWith(`chrome-extension://test-extension/${path}`);
 });
 
 it.each([

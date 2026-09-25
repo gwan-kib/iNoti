@@ -138,6 +138,23 @@ it('prevents concurrent offscreen creation for simultaneous requests', async () 
   expect(createDocument).toHaveBeenCalledTimes(1);
 });
 
+it('plays a manual preview even when sound is disabled', async () => {
+  storageGet.mockResolvedValue({ soundEnabled: false, selectedSoundId: 'soft-bell' });
+  messageListener()({ type: 'PREVIEW_SOUND' }, testerSender);
+  await vi.waitFor(() => expect(runtimeSendMessage).toHaveBeenCalledWith({ type: 'PLAY_SOUND', target: 'offscreen', soundId: 'soft-bell' }));
+  expect(createDocument).toHaveBeenCalledTimes(1);
+});
+
+it('ignores malformed and untrusted preview requests', () => {
+  const log = vi.spyOn(console, 'info').mockImplementation(() => {});
+  expect(messageListener()({ type: 'PREVIEW_SOUND', soundId: 'soft-bell' }, testerSender)).toBe(false);
+  expect(messageListener()({ type: 'PREVIEW_SOUND' }, { id: 'other-extension' })).toBe(false);
+  expect(storageGet).not.toHaveBeenCalled();
+  expect(createDocument).not.toHaveBeenCalled();
+  expect(runtimeSendMessage).not.toHaveBeenCalled();
+  log.mockRestore();
+});
+
 it('falls back to the default sound id for an unknown persisted value', async () => {
   storageGet.mockResolvedValue({ selectedSoundId: '../../etc/passwd' });
   messageListener()({ type: 'NEW_QUESTION_DETECTED' }, testerSender);

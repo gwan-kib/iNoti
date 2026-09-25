@@ -4,6 +4,8 @@ import { createMonitoringControl, type MonitoringPanelStatus } from '../content/
 import { watchPulsePreference } from '../shared/alert-preference';
 import { createNewQuestionAlerts } from '../shared/new-question';
 import { requestNewQuestionSound } from '../shared/sound-request';
+import { DEFAULT_SOUND_ID, SOUND_OPTIONS, resolveSoundId } from '../shared/sounds';
+import { loadSoundPreferences, saveSelectedSoundId, saveSoundEnabled } from '../shared/sound-preference';
 import { PIP_DIMENSIONS_REM } from '../shared/pip-dimensions';
 import { followPipSize } from './preview-size';
 
@@ -120,6 +122,65 @@ function initDevTester() {
     showQuestion: (detectedAt) => { preview.question(detectedAt); controller.question(detectedAt); },
     showEnded: (endedAt) => { preview.ended(endedAt); controller.ended(endedAt); },
   }, appendLog);
+
+  // Sound section: exercises the real request -> worker -> offscreen path and
+  // reflects the saved preference the worker reads, without a fake player.
+  const soundToggle = required<HTMLInputElement>('sound-alerts');
+  const soundChoice = required<HTMLSelectElement>('sound-choice');
+  const soundStatus = required<HTMLElement>('sound-status');
+  for (const option of SOUND_OPTIONS) {
+    const element = document.createElement('option');
+    element.value = option.id;
+    element.textContent = option.label;
+    soundChoice.append(element);
+  }
+  let soundEnabledValue = true;
+  let soundIdValue = DEFAULT_SOUND_ID;
+  const renderSound = () => {
+    soundToggle.checked = soundEnabledValue;
+    soundChoice.value = soundIdValue;
+    const label = SOUND_OPTIONS.find(option => option.id === soundIdValue)?.label ?? soundIdValue;
+    soundStatus.textContent = `Saved: ${soundEnabledValue ? 'on' : 'off'} · ${label}`;
+  };
+  renderSound();
+  void loadSoundPreferences().then(preferences => {
+    if (!preferences) {
+      soundStatus.textContent = 'Extension storage unavailable here; the worker still owns the sound decision.';
+      return;
+    }
+    soundEnabledValue = preferences.enabled;
+    soundIdValue = preferences.soundId;
+    renderSound();
+  }).catch(() => { soundStatus.textContent = 'Could not load the sound preference.'; });
+  soundToggle.addEventListener('change', () => {
+    const next = soundToggle.checked;
+    const previous = soundEnabledValue;
+    soundEnabledValue = next;
+    renderSound();
+    void saveSoundEnabled(next).then(() => {
+      appendLog('sound preference saved', { enabled: next });
+    }).catch(() => {
+      soundEnabledValue = previous;
+      renderSound();
+      soundStatus.textContent = 'Could not save the sound preference.';
+    });
+  });
+  soundChoice.addEventListener('change', () => {
+    const previous = soundIdValue;
+    soundIdValue = resolveSoundId(soundChoice.value);
+    renderSound();
+    void saveSelectedSoundId(soundIdValue).then(() => {
+      appendLog('sound selection saved', { soundId: soundIdValue });
+    }).catch(() => {
+      soundIdValue = previous;
+      renderSound();
+      soundStatus.textContent = 'Could not save the sound selection.';
+    });
+  });
+  required<HTMLButtonElement>('test-sound').addEventListener('click', () => {
+    appendLog('test sound requested', { savedEnabled: soundEnabledValue, soundId: soundIdValue });
+    requestNewQuestionSound();
+  });
 
   renderStatus();
   appendLog('tester loaded', { documentPipAvailable: Boolean(api) });

@@ -2,6 +2,7 @@ import { logger, safeError } from '../shared/logging';
 import { parseRoute } from '../content/detector';
 import {
   isNewQuestionDetectedMessage,
+  isPreviewSoundMessage,
   type NavigationChangedMessage,
   type PlaySoundMessage,
 } from '../shared/messages';
@@ -97,6 +98,17 @@ async function readSoundPreferences(): Promise<{ enabled: boolean; soundId: Soun
   }
 }
 
+async function playRegisteredSound(soundId: SoundId): Promise<void> {
+  try {
+    await ensureOffscreenDocument();
+    const message: PlaySoundMessage = { type: 'PLAY_SOUND', target: 'offscreen', soundId };
+    await chrome.runtime.sendMessage(message);
+    log('sound playback requested', { soundId });
+  } catch (error) {
+    log('sound playback request failed', { reason: safeError(error) });
+  }
+}
+
 async function playSoundForNewQuestion(): Promise<void> {
   const preferences = await readSoundPreferences();
   if (!preferences) return;
@@ -105,17 +117,26 @@ async function playSoundForNewQuestion(): Promise<void> {
     log('sound disabled');
     return;
   }
-  try {
-    await ensureOffscreenDocument();
-    const message: PlaySoundMessage = { type: 'PLAY_SOUND', target: 'offscreen', soundId: preferences.soundId };
-    await chrome.runtime.sendMessage(message);
-    log('sound playback requested', { soundId: preferences.soundId });
-  } catch (error) {
-    log('sound playback request failed', { reason: safeError(error) });
-  }
+  await playRegisteredSound(preferences.soundId);
+}
+
+async function playSelectedSoundPreview(): Promise<void> {
+  // An explicit popup preview plays regardless of the enabled preference.
+  const preferences = await readSoundPreferences();
+  if (!preferences) return;
+  await playRegisteredSound(preferences.soundId);
 }
 
 chrome.runtime.onMessage.addListener((message: unknown, sender) => {
+  if (isPreviewSoundMessage(message)) {
+    if (!isTrustedSoundSender(sender)) {
+      log('rejected sound request');
+      return false;
+    }
+    log('sound preview requested');
+    void playSelectedSoundPreview();
+    return false;
+  }
   if (!isNewQuestionDetectedMessage(message)) return false;
   if (!isTrustedSoundSender(sender)) {
     log('rejected sound request');

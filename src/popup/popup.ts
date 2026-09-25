@@ -1,5 +1,7 @@
 import { PULSE_KEY, preferenceStorage, pulsePreference, type PreferenceStorage } from '../shared/alert-preference';
-import { SOUND_ENABLED_KEY, soundEnabled } from '../shared/sound-preference';
+import { SELECTED_SOUND_KEY, SOUND_ENABLED_KEY, soundEnabled } from '../shared/sound-preference';
+import { DEFAULT_SOUND_ID, SOUND_OPTIONS, resolveSoundId } from '../shared/sounds';
+import { requestSoundPreview } from '../shared/sound-request';
 
 type BooleanReader = (value: unknown) => boolean;
 
@@ -44,6 +46,44 @@ export function bindSoundSetting(input: HTMLInputElement, status: HTMLElement, s
   return bindBooleanSetting(input, status, storage, SOUND_ENABLED_KEY, soundEnabled);
 }
 
+export function populateSoundOptions(select: HTMLSelectElement) {
+  for (const option of SOUND_OPTIONS) {
+    const element = document.createElement('option');
+    element.value = option.id;
+    element.textContent = option.label;
+    select.append(element);
+  }
+}
+
+export async function bindSoundChoice(select: HTMLSelectElement, status: HTMLElement, storage: PreferenceStorage) {
+  let saved = DEFAULT_SOUND_ID;
+  select.disabled = true;
+  try {
+    saved = resolveSoundId((await storage.local.get(SELECTED_SOUND_KEY))[SELECTED_SOUND_KEY]);
+    select.value = saved;
+    select.disabled = false;
+  } catch {
+    status.textContent = 'Could not load preference. Reopen the popup to retry.';
+    return;
+  }
+  select.addEventListener('change', async () => {
+    select.disabled = true;
+    // Only registered ids can be stored, so storage can never hold a raw path.
+    const next = resolveSoundId(select.value);
+    status.textContent = '';
+    try {
+      await storage.local.set({ [SELECTED_SOUND_KEY]: next });
+      saved = next;
+      select.value = next;
+    } catch {
+      select.value = saved;
+      status.textContent = 'Could not save preference. Please try again.';
+    } finally {
+      select.disabled = false;
+    }
+  });
+}
+
 export type TabCreator = (properties: { url: string }) => unknown;
 export type UrlResolver = (path: string) => string;
 
@@ -58,6 +98,13 @@ function initPopup() {
   if (pulseInput && status && storage) void bindPulseSetting(pulseInput, status, storage);
   const soundInput = document.querySelector<HTMLInputElement>('#sound-alerts');
   if (soundInput && status && storage) void bindSoundSetting(soundInput, status, storage);
+  const soundChoice = document.querySelector<HTMLSelectElement>('#sound-choice');
+  if (soundChoice && status && storage) {
+    populateSoundOptions(soundChoice);
+    void bindSoundChoice(soundChoice, status, storage);
+  }
+  const testSound = document.querySelector<HTMLButtonElement>('#test-sound');
+  if (testSound) testSound.addEventListener('click', () => requestSoundPreview());
   const button = document.querySelector<HTMLButtonElement>('#open-dev-tester');
   if (!button) return;
   button.addEventListener('click', () => {

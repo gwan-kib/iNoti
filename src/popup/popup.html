@@ -16,6 +16,12 @@
     <p id="pulse-description"><span class="popup-description-text">Turn off for a solid alert color. Reduced-motion preferences also disable pulsing.</span></p>
     <label class="toggle-setting" for="sound-alerts"><input id="sound-alerts" type="checkbox" disabled aria-describedby="sound-description"><span class="toggle-label">Sound notification</span></label>
     <p id="sound-description"><span class="popup-description-text">Play a sound when a new iClicker question is detected.</span></p>
+    <div class="sound-choice">
+      <label class="sound-choice-label" for="sound-choice"><span class="sound-choice-label-text">Notification sound</span></label>
+      <select id="sound-choice" disabled aria-describedby="sound-choice-description"></select>
+    </div>
+    <button id="test-sound" class="sound-test" type="button"><span class="button-text">Play test sound</span></button>
+    <p id="sound-choice-description"><span class="popup-description-text">Plays the selected chime for each detected question; use Play test sound to preview it.</span></p>
     <p id="preference-status" class="preference-status" role="status"></p>
     <h2 class="tools-title"><span class="tools-title-text">Testing tools</span></h2>
     <p class="popup-description"><span class="popup-description-text">Open the isolated tester to preview alert states without joining an iClicker class.</span></p>

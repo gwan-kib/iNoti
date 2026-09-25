@@ -166,29 +166,64 @@ code {
   flex-shrink: 0;
 }
 
-.pulse-option {
+.pulse-option,
+.sound-option {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.25rem;
 }
-.pulse-option input {
+.pulse-option input,
+.sound-option input {
   width: 1rem;
   height: 1rem;
   margin: 0;
   accent-color: var(--inoti-brand);
 }
-.pulse-option input:focus-visible {
+.pulse-option input:focus-visible,
+.sound-option input:focus-visible {
   outline: 0.125rem solid var(--inoti-focus);
   outline-offset: 0.125rem;
 }
-.pulse-option-text {
+.pulse-option-text,
+.sound-option-text {
   font-size: 0.875rem;
   font-weight: 650;
 }
-.pulse-help {
+.pulse-help,
+.sound-help {
   margin-bottom: 1rem;
 }
-.pulse-help-text {
+.pulse-help-text,
+.sound-help-text {
   font-size: 0.75rem;
+}
+.sound-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.sound-choice-label-text {
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+.sound-choice select {
+  padding: 0.3125rem 0.375rem;
+  border: 0.0625rem solid var(--inoti-border);
+  border-radius: 0.5rem;
+  background: var(--inoti-on-brand);
+  color: var(--inoti-text);
+  font: inherit;
+  font-size: 0.8125rem;
+}
+.sound-choice select:focus-visible {
+  outline: 0.125rem solid var(--inoti-focus);
+  outline-offset: 0.125rem;
+}
+.sound-status {
+  font-size: 0.8125rem;
+}
+.sound-status:empty {
+  display: none;
 }

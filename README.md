@@ -9,7 +9,7 @@ Monitoring does not depend on the notification window. Closing that window only 
 This is an unpacked development version, not a Chrome Web Store release. Use desktop Chrome 123 or newer with Document Picture-in-Picture available. Real Chrome/iClicker verification of this monitoring experience is still pending.
 
 1. Follow the [build and load-unpacked instructions](CONTRIBUTING.md).
-2. Open one iClicker student tab and join a supported class. Monitoring starts automatically for that class; a sound plays on each genuinely new question while the tab stays open. Use the toolbar popup to turn **Sound notification** off or on.
+2. Open one iClicker student tab and join a supported class. Monitoring starts automatically for that class; a sound plays on each genuinely new question while the tab stays open. Use the toolbar popup to turn **Sound notification** off or on, choose a **Notification sound** from the dropdown (Default Chime, Soft Bell, Bright Ping, Calm Echo), and click **Play test sound** to preview the selected chime.
 3. Optionally click **Open notification window** in the panel on the right side of the page to add the visual PiP surface. It starts with a Monitoring badge and a waiting status. Keep the iClicker page open so iNoti can detect new questions.
 4. With the window open, a new supported poll transition displays the alert; closing/results or waiting after a detected question shows **Question ended** with an **Ended at** time. This is when iNoti detected the end, not the instructor's exact end time. The screen stays until the next detected question or the window closes.
 5. Close the notification window to remove the visual surface only; monitoring, the sound alert, and the panel continue. Use **Close notification window** in the panel or close the window itself. Leaving the class stops monitoring for that session.
@@ -20,11 +20,11 @@ Document PiP is an always-on-top browser surface. Chrome controls its position a
 
 New-question alerts gently pulse by default: a soft lavender circle grows outward from the middle of the question title over the pink alert surface. Open the iNoti toolbar popup to turn off **Pulse new-question background** for a solid soft pink alert, or turn off **Sound notification**. Both preferences apply immediately and are saved on this device. System reduced-motion preferences also keep the background solid. Idle and ended screens do not pulse. The elapsed timer stops and hides when the question ends.
 
-You still answer questions yourself in iClicker. Other settings, a sound picker, quiz alerts, and cross-tab deduplication are not implemented.
+You still answer questions yourself in iClicker. Volume control, other settings, quiz alerts, and cross-tab deduplication are not implemented.
 
 ### Development tester
 
-The unpacked development build includes a small toolbar popup with an **Open Dev Tester** button. It opens an extension-owned tab where the idle and new-question PiP states can be previewed and the real PiP surface can be opened manually without joining an iClicker class. Use **Idle** to return both views to waiting, and toggle **Pulse new-question background** to preview a solid background. **New Question** also exercises the real sound path, so it plays the configured chime when **Sound notification** is enabled even with the window closed. This tester override lasts until the page reloads and does not change your saved toolbar preference. The tester is development tooling only: it verifies the alert UI/lifecycle in isolation and does not prove that live iClicker detection works.
+The unpacked development build includes a small toolbar popup with an **Open Dev Tester** button. It opens an extension-owned tab where the idle and new-question PiP states can be previewed and the real PiP surface can be opened manually without joining an iClicker class. Use **Idle** to return both views to waiting, and toggle **Pulse new-question background** to preview a solid background. **New Question** also exercises the real sound path, so it plays the configured chime when **Sound notification** is enabled even with the window closed. The tester's **Sound** section shows and updates the same saved sound on/off and sound-choice preferences and has a **Test sound** button for the production playback path. This tester override lasts until the page reloads and does not change your saved toolbar preference. The tester is development tooling only: it verifies the alert UI/lifecycle in isolation and does not prove that live iClicker detection works.
 
 ## Privacy
 

@@ -21,6 +21,6 @@ The Phase 1 monitoring migration is explicitly owner-authorized. The initial mig
 
 The full MVP still requires correct click focus, cross-tab duplicate suppression, tested recovery, and real-browser verification of background/minimized sound. Phase 1 does not satisfy those requirements. Identity must be resolved before promising one alert per question across tabs or reconnects.
 
-Quiz notifications, custom positioning, notification stacks/progress bars/history, themes, a user-facing sound picker, cross-browser packaging, mobile notifications, and backend integrations remain deferred. DOM or network observation is not planned without new evidence.
+Quiz notifications, custom positioning, notification stacks/progress bars/history, themes, volume control, cross-browser packaging, mobile notifications, and backend integrations remain deferred. DOM or network observation is not planned without new evidence.
 
 See [architecture](ARCHITECTURE.md), [decisions](DECISIONS.md), [privacy](PRIVACY.md), and [testing](TESTING.md).

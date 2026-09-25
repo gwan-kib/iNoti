@@ -10,6 +10,7 @@ export class ElementFake extends EventTarget {
   id = '';
   className = '';
   type = '';
+  value = '';
   isConnected = false;
   style = { cssText: '' };
   attributes = new Map<string, string>();

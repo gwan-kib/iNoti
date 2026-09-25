@@ -26,6 +26,18 @@ export function isNewQuestionDetectedMessage(value: unknown): value is NewQuesti
   return Object.keys(message).length === 1 && message['type'] === 'NEW_QUESTION_DETECTED';
 }
 
+// Popup -> service worker. An explicit user preview of the selected sound; it
+// bypasses the enabled preference but still goes through the same offscreen path.
+export interface PreviewSoundMessage {
+  type: 'PREVIEW_SOUND';
+}
+
+export function isPreviewSoundMessage(value: unknown): value is PreviewSoundMessage {
+  if (typeof value !== 'object' || value === null) return false;
+  const message = value as Record<string, unknown>;
+  return Object.keys(message).length === 1 && message['type'] === 'PREVIEW_SOUND';
+}
+
 // Service worker -> offscreen document. Only a registered sound id is sent; the
 // offscreen player resolves the file through the shared sound registry.
 export interface PlaySoundMessage {

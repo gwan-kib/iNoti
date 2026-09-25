@@ -63,6 +63,28 @@
     <section class="panel">
       <div class="panel-heading">
         <div>
+          <h2>Sound</h2>
+          <p>Uses the production new-question → worker → offscreen path. The worker plays only when the saved preference is on.</p>
+        </div>
+      </div>
+      <label class="sound-option">
+        <input id="sound-alerts" type="checkbox">
+        <span class="sound-option-text">Sound notification</span>
+      </label>
+      <div class="sound-choice">
+        <label class="sound-choice-label" for="sound-choice"><span class="sound-choice-label-text">Notification sound</span></label>
+        <select id="sound-choice"></select>
+      </div>
+      <p class="sound-help"><span class="sound-help-text">Changes are written to chrome.storage.local, the same values the worker and popup use. Test sound plays the selected sound through the worker → offscreen path.</span></p>
+      <div class="controls">
+        <button id="test-sound" type="button"><span class="button-text">Test sound</span></button>
+      </div>
+      <p id="sound-status" class="sound-status" role="status"></p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
           <h2>Event log</h2>
           <p>Also written to DevTools as <code>[iNoti][dev]</code>. Keep captures free of student/session data.</p>
         </div>

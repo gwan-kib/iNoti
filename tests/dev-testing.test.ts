@@ -27,7 +27,7 @@ it('previews monitoring/window panel states and exercises the production questio
   const { DocumentFake, ElementFake } = await import('./dom-fake');
   const preview = new DocumentFake();
   const pipDocument = new DocumentFake();
-  const ids = ['pip-status', 'event-log', 'preview', 'pulse-alerts', 'open-pip', 'idle', 'question', 'ended', 'stop', 'clear-log', 'panel-preview', 'panel-unmonitored', 'panel-monitoring', 'panel-opening', 'panel-unsupported', 'panel-failed'];
+  const ids = ['pip-status', 'event-log', 'preview', 'pulse-alerts', 'sound-alerts', 'sound-choice', 'sound-status', 'test-sound', 'open-pip', 'idle', 'question', 'ended', 'stop', 'clear-log', 'panel-preview', 'panel-unmonitored', 'panel-monitoring', 'panel-opening', 'panel-unsupported', 'panel-failed'];
   const elements = Object.fromEntries(ids.map(id => [id, Object.assign(new ElementFake(), { checked: false, contentDocument: preview })]));
   const panelDocument = new DocumentFake();
   elements['panel-preview']!.contentDocument = panelDocument;
@@ -35,9 +35,11 @@ it('previews monitoring/window panel states and exercises the production questio
   const pip = Object.assign(new EventTarget(), { document: pipDocument, closed: false, close: vi.fn() });
   const requestWindow = vi.fn().mockResolvedValue(pip);
   const sendMessage = vi.fn().mockResolvedValue(undefined);
+  const storageGet = vi.fn().mockResolvedValue({ soundEnabled: true, selectedSoundId: 'default-chime' });
+  const storageSet = vi.fn().mockResolvedValue(undefined);
   vi.stubGlobal('document', doc);
   vi.stubGlobal('window', Object.assign(new EventTarget(), { focus: vi.fn(), documentPictureInPicture: { requestWindow } }));
-  vi.stubGlobal('chrome', { runtime: { id: 'test-extension', sendMessage } });
+  vi.stubGlobal('chrome', { runtime: { id: 'test-extension', sendMessage }, storage: { local: { get: storageGet, set: storageSet }, onChanged: { addListener: vi.fn(), removeListener: vi.fn() } } });
   vi.stubGlobal('getComputedStyle', () => ({ fontSize: '16px' }));
   await import('../src/dev-testing/dev-testing');
   const click = (id: string) => elements[id]!.dispatchEvent(new Event('click'));
@@ -113,4 +115,26 @@ it('previews monitoring/window panel states and exercises the production questio
   click('open-pip');
   await Promise.resolve();
   expect(pipDocument.body.attributes.get('data-pulse')).toBe('true');
+
+  // Sound section loads the saved preference and exercises the real request path.
+  await vi.waitFor(() => expect(elements['sound-status']!.textContent).toContain('Default Chime'));
+  expect(elements['sound-alerts']!.checked).toBe(true);
+  const soundToggle = elements['sound-alerts']!;
+  soundToggle.checked = false;
+  soundToggle.dispatchEvent(new Event('change'));
+  await vi.waitFor(() => expect(storageSet).toHaveBeenCalledWith({ soundEnabled: false }));
+  expect(elements['sound-status']!.textContent).toContain('off');
+
+  // The sound picker is populated from the registry and saves the selected id.
+  const soundChoice = elements['sound-choice']!;
+  expect(soundChoice.children.map(option => option.textContent)).toEqual(['Default Chime', 'Soft Bell', 'Bright Ping', 'Calm Echo']);
+  expect(soundChoice.value).toBe('default-chime');
+  soundChoice.value = 'soft-bell';
+  soundChoice.dispatchEvent(new Event('change'));
+  await vi.waitFor(() => expect(storageSet).toHaveBeenCalledWith({ selectedSoundId: 'soft-bell' }));
+  expect(elements['sound-status']!.textContent).toContain('Soft Bell');
+
+  sendMessage.mockClear();
+  click('test-sound');
+  expect(sendMessage).toHaveBeenCalledExactlyOnceWith({ type: 'NEW_QUESTION_DETECTED' });
 });

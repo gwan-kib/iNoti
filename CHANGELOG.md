@@ -10,7 +10,11 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 - Added sound alerts that play once per genuinely new question even when the notification window is closed, through an MV3 offscreen audio document. Sound is enabled by default and can be turned off in the popup; disabling sound keeps monitoring and visual alerts working and does not create the offscreen document.
 
-- Added local sound preferences (`soundEnabled`, `selectedSoundId`) and a central sound registry; the bundled default chime lives at `assets/sounds/default-chime.wav`. There is no sound-picker UI yet.
+- Added local sound preferences (`soundEnabled`, `selectedSoundId`) and a central sound registry with four bundled sounds: Default Chime, Soft Bell, Bright Ping, and Calm Echo under `assets/sounds/`.
+
+- Added a **Notification sound** dropdown to the popup and the dev tester; it writes only registered sound ids and falls back to Default Chime for unknown stored values.
+
+- Added a **Play test sound** button to the popup that previews the selected chime through the same worker → offscreen path, even while sound is turned off.
 
 - The monitoring panel action is now an Open/Close notification window toggle with monitoring-first copy; the button is no longer hidden while the window is open.
 
@@ -45,7 +49,9 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 - Bundled `assets/sounds/default-chime.wav` with a build step that copies the whole sounds directory to `dist/assets/sounds/`, an `offscreen/` audio document build, and the `offscreen` permission.
 
-- Popup **Sound notification** setting alongside the pulse preference; it persists locally and defaults to on.
+- Popup **Sound notification** setting alongside the pulse preference; it persists locally and defaults to on, with a **Notification sound** selector for the four bundled chimes.
+
+- Dev tester Sound section that reflects and writes the saved `soundEnabled` preference and has a **Test sound** button exercising the real worker → offscreen playback path, including the disabled skip.
 
 - Dev tester Monitoring panel section that previews the real on-page control in a mock page and forces each of its states, while mirroring the live monitoring/window status.
 
@@ -68,4 +74,4 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 - Privacy-safe content, worker, and PiP diagnostics; no question/answer content, telemetry, or persistent state.
 - Project documentation, local checks, and CI configuration.
 
-Real Chrome/iClicker validation of PiP remains pending. The development tester does not replace live compatibility checks. Sound, production settings, click focus, quiz support, cross-tab deduplication, and recovery remain deferred.
+Real Chrome/iClicker validation of PiP and audible sound remains pending; the development tester does not replace live compatibility checks. Quiz support, cross-tab deduplication, and recovery remain deferred.

@@ -12,7 +12,7 @@ Static content-script access is exactly `https://student.iclicker.com/*`. The `o
 
 - The page holds its previous normalized route/class ID and monitoring state in memory. Question IDs are validated, not retained in normalized state.
 - NAVIGATION_CHANGED transiently carries a supported hash (possibly containing class/question UUIDs) or an empty marker to the originating page. The content receiver validates the extension sender. Payloads and document IDs are never logged or persisted.
-- The worker has no session registry. NEW_POLL messaging is removed. For sound it accepts only a generic `NEW_QUESTION_DETECTED` fact from the content script or extension tester and forwards only a registered `soundId` to the offscreen document; no route, class id, question content, or student data is included.
+- The worker has no session registry. NEW_POLL messaging is removed. For sound it accepts only a generic `NEW_QUESTION_DETECTED` fact from the content script or extension tester, or a `PREVIEW_SOUND` request from the popup, and forwards only a registered `soundId` to the offscreen document; no route, class id, question content, or student data is included.
 - PiP receives generic idle/active/ended display calls and local start/end detection times only. Text is rendered with textContent; no question content, identifiers, or telemetry are introduced. The icon font makes the external asset requests described below.
 - PiP shares the opener's origin. It is not an extension-origin privacy boundary and must never contain secrets. No alert query URL is used. The `storage` permission stores only local preferences in `chrome.storage.local`: the booleans `pulseAlerts` and `soundEnabled`, and the registered id `selectedSoundId`. It is not synced and contains no session or student data. Storage change events update open PiP views without tab access. See D014 and D017 in [decisions](DECISIONS.md).
 - Sound playback uses only the bundled local asset under `assets/sounds/`, resolved through `src/shared/sounds.ts` and `chrome.runtime.getURL`; no external/CDN audio is requested and no audio data leaves the device.
@@ -21,7 +21,7 @@ Static content-script access is exactly `https://student.iclicker.com/*`. The `o
 
 ## Remaining work
 
-Memory Saver/discard, background/minimized sound, real layout, and application-switch visibility require the [manual matrix](TESTING.md). No automatic discard override or recovery is implemented. Session storage/recovery, a user-facing sound picker, and cross-tab coordination remain deferred. Any new permission requires a written reason, narrower-alternative review, a decision, and matching manifest/README/privacy changes. Keep fixtures synthetic.
+Memory Saver/discard, background/minimized sound, real layout, and application-switch visibility require the [manual matrix](TESTING.md). No automatic discard override or recovery is implemented. Session storage/recovery, volume control, and cross-tab coordination remain deferred. Any new permission requires a written reason, narrower-alternative review, a decision, and matching manifest/README/privacy changes. Keep fixtures synthetic.
 
 Go to Question uses a user-clicked `window.focus()` call to the existing opener. It does not inspect tabs, navigate, close PiP, or add permissions.
 

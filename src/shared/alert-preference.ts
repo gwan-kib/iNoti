@@ -2,7 +2,7 @@ export const PULSE_KEY = 'pulseAlerts';
 
 export interface PreferenceStorage {
   local: {
-    get(key: string): Promise<Record<string, unknown>>;
+    get(keys: string | string[]): Promise<Record<string, unknown>>;
     set(values: Record<string, unknown>): Promise<void>;
   };
   onChanged: {
