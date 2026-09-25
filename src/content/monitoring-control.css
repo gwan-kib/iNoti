@@ -118,7 +118,9 @@ button:focus-visible {
   outline: 0.1875rem solid var(--inoti-monitor-focus);
   outline-offset: 0.1875rem;
 }
-button[hidden] { display: none; }
+button[hidden] {
+  display: none;
+}
 button:not(:disabled):hover {
   filter: brightness(0.96);
 }

@@ -142,7 +142,10 @@ export function createPipView(
       time.hidden = elapsed.hidden = true;
       timeText.textContent = "";
       elapsedText.textContent = "";
-      main.setAttribute("aria-label", "iNoti monitoring: waiting for a new question");
+      main.setAttribute(
+        "aria-label",
+        "iNoti monitoring: waiting for a new question",
+      );
     },
     question(detectedAt) {
       goToQuestion.hidden = false;
@@ -158,7 +161,10 @@ export function createPipView(
       time.setAttribute("aria-label", `Detected at ${timeText.textContent}`);
       const updateElapsed = () => {
         // Recompute from the detection timestamp so delayed background ticks catch up.
-        const seconds = Math.max(0, Math.floor((Date.now() - detectedAt) / 1000));
+        const seconds = Math.max(
+          0,
+          Math.floor((Date.now() - detectedAt) / 1000),
+        );
         const minutes = Math.floor(seconds / 60);
         const clock =
           minutes < 60

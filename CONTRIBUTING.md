@@ -25,14 +25,14 @@ npm run check
 
 Use `npm ci` for reproducible installation from `package-lock.json`. Use `npm install` when intentionally updating dependencies and commit the resulting manifest and lockfile together. Direct development dependencies are pinned; there are no runtime dependencies.
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Local hot-reloading UI tester at http://127.0.0.1:5173/src/dev-testing/index.html |
-| `npm run lint` | ESLint recommended JavaScript and TypeScript rules; warnings fail the check |
-| `npm run typecheck` | Strict TypeScript validation without emitting files |
-| `npm test` | Vitest single run of route, transition, messaging, PiP, and development-tool wiring tests |
-| `npm run build` | Vite production build into `dist/` |
-| `npm run check` | Lint, type-check, tests, then build; stops on failure |
+| Command             | Purpose                                                                                   |
+| ------------------- | ----------------------------------------------------------------------------------------- |
+| `npm run dev`       | Local hot-reloading UI tester at http://127.0.0.1:5173/src/dev-testing/index.html         |
+| `npm run lint`      | ESLint recommended JavaScript and TypeScript rules; warnings fail the check               |
+| `npm run typecheck` | Strict TypeScript validation without emitting files                                       |
+| `npm test`          | Vitest single run of route, transition, messaging, PiP, and development-tool wiring tests |
+| `npm run build`     | Vite production build into `dist/`                                                        |
+| `npm run check`     | Lint, type-check, tests, then build; stops on failure                                     |
 
 Lint and type-checking cover configuration, source, and tests. Strict TypeScript includes DOM and Chrome API types. Chrome APIs are mocked at component boundaries in tests; no runtime dependency or UI framework is needed.
 
@@ -70,16 +70,16 @@ See [testing](docs/TESTING.md) for fixture requirements, browser scenarios, and 
 
 README.md is primarily for users, with links to technical documentation near the end. Keep developer workflow, setup, architecture, and implementation details here or in docs/. Move useful technical content to its appropriate document when simplifying the README.
 
-| Change | Required updates |
-| --- | --- |
-| Developer setup command, dependency, or build | CONTRIBUTING.md; docs/TESTING.md for check changes; README.md only if user installation or usage changes |
-| Component responsibility or message flow | docs/ARCHITECTURE.md |
-| Selector, state signal, fingerprint, or dedupe | docs/DETECTION_STRATEGY.md and detection tests/fixtures |
-| Permission or host access | Manifest when present, README.md, docs/PRIVACY.md, and docs/DECISIONS.md |
-| Harness, fixture, mock, or manual verification | docs/TESTING.md |
-| User-facing behavior or setting | README.md; CHANGELOG.md for user-visible release changes |
-| Production limitation | README limitations/troubleshooting and the relevant technical document |
-| No documentation impact | No extra paperwork; if using a PR, mark documentation not applicable and explain why |
+| Change                                         | Required updates                                                                                         |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Developer setup command, dependency, or build  | CONTRIBUTING.md; docs/TESTING.md for check changes; README.md only if user installation or usage changes |
+| Component responsibility or message flow       | docs/ARCHITECTURE.md                                                                                     |
+| Selector, state signal, fingerprint, or dedupe | docs/DETECTION_STRATEGY.md and detection tests/fixtures                                                  |
+| Permission or host access                      | Manifest when present, README.md, docs/PRIVACY.md, and docs/DECISIONS.md                                 |
+| Harness, fixture, mock, or manual verification | docs/TESTING.md                                                                                          |
+| User-facing behavior or setting                | README.md; CHANGELOG.md for user-visible release changes                                                 |
+| Production limitation                          | README limitations/troubleshooting and the relevant technical document                                   |
+| No documentation impact                        | No extra paperwork; if using a PR, mark documentation not applicable and explain why                     |
 
 Repository documentation becomes the maintained source of truth once implementation begins. Keep the original plan linked in docs/ROADMAP.md for context, but do not leave corrected behavior only in an external document.
 

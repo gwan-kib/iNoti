@@ -103,7 +103,9 @@ body[data-question-active="true"] .status-badge {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.detection-time { grid-column: 2; }
+.detection-time {
+  grid-column: 2;
+}
 .elapsed-time {
   grid-column: 3;
   border-left: 0.0625rem solid var(--inoti-border);
@@ -196,7 +198,11 @@ body[data-question-active="true"] .status-badge {
   translate: -50% -50%;
   z-index: -1;
   pointer-events: none;
-  background: radial-gradient(circle at center, var(--inoti-alert-pulse), transparent 100%);
+  background: radial-gradient(
+    circle at center,
+    var(--inoti-alert-pulse),
+    transparent 100%
+  );
   transform: scale(0);
   opacity: 0;
 }

@@ -1,98 +1,149 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="../assets/inoti-logo.png">
-  <title>iNoti Dev Tester</title>
-  <link rel="stylesheet" href="./dev-testing.css">
-</head>
-<body>
-  <main class="shell">
-    <header>
-      <p class="eyebrow">Development only</p>
-      <h1 class="brand"><img class="brand-logo" src="../assets/inoti-logo.png" alt=""><span class="brand-text">iNoti Dev Tester</span></h1>
-      <p>Exercise the alert UI without an iClicker class. These controls do not send synthetic events into live detection.</p>
-    </header>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="../assets/inoti-logo.png" />
+    <title>iNoti Dev Tester</title>
+    <link rel="stylesheet" href="./dev-testing.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <p class="eyebrow">Development only</p>
+        <h1 class="brand">
+          <img class="brand-logo" src="../assets/inoti-logo.png" alt="" /><span
+            class="brand-text"
+            >iNoti Dev Tester</span
+          >
+        </h1>
+        <p>
+          Exercise the alert UI without an iClicker class. These controls do not
+          send synthetic events into live detection.
+        </p>
+      </header>
 
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <h2>PiP state simulator</h2>
-          <p id="pip-status" role="status">PiP: checking support…</p>
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <h2>PiP state simulator</h2>
+            <p id="pip-status" role="status">PiP: checking support…</p>
+          </div>
         </div>
-      </div>
-      <div class="controls">
-        <button id="open-pip" type="button">Open PiP</button>
-        <button id="idle" type="button"><span class="button-text">Idle</span></button>
-        <button id="question" type="button">New Question</button>
-        <button id="ended" type="button"><span class="button-text">End Question</span></button>
-        <button id="stop" type="button">Close PiP</button>
-      </div>
-      <label class="pulse-option">
-        <input id="pulse-alerts" type="checkbox">
-        <span class="pulse-option-text">Pulse new-question background</span>
-      </label>
-      <p class="pulse-help"><span class="pulse-help-text">Applies to this tester and its PiP for this session. Reduced-motion preferences still apply.</span></p>
-      <div class="preview-wrap">
-        <div class="preview-label">Inline preview</div>
-        <iframe id="preview" title="iNoti notification preview"></iframe>
-      </div>
-    </section>
+        <div class="controls">
+          <button id="open-pip" type="button">Open PiP</button>
+          <button id="idle" type="button">
+            <span class="button-text">Idle</span>
+          </button>
+          <button id="question" type="button">New Question</button>
+          <button id="ended" type="button">
+            <span class="button-text">End Question</span>
+          </button>
+          <button id="stop" type="button">Close PiP</button>
+        </div>
+        <label class="pulse-option">
+          <input id="pulse-alerts" type="checkbox" />
+          <span class="pulse-option-text">Pulse new-question background</span>
+        </label>
+        <p class="pulse-help">
+          <span class="pulse-help-text"
+            >Applies to this tester and its PiP for this session. Reduced-motion
+            preferences still apply.</span
+          >
+        </p>
+        <div class="preview-wrap">
+          <div class="preview-label">Inline preview</div>
+          <iframe id="preview" title="iNoti notification preview"></iframe>
+        </div>
+      </section>
 
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <h2>Monitoring panel</h2>
-          <p>The on-page control shown on the iClicker tab. Buttons force each of its states.</p>
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Monitoring panel</h2>
+            <p>
+              The on-page control shown on the iClicker tab. Buttons force each
+              of its states.
+            </p>
+          </div>
         </div>
-      </div>
-      <div class="controls">
-        <button id="panel-unmonitored" type="button"><span class="button-text">Not monitoring</span></button>
-        <button id="panel-monitoring" type="button"><span class="button-text">Monitoring</span></button>
-        <button id="panel-opening" type="button"><span class="button-text">Opening</span></button>
-        <button id="panel-unsupported" type="button"><span class="button-text">Unsupported</span></button>
-        <button id="panel-failed" type="button"><span class="button-text">Failed</span></button>
-      </div>
-      <div class="preview-wrap">
-        <div class="preview-label">On-page preview</div>
-        <iframe id="panel-preview" title="iNoti monitoring panel preview"></iframe>
-      </div>
-    </section>
+        <div class="controls">
+          <button id="panel-unmonitored" type="button">
+            <span class="button-text">Not monitoring</span>
+          </button>
+          <button id="panel-monitoring" type="button">
+            <span class="button-text">Monitoring</span>
+          </button>
+          <button id="panel-opening" type="button">
+            <span class="button-text">Opening</span>
+          </button>
+          <button id="panel-unsupported" type="button">
+            <span class="button-text">Unsupported</span>
+          </button>
+          <button id="panel-failed" type="button">
+            <span class="button-text">Failed</span>
+          </button>
+        </div>
+        <div class="preview-wrap">
+          <div class="preview-label">On-page preview</div>
+          <iframe
+            id="panel-preview"
+            title="iNoti monitoring panel preview"
+          ></iframe>
+        </div>
+      </section>
 
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <h2>Sound</h2>
-          <p>Uses the production new-question → worker → offscreen path. The worker plays only when the saved preference is on.</p>
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Sound</h2>
+            <p>
+              Uses the production new-question → worker → offscreen path. The
+              worker plays only when the saved preference is on.
+            </p>
+          </div>
         </div>
-      </div>
-      <label class="sound-option">
-        <input id="sound-alerts" type="checkbox">
-        <span class="sound-option-text">Sound notification</span>
-      </label>
-      <div class="sound-choice">
-        <label class="sound-choice-label" for="sound-choice"><span class="sound-choice-label-text">Notification sound</span></label>
-        <select id="sound-choice"></select>
-      </div>
-      <p class="sound-help"><span class="sound-help-text">Changes are written to chrome.storage.local, the same values the worker and popup use. Test sound plays the selected sound through the worker → offscreen path.</span></p>
-      <div class="controls">
-        <button id="test-sound" type="button"><span class="button-text">Test sound</span></button>
-      </div>
-      <p id="sound-status" class="sound-status" role="status"></p>
-    </section>
+        <label class="sound-option">
+          <input id="sound-alerts" type="checkbox" />
+          <span class="sound-option-text">Sound notification</span>
+        </label>
+        <div class="sound-choice">
+          <label class="sound-choice-label" for="sound-choice"
+            ><span class="sound-choice-label-text"
+              >Notification sound</span
+            ></label
+          >
+          <select id="sound-choice"></select>
+        </div>
+        <p class="sound-help">
+          <span class="sound-help-text"
+            >Changes are written to chrome.storage.local, the same values the
+            worker and popup use. Test sound plays the selected sound through
+            the worker → offscreen path.</span
+          >
+        </p>
+        <div class="controls">
+          <button id="test-sound" type="button">
+            <span class="button-text">Test sound</span>
+          </button>
+        </div>
+        <p id="sound-status" class="sound-status" role="status"></p>
+      </section>
 
-    <section class="panel">
-      <div class="panel-heading">
-        <div>
-          <h2>Event log</h2>
-          <p>Also written to DevTools as <code>[iNoti][dev]</code>. Keep captures free of student/session data.</p>
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Event log</h2>
+            <p>
+              Also written to DevTools as <code>[iNoti][dev]</code>. Keep
+              captures free of student/session data.
+            </p>
+          </div>
+          <button id="clear-log" class="secondary" type="button">Clear</button>
         </div>
-        <button id="clear-log" class="secondary" type="button">Clear</button>
-      </div>
-      <ol id="event-log" class="event-log" aria-live="polite"></ol>
-    </section>
-  </main>
-  <script src="./dev-testing.js"></script>
-</body>
+        <ol id="event-log" class="event-log" aria-live="polite"></ol>
+      </section>
+    </main>
+    <script src="./dev-testing.js"></script>
+  </body>
 </html>

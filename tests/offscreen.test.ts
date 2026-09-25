@@ -1,59 +1,83 @@
-import { expect, it, vi } from 'vitest';
-import { createOffscreenPlayer } from '../src/offscreen/offscreen';
+import { expect, it, vi } from "vitest";
+import { createOffscreenPlayer } from "../src/offscreen/offscreen";
 
 function audioFixture(play: () => Promise<void> = () => Promise.resolve()) {
   return { pause: vi.fn(), play: vi.fn(play) };
 }
 
 function player(audio = audioFixture()) {
-  const getUrl = vi.fn((path: string) => `chrome-extension://test-extension/${path}`);
+  const getUrl = vi.fn(
+    (path: string) => `chrome-extension://test-extension/${path}`,
+  );
   const createAudio = vi.fn(() => audio as unknown as HTMLAudioElement);
-  return { player: createOffscreenPlayer(getUrl, createAudio), getUrl, createAudio, audio };
+  return {
+    player: createOffscreenPlayer(getUrl, createAudio),
+    getUrl,
+    createAudio,
+    audio,
+  };
 }
 
 it.each([
-  ['default-chime', 'assets/sounds/default-chime.wav'],
-  ['soft-bell', 'assets/sounds/soft-bell.wav'],
-  ['bright-ping', 'assets/sounds/bright-ping.wav'],
-  ['calm-echo', 'assets/sounds/calm-echo.wav'],
-])('plays registered sound %s through its extension URL', (soundId, path) => {
+  ["default-chime", "assets/sounds/default-chime.wav"],
+  ["soft-bell", "assets/sounds/soft-bell.wav"],
+  ["bright-ping", "assets/sounds/bright-ping.wav"],
+  ["calm-echo", "assets/sounds/calm-echo.wav"],
+])("plays registered sound %s through its extension URL", (soundId, path) => {
   const { player: subject, getUrl, createAudio } = player();
-  subject.handleMessage({ type: 'PLAY_SOUND', target: 'offscreen', soundId });
+  subject.handleMessage({ type: "PLAY_SOUND", target: "offscreen", soundId });
   expect(getUrl).toHaveBeenCalledExactlyOnceWith(path);
-  expect(createAudio).toHaveBeenCalledExactlyOnceWith(`chrome-extension://test-extension/${path}`);
+  expect(createAudio).toHaveBeenCalledExactlyOnceWith(
+    `chrome-extension://test-extension/${path}`,
+  );
 });
 
 it.each([
-  { type: 'NEW_QUESTION_DETECTED' },
-  { type: 'PLAY_SOUND', target: 'offscreen', soundId: '../../etc/passwd' },
-  { type: 'PLAY_SOUND', target: 'page', soundId: 'default-chime' },
+  { type: "NEW_QUESTION_DETECTED" },
+  { type: "PLAY_SOUND", target: "offscreen", soundId: "../../etc/passwd" },
+  { type: "PLAY_SOUND", target: "page", soundId: "default-chime" },
   null,
-])('ignores an invalid or unregistered message %j', (message) => {
+])("ignores an invalid or unregistered message %j", (message) => {
   const { player: subject, getUrl, createAudio } = player();
   subject.handleMessage(message);
   expect(getUrl).not.toHaveBeenCalled();
   expect(createAudio).not.toHaveBeenCalled();
 });
 
-it('stops the previous chime so a rapid next question restarts cleanly', () => {
+it("stops the previous chime so a rapid next question restarts cleanly", () => {
   const first = audioFixture();
   const second = audioFixture();
   const getUrl = vi.fn((path: string) => path);
-  const createAudio = vi.fn()
+  const createAudio = vi
+    .fn()
     .mockReturnValueOnce(first as unknown as HTMLAudioElement)
     .mockReturnValueOnce(second as unknown as HTMLAudioElement);
   const subject = createOffscreenPlayer(getUrl, createAudio);
-  subject.handleMessage({ type: 'PLAY_SOUND', target: 'offscreen', soundId: 'default-chime' });
-  subject.handleMessage({ type: 'PLAY_SOUND', target: 'offscreen', soundId: 'default-chime' });
+  subject.handleMessage({
+    type: "PLAY_SOUND",
+    target: "offscreen",
+    soundId: "default-chime",
+  });
+  subject.handleMessage({
+    type: "PLAY_SOUND",
+    target: "offscreen",
+    soundId: "default-chime",
+  });
   expect(first.pause).toHaveBeenCalledOnce();
   expect(second.play).toHaveBeenCalledOnce();
 });
 
-it('handles a rejected play promise without throwing', async () => {
-  const log = vi.spyOn(console, 'info').mockImplementation(() => {});
-  const { player: subject } = player(audioFixture(() => Promise.reject(new Error('private'))));
-  subject.handleMessage({ type: 'PLAY_SOUND', target: 'offscreen', soundId: 'default-chime' });
+it("handles a rejected play promise without throwing", async () => {
+  const log = vi.spyOn(console, "info").mockImplementation(() => {});
+  const { player: subject } = player(
+    audioFixture(() => Promise.reject(new Error("private"))),
+  );
+  subject.handleMessage({
+    type: "PLAY_SOUND",
+    target: "offscreen",
+    soundId: "default-chime",
+  });
   await Promise.resolve();
-  expect(JSON.stringify(log.mock.calls)).not.toContain('private');
+  expect(JSON.stringify(log.mock.calls)).not.toContain("private");
   log.mockRestore();
 });

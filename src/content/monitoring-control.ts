@@ -15,12 +15,16 @@ export interface MonitoringPanelStatus {
 // Copy stays a normalized state/failure category: never surface arbitrary errors,
 // routes, or identifiers from the page.
 function explanationFor({ monitoring, pip }: MonitoringPanelStatus): string {
-  if (pip.issue === "unsupported") return "Notification window needs desktop Chrome 123 or newer.";
-  if (pip.issue === "failed") return "The Notification window could not open. Click the button to try again.";
+  if (pip.issue === "unsupported")
+    return "Notification window needs desktop Chrome 123 or newer.";
+  if (pip.issue === "failed")
+    return "The Notification window could not open. Click the button to try again.";
   if (pip.opening) return "Opening the Notification window…";
-  if (!monitoring) return "Open a supported iClicker class to monitor for new questions.";
+  if (!monitoring)
+    return "Open a supported iClicker class to monitor for new questions.";
   // Monitoring is deliberately not tied to the window: the copy states both.
-  if (pip.state === "CLOSED") return "iNoti is monitoring this class. Open the notification window for visual alerts.";
+  if (pip.state === "CLOSED")
+    return "iNoti is monitoring this class. Open the notification window for visual alerts.";
   return "iNoti is monitoring this class. Do not close the iClicker tab.";
 }
 
@@ -32,7 +36,11 @@ function stateKey({ monitoring, pip }: MonitoringPanelStatus): string {
   return pip.state === "CLOSED" ? "monitoring" : "pip-open";
 }
 
-export function createMonitoringControl(document: Document, toggle: () => void, openSettings = requestSettingsPopup) {
+export function createMonitoringControl(
+  document: Document,
+  toggle: () => void,
+  openSettings = requestSettingsPopup,
+) {
   const host = document.createElement("div");
   host.id = "inoti-monitoring-control";
   // Keep the panel and its positioning isolated in the shadow stylesheet.
@@ -97,7 +105,9 @@ export function createMonitoringControl(document: Document, toggle: () => void, 
     settings.disabled = true;
     clearSettingsNotice();
     try {
-      if (!(await openSettings())) settingsStatus.textContent = "Couldn't open settings, use toolbar icon.";
+      if (!(await openSettings()))
+        settingsStatus.textContent =
+          "Couldn't open settings, use toolbar icon.";
     } catch {
       settingsStatus.textContent = "Couldn't open settings, use toolbar icon.";
     } finally {
@@ -107,7 +117,8 @@ export function createMonitoringControl(document: Document, toggle: () => void, 
   });
   const explanation = document.createElement("div");
   explanation.className = "monitoring-explanation";
-  explanation.textContent = "Open a supported iClicker class to monitor for new questions.";
+  explanation.textContent =
+    "Open a supported iClicker class to monitor for new questions.";
   const button = document.createElement("button");
   button.type = "button";
   const label = document.createElement("span");
@@ -135,7 +146,8 @@ export function createMonitoringControl(document: Document, toggle: () => void, 
       // action: remove the button entirely while the window is open.
       const open = status.pip.state !== "CLOSED";
       button.hidden = open;
-      button.disabled = status.pip.opening || status.pip.issue === "unsupported";
+      button.disabled =
+        status.pip.opening || status.pip.issue === "unsupported";
       label.textContent =
         status.pip.issue === "unsupported"
           ? "Document PiP unavailable"
@@ -152,7 +164,9 @@ export function createMonitoringControl(document: Document, toggle: () => void, 
             : "Open the notification window for visual alerts";
       button.setAttribute(
         "aria-label",
-        status.pip.issue === "failed" ? "Could not open the Notification window. Try again" : label.textContent,
+        status.pip.issue === "failed"
+          ? "Could not open the Notification window. Try again"
+          : label.textContent,
       );
       explanation.textContent = explanationFor(status);
       explanation.setAttribute("data-state", stateKey(status));

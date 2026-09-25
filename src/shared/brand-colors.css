@@ -1,5 +1,6 @@
 /* Shared palette for extension pages, PiP, and the monitoring shadow root. */
-:root, :host {
+:root,
+:host {
   --inoti-surface: #fbf7ff;
   --inoti-alert-surface: #f8e5f2;
   --inoti-alert-pulse: #e5d2f7;
@@ -11,7 +12,7 @@
   --inoti-page: #f3ebfa;
   --inoti-text-description: #705a7e;
   --inoti-border: #dfcfe9;
-  --inoti-panel-shadow: rgba(77, 36, 112, .08);
+  --inoti-panel-shadow: rgba(77, 36, 112, 0.08);
   --inoti-secondary-surface: #d28aff7a;
   --inoti-status-monitoring-surface: #f0d9ff;
   --inoti-secondary-text: #533767;
@@ -21,7 +22,7 @@
   --inoti-log-muted: #c5afd4;
   --inoti-monitor-surface: #7040b5;
   --inoti-monitor-focus: #edabd3;
-  --inoti-control-shadow: rgba(63, 29, 88, .2);
+  --inoti-control-shadow: rgba(63, 29, 88, 0.2);
   --inoti-on-brand: #ffffff;
   --inoti-popup-text: #1c1545;
   --inoti-popup-border: #e9dff7;

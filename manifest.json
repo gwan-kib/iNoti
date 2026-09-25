@@ -4,11 +4,7 @@
   "name": "iNoti",
   "version": "0.1.0",
   "description": "Visual/audio notifications for iClicker questions.",
-  "permissions": [
-    "webNavigation",
-    "storage",
-    "offscreen"
-  ],
+  "permissions": ["webNavigation", "storage", "offscreen"],
   "icons": {
     "128": "assets/inoti-logo.png"
   },
@@ -17,12 +13,8 @@
   },
   "content_scripts": [
     {
-      "matches": [
-        "https://student.iclicker.com/*"
-      ],
-      "js": [
-        "content.js"
-      ],
+      "matches": ["https://student.iclicker.com/*"],
+      "js": ["content.js"],
       "run_at": "document_start"
     }
   ],

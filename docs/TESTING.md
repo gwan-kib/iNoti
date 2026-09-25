@@ -4,14 +4,14 @@
 
 Use Node 22.13+ within 22.x and npm 10 or 11; see [setup](../CONTRIBUTING.md).
 
-| Command | Check |
-| --- | --- |
-| `npm ci` | Reproducible installation |
-| `npm run lint` | Source, tests, configuration; excludes local nested .kilo worktrees |
-| `npm run typecheck` | Strict TypeScript and Chrome types |
-| `npm test` | Real Vitest tests under tests/ |
-| `npm run build` | Five-stage extension package (content, worker, popup, tester, offscreen) plus copied sounds |
-| `npm run check` | Lint, type-check, tests, build |
+| Command             | Check                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| `npm ci`            | Reproducible installation                                                                   |
+| `npm run lint`      | Source, tests, configuration; excludes local nested .kilo worktrees                         |
+| `npm run typecheck` | Strict TypeScript and Chrome types                                                          |
+| `npm test`          | Real Vitest tests under tests/                                                              |
+| `npm run build`     | Five-stage extension package (content, worker, popup, tester, offscreen) plus copied sounds |
+| `npm run check`     | Lint, type-check, tests, build                                                              |
 
 CI runs equivalent checks; hosted CI results remain separate from local verification.
 
@@ -95,33 +95,33 @@ Build, reload the extension in chrome://extensions, refresh the student tab, and
 
 All rows below are **pending real-browser verification**.
 
-| Scenario | Expected result |
-| --- | --- |
-| Enable **Play sound**, join a supported class, leave the window closed | Monitoring runs automatically; panel reads `iNoti is monitoring this class. Open the notification window for visual alerts.` |
-| Authorized instructor opens a new poll from waiting with the window closed | Exactly one sound plays; no window opens; no page navigation or fallback alert |
-| Open the window, then a new poll from waiting | Exactly one sound and one visual alert with the correct local detection time |
-| Duplicate hashchange + webNavigation reports for one transition | One sound and one alert update total |
-| Stay on the same active poll | No repeat sound, alert, window, resize, or timer dismissal |
-| Poll ends/submitted/results route or waiting | No sound; an open window shows Question Ended with its local end-detection time, then returns to waiting about two minutes later |
-| Next closed/waiting to active transition | Fresh sound and, if open, a fresh alert in the same window |
-| Initial load/refresh on an active poll | No sound and no fake new question; the panel offers Open notification window |
-| Open the window during an already-active question | No sound replay and no retroactive alert; the window starts idle |
-| Close the window (panel or title bar) | Only the window closes; monitoring continues; next new question still sounds |
-| Reopen the window | No sound merely because it opened |
-| Disable **Play sound** while monitoring stays active | No sound; monitoring and visual alerts continue; no offscreen audio document is created |
-| Re-enable **Play sound** | The next new question plays a sound again |
-| Unsupported/home/quiz route | No monitoring panel, question alert, or sound |
-| Leave supported session/change class | Old window closes; the old session stops alerting; unsupported pages hide the control |
-| Navigate away while the window is opening | Late opened window is closed |
-| Full refresh/close opener | Window closes; monitoring resumes automatically for a supported route after the page loads |
-| Back/forward cache restoration | Fresh route baseline, no duplicate active alert or sound |
-| Missing API (controlled unsupported environment) | Clear unavailable window state; monitoring and sound continue without a visual window |
-| Request denied/fails | Visible retry state; another explicit click can retry |
-| Extension/worker restart | Worker listeners return; offscreen audio is recreated on demand when the next sound is requested |
-| Switch Chrome tabs with iClicker in the background, then a new poll | Record whether exactly one sound plays; PiP (if open) remains visible |
-| Minimize Chrome, then a new poll | Record whether exactly one sound plays through the backgrounded tab |
-| Use another desktop application, then a new poll | Record whether exactly one sound plays |
-| Memory Saver, background freeze/discard, reconnect | Record missed updates/closure and whether a frozen/discarded page still alerts; no reliability guarantee or discard override |
+| Scenario                                                                   | Expected result                                                                                                                  |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Enable **Play sound**, join a supported class, leave the window closed     | Monitoring runs automatically; panel reads `iNoti is monitoring this class. Open the notification window for visual alerts.`     |
+| Authorized instructor opens a new poll from waiting with the window closed | Exactly one sound plays; no window opens; no page navigation or fallback alert                                                   |
+| Open the window, then a new poll from waiting                              | Exactly one sound and one visual alert with the correct local detection time                                                     |
+| Duplicate hashchange + webNavigation reports for one transition            | One sound and one alert update total                                                                                             |
+| Stay on the same active poll                                               | No repeat sound, alert, window, resize, or timer dismissal                                                                       |
+| Poll ends/submitted/results route or waiting                               | No sound; an open window shows Question Ended with its local end-detection time, then returns to waiting about two minutes later |
+| Next closed/waiting to active transition                                   | Fresh sound and, if open, a fresh alert in the same window                                                                       |
+| Initial load/refresh on an active poll                                     | No sound and no fake new question; the panel offers Open notification window                                                     |
+| Open the window during an already-active question                          | No sound replay and no retroactive alert; the window starts idle                                                                 |
+| Close the window (panel or title bar)                                      | Only the window closes; monitoring continues; next new question still sounds                                                     |
+| Reopen the window                                                          | No sound merely because it opened                                                                                                |
+| Disable **Play sound** while monitoring stays active                       | No sound; monitoring and visual alerts continue; no offscreen audio document is created                                          |
+| Re-enable **Play sound**                                                   | The next new question plays a sound again                                                                                        |
+| Unsupported/home/quiz route                                                | No monitoring panel, question alert, or sound                                                                                    |
+| Leave supported session/change class                                       | Old window closes; the old session stops alerting; unsupported pages hide the control                                            |
+| Navigate away while the window is opening                                  | Late opened window is closed                                                                                                     |
+| Full refresh/close opener                                                  | Window closes; monitoring resumes automatically for a supported route after the page loads                                       |
+| Back/forward cache restoration                                             | Fresh route baseline, no duplicate active alert or sound                                                                         |
+| Missing API (controlled unsupported environment)                           | Clear unavailable window state; monitoring and sound continue without a visual window                                            |
+| Request denied/fails                                                       | Visible retry state; another explicit click can retry                                                                            |
+| Extension/worker restart                                                   | Worker listeners return; offscreen audio is recreated on demand when the next sound is requested                                 |
+| Switch Chrome tabs with iClicker in the background, then a new poll        | Record whether exactly one sound plays; PiP (if open) remains visible                                                            |
+| Minimize Chrome, then a new poll                                           | Record whether exactly one sound plays through the backgrounded tab                                                              |
+| Use another desktop application, then a new poll                           | Record whether exactly one sound plays                                                                                           |
+| Memory Saver, background freeze/discard, reconnect                         | Record missed updates/closure and whether a frozen/discarded page still alerts; no reliability guarantee or discard override     |
 
 Also test Chrome Memory Saver/discard separately: a discarded or fully frozen iClicker page may not run the content script at all and must not be conflated with an ordinary background tab.
 

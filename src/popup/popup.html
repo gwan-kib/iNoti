@@ -15,7 +15,10 @@
   <body>
     <main>
       <div class="brand">
-        <img class="brand-logo" src="../assets/inoti-logo.png" alt="" /><span class="brand-text">iNoti</span>
+        <img class="brand-logo" src="../assets/inoti-logo.png" alt="" /><span
+          class="brand-text"
+          >iNoti</span
+        >
       </div>
       <div class="settings">
         <div class="setting-card">
@@ -23,7 +26,9 @@
             ><span class="material-symbols-rounded">blur_circular</span></span
           >
           <div class="setting-copy">
-            <label class="toggle-label" for="pulse-alerts"><span>Pulse iNoti background</span></label>
+            <label class="toggle-label" for="pulse-alerts"
+              ><span>Pulse iNoti background</span></label
+            >
             <p id="pulse-description" class="setting-description">
               <span>When a new iClicker question is detected</span>
             </p>
@@ -38,9 +43,13 @@
           />
         </div>
         <div class="setting-card">
-          <span class="setting-icon" aria-hidden="true"><span class="material-symbols-rounded">volume_up</span></span>
+          <span class="setting-icon" aria-hidden="true"
+            ><span class="material-symbols-rounded">volume_up</span></span
+          >
           <div class="setting-copy">
-            <label class="toggle-label" for="sound-alerts"><span>Play sound</span></label>
+            <label class="toggle-label" for="sound-alerts"
+              ><span>Play sound</span></label
+            >
             <p id="sound-description" class="setting-description">
               <span>When a new iClicker question is detected</span>
             </p>
@@ -55,24 +64,32 @@
           />
         </div>
         <div class="setting-card sound-choice">
-          <span class="setting-icon" aria-hidden="true"><span class="material-symbols-rounded">music_note</span></span>
+          <span class="setting-icon" aria-hidden="true"
+            ><span class="material-symbols-rounded">music_note</span></span
+          >
           <label class="sound-choice-label" for="sound-choice"
             ><span class="sound-choice-label-text">Sound</span></label
           >
           <div class="select-wrap">
             <select id="sound-choice" disabled></select>
-            <span class="material-symbols-rounded select-chevron" aria-hidden="true">expand_more</span>
+            <span
+              class="material-symbols-rounded select-chevron"
+              aria-hidden="true"
+              >expand_more</span
+            >
           </div>
         </div>
       </div>
       <p id="preference-status" class="preference-status" role="status"></p>
       <div class="popup-actions">
         <button id="test-sound" class="sound-test" type="button">
-          <span class="material-symbols-rounded button-icon" aria-hidden="true">play_arrow</span
+          <span class="material-symbols-rounded button-icon" aria-hidden="true"
+            >play_arrow</span
           ><span class="button-text">Test sound</span>
         </button>
         <button id="open-dev-tester" type="button">
-          <span class="material-symbols-rounded button-icon" aria-hidden="true">open_in_new</span
+          <span class="material-symbols-rounded button-icon" aria-hidden="true"
+            >open_in_new</span
           ><span class="button-text">Dev testing</span>
         </button>
       </div>

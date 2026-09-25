@@ -6,12 +6,12 @@ The project owner supplied the following observations for revised Phase 1. They 
 
 Supported origin: `https://student.iclicker.com`.
 
-| Hash route | Normalized state |
-| --- | --- |
-| `#/class/<classId>` | `WAITING` |
-| `#/class/<classId>/poll` | `QUESTION_ACTIVE` |
+| Hash route                                | Normalized state  |
+| ----------------------------------------- | ----------------- |
+| `#/class/<classId>`                       | `WAITING`         |
+| `#/class/<classId>/poll`                  | `QUESTION_ACTIVE` |
 | `#/class/<classId>/question/<questionId>` | `QUESTION_CLOSED` |
-| Everything else, including quiz routes | `UNSUPPORTED` |
+| Everything else, including quiz routes    | `UNSUPPORTED`     |
 
 The observed sequence is waiting, poll, question, poll, question. Closed question routes expose different question UUIDs, but the poll route has no question UUID. Hash routes were observed changing in a background tab. Refreshing on a poll leaves the URL on that poll.
 
@@ -25,14 +25,14 @@ Latest owner-supplied real Chrome evidence: the content console showed `loaded` 
 
 `src/content/monitor.ts` reads the initial hash as a baseline. One evaluation function handles `hashchange` event URLs and validated `NAVIGATION_CHANGED` hashes from the worker. The worker uses Chrome `onHistoryStateUpdated` and `onReferenceFragmentUpdated`, filtered by hostname plus exact HTTPS origin and top frame. It forwards only supported route hashes; unsupported routes become an empty marker to reset the baseline without disclosing arbitrary route content. No timers, DOM observation, text inspection, History API patching, API inspection, or WebSocket interception is used.
 
-| Transition | Candidate |
-| --- | --- |
-| Initial active route, including refresh | No |
-| Same-class waiting to active | Yes |
-| Same-class closed to active | Yes |
-| Active to closed, active to active, waiting to waiting | No |
-| Unsupported to active, or changing classes directly into active | No |
-| Unsupported to waiting/closed, then same-class active | Yes, on the later supported transition |
+| Transition                                                      | Candidate                              |
+| --------------------------------------------------------------- | -------------------------------------- |
+| Initial active route, including refresh                         | No                                     |
+| Same-class waiting to active                                    | Yes                                    |
+| Same-class closed to active                                     | Yes                                    |
+| Active to closed, active to active, waiting to waiting          | No                                     |
+| Unsupported to active, or changing classes directly into active | No                                     |
+| Unsupported to waiting/closed, then same-class active           | Yes, on the later supported transition |
 
 Previous state advances before updating the monitoring controller. Consecutive reports of the same route from either source cannot resend it, without cooldown timers. An eligible transition is the single accepted new-question event: it requests the configured sound and supplies only local detection time to an already-open PiP; it never opens a window. Leaving active for waiting/closed after a displayed alert shows Question Ended with the local end-detection time. Repeated waiting/closed reports do not replace that timestamp. Initial waiting/closed routes remain idle; an active route that never alerted does not produce an ended screen. Unsupported routes end monitoring for that session, while a supported replacement class keeps monitoring active for the new class. NAVIGATION_CHANGED carries a transient route hash, potentially containing class/question IDs, only to the originating page; it is neither persisted nor logged. State stays in the content script so worker suspension cannot erase the baseline.
 
