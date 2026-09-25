@@ -198,6 +198,14 @@ Consequences: the panel now shows Open/Close notification window and monitoring-
 
 Evidence: automated tests cover monitoring/window separation, the single acceptance point and duplicate suppression, registry and preference fallback, worker offscreen lifecycle and disabled-sound skip, and offscreen playback/replay/rejection. Live browser, background/minimized, and Memory Saver checks remain manual.
 
+## D018: Ended screen returns to idle after two minutes
+
+Status: accepted and implemented at the owner's request.
+
+Choice: when a question ends and the notification window is open, the ended screen starts a fixed two-minute timer (`QUESTION_END_IDLE_MS` in `src/content/pip-controller.ts`). On expiry the controller calls `view.idle()` and moves to the idle window state, logging `PiP -> idle after end timeout`. The timer is cleared by a new question, a manual answer, an explicit idle, a close, and window pagehide, so it cannot override a newer state or fire against a closed window. Duplicate end reports do not restart it because `ended()` only acts from the active state.
+
+Consequences: the ended screen is no longer persistent; the window returns to the waiting screen about two minutes after the end was detected. Monitoring, sound, the elapsed timer, and manual-answer behavior are unchanged. The duration is fixed with no setting. Real timing/screenshot verification remains manual.
+
 ## Decisions still required
 
 - Per-question identity, cross-tab duplicate handling, and any future fingerprint policy.

@@ -18,6 +18,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 - The monitoring panel action is now an Open/Close notification window toggle with monitoring-first copy; the button is no longer hidden while the window is open.
 
+- The Question ended screen now returns the notification window to its waiting state about two minutes after the question ends; a new question, a manual answer, or closing the window cancels that timeout.
+
 - Removed the monitoring panel's question-active state; a new question no longer changes the panel copy, which stays on the monitoring message while the notification window carries the alert.
 
 - The monitoring panel now pins the brand row to the top, anchors the button to the bottom, and centers the explanation in the remaining space.

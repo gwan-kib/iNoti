@@ -8,7 +8,7 @@ This folder is for local testing evidence and notes that should not become produ
 2. Click the iNoti toolbar icon.
 3. Click **Open Dev Tester**.
 4. Use the inline preview for quick visual state checks.
-5. Click **Open PiP** to test the real shared Document Picture-in-Picture view, then drive **New Question**, **Idle**, **End Question**, and **Close PiP** manually.
+5. Click **Open PiP** to test the real shared Document Picture-in-Picture view, then drive **New Question**, **Idle**, **End Question**, and **Close PiP** manually. **End Question** shows the ended screen, which returns to waiting about two minutes later (a new question or **Close PiP** cancels that timeout).
 6. Use the **Monitoring panel** section to check the on-page control in a mock page and force each state (Not monitoring, Monitoring, Opening, Unsupported, Failed).
 7. Use the **Sound** section to load/save the real `soundEnabled` preference, pick a **Notification sound** (Default Chime, Soft Bell, Bright Ping, Calm Echo), and click **Test sound**. This sends the production `NEW_QUESTION_DETECTED` request to the service worker, which plays the registered selected sound through the offscreen document when enabled. The saved preferences are shared with the popup and the worker.
 

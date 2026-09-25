@@ -68,7 +68,7 @@ On a real PiP active alert, click Question Answered (also test Tab then Enter/Sp
 
 ## Question ended screen checks
 
-In the tester, open PiP, choose New Question, then End Question. Verify the neutral background, Question Ended title, local Ended at time, and hidden elapsed timer. In a controlled class, check both active-to-waiting and active-to-results routes. Repeated end reports must retain the first end time. The next question must restore the active title, pulse preference, and fresh elapsed timer in the same window. Initial waiting/closed routes and opening the window on an already-active question must not invent an ended alert. Leaving the class ends monitoring; closing the window does not.
+In the tester, open PiP, choose New Question, then End Question. Verify the neutral background, Question Ended title, local Ended at time, and hidden elapsed timer. Confirm the ended screen returns to the waiting screen about two minutes later (a fresh `End Question` should idle the real window then the inline preview), and that a new question before the timeout cancels it. In a controlled class, check both active-to-waiting and active-to-results routes. Repeated end reports must retain the first end time and must not restart the timeout. The next question must restore the active title, pulse preference, and fresh elapsed timer in the same window. Initial waiting/closed routes and opening the window on an already-active question must not invent an ended alert. Leaving the class ends monitoring; closing the window does not. Automated controller tests cover the timeout and its cancellation with fake timers.
 
 `npm run check` passed lint, type-check, all 96 tests, and all four builds. Automated controller, route integration, and view tests cover ended transitions and cleanup. Live iClicker and visual browser verification remain pending; no connected browser or authenticated class session is available in this session.
 
@@ -101,7 +101,7 @@ All rows below are **pending real-browser verification**.
 | Open the window, then a new poll from waiting | Exactly one sound and one visual alert with the correct local detection time |
 | Duplicate hashchange + webNavigation reports for one transition | One sound and one alert update total |
 | Stay on the same active poll | No repeat sound, alert, window, resize, or timer dismissal |
-| Poll ends/submitted/results route or waiting | No sound; an open window shows Question Ended with its local end-detection time |
+| Poll ends/submitted/results route or waiting | No sound; an open window shows Question Ended with its local end-detection time, then returns to waiting about two minutes later |
 | Next closed/waiting to active transition | Fresh sound and, if open, a fresh alert in the same window |
 | Initial load/refresh on an active poll | No sound and no fake new question; the panel offers Open notification window |
 | Open the window during an already-active question | No sound replay and no retroactive alert; the window starts idle |

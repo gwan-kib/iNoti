@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { createPipController, documentPip } from '../src/content/pip-controller';
+import { createPipController, documentPip, QUESTION_END_IDLE_MS } from '../src/content/pip-controller';
 import { createPipView } from '../src/content/pip-view';
 import { createConfiguredPipView } from '../src/content/configured-pip-view';
 import { DocumentFake } from './dom-fake';
@@ -311,6 +311,49 @@ it('wires the configured view to focus the opener synchronously without closing 
   view.idle();
 });
 
+
+it('returns the ended screen to idle two minutes after a question ends', async () => {
+  vi.useFakeTimers();
+  const f = fixture();
+  f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
+  await f.controller.open();
+  f.controller.question(1);
+  f.controller.ended(2);
+  expect(f.view.ended).toHaveBeenCalledExactlyOnceWith(2);
+  expect(f.view.idle).toHaveBeenCalledOnce();
+  vi.advanceTimersByTime(QUESTION_END_IDLE_MS - 1);
+  expect(f.view.idle).toHaveBeenCalledOnce();
+  expect(f.changed).toHaveBeenLastCalledWith({ state: 'QUESTION_ENDED', opening: false });
+  vi.advanceTimersByTime(1);
+  expect(f.view.idle).toHaveBeenCalledTimes(2);
+  expect(f.changed).toHaveBeenLastCalledWith({ state: 'OPEN_IDLE', opening: false });
+});
+
+it('cancels the ended-screen timeout when a new question arrives', async () => {
+  vi.useFakeTimers();
+  const f = fixture();
+  f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
+  await f.controller.open();
+  f.controller.question(1);
+  f.controller.ended(2);
+  f.controller.question(3);
+  vi.advanceTimersByTime(QUESTION_END_IDLE_MS);
+  expect(f.view.question).toHaveBeenLastCalledWith(3);
+  expect(f.changed).toHaveBeenLastCalledWith({ state: 'QUESTION_ACTIVE', opening: false });
+});
+
+it('cancels the ended-screen timeout when the window closes', async () => {
+  vi.useFakeTimers();
+  const f = fixture();
+  f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
+  await f.controller.open();
+  f.controller.question(1);
+  f.controller.ended(2);
+  f.controller.close();
+  vi.advanceTimersByTime(QUESTION_END_IDLE_MS);
+  expect(f.view.idle).toHaveBeenCalledOnce();
+  expect(f.changed).toHaveBeenLastCalledWith({ state: 'CLOSED', opening: false });
+});
 
 it('adds a subset Google Rounded Symbols stylesheet link to each view document', () => {
   const document = new DocumentFake();

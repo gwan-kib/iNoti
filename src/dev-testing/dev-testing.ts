@@ -98,6 +98,8 @@ function initDevTester() {
       stopFollowingSize?.();
       stopFollowingSize = undefined;
     }
+    // Mirror controller-driven idle (including the ended-screen timeout) in the preview.
+    if (next.state === 'OPEN_IDLE') preview.idle();
     pipStatus = next;
     renderStatus();
     panelControl.render(panelState());
