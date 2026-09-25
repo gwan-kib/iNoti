@@ -6,7 +6,9 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
-- Replaced the four bundled chimes with six recently downloaded WAV alerts: Default, Bubble, Pop, Success, Start, and Timer. Previously saved sound selections fall back to Default.
+- Switched Default to the former Start tone and renamed the remaining choices with sound-based names: Bubble, Pop, Bell, Tone, and Ring. Previous Start, Success, and Timer selections resolve to the matching sounds.
+
+- Replaced the four bundled chimes with six recently downloaded WAV alerts: Default, Bubble, Pop, Bell, Tone, and Ring. Previously saved sound selections fall back to Default.
 
 - Removed the monitoring panel's Close notification window action; while the window is open the panel hides its button entirely, so the window's title bar is the only close control.
 
@@ -30,7 +32,7 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 - Added sound alerts that play once per genuinely new question even when the notification window is closed, through an MV3 offscreen audio document. Sound is enabled by default and can be turned off in the popup; disabling sound keeps monitoring and visual alerts working and does not create the offscreen document.
 
-- Added local sound preferences (`soundEnabled`, `selectedSoundId`) and a central sound registry with six bundled sounds: Default, Bubble, Pop, Success, Start, and Timer under `assets/sounds/`.
+- Added local sound preferences (`soundEnabled`, `selectedSoundId`) and a central sound registry with six bundled sounds: Default, Bubble, Pop, Bell, Tone, and Ring under `assets/sounds/`.
 
 - Added a **Notification sound** dropdown to the popup and the dev tester; it writes only registered sound ids and falls back to Default for unknown stored values.
 

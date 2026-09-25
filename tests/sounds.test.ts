@@ -25,12 +25,12 @@ it("registers the bundled selectable sounds with unique ids and paths", () => {
       path: "assets/sounds/pop.wav",
     },
     {
-      id: "success",
-      label: "Success",
-      path: "assets/sounds/success.wav",
+      id: "bell",
+      label: "Bell",
+      path: "assets/sounds/bell.wav",
     },
-    { id: "start", label: "Start", path: "assets/sounds/start.wav" },
-    { id: "timer", label: "Timer", path: "assets/sounds/timer.wav" },
+    { id: "tone", label: "Tone", path: "assets/sounds/tone.wav" },
+    { id: "ring", label: "Ring", path: "assets/sounds/ring.wav" },
   ]);
   expect(new Set(SOUND_OPTIONS.map((option) => option.id)).size).toBe(
     SOUND_OPTIONS.length,
@@ -49,5 +49,8 @@ it("resolves registered ids and rejects arbitrary strings", () => {
   expect(resolveSoundId("pop")).toBe("pop");
   expect(resolveSoundId("unknown-tone")).toBe("default");
   expect(resolveSoundId(undefined)).toBe("default");
-  expect(soundPathFor("success")).toBe("assets/sounds/success.wav");
+  expect(soundPathFor("tone")).toBe("assets/sounds/tone.wav");
+  expect(resolveSoundId("start")).toBe("default");
+  expect(resolveSoundId("success")).toBe("tone");
+  expect(resolveSoundId("timer")).toBe("ring");
 });

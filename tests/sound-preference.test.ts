@@ -105,11 +105,11 @@ it("loads and saves the selected sound through the shared key", async () => {
     storage,
   );
   expect(select.value).toBe("bubble");
-  select.value = "success";
+  select.value = "tone";
   select.dispatchEvent(new Event("change"));
   await vi.waitFor(() => expect(select.disabled).toBe(false));
   expect(storage.local.set).toHaveBeenCalledWith({
-    selectedSoundId: "success",
+    selectedSoundId: "tone",
   });
 });
 

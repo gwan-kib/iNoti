@@ -22,9 +22,9 @@ it.each([
   ["default", "assets/sounds/default.wav"],
   ["bubble", "assets/sounds/bubble.wav"],
   ["pop", "assets/sounds/pop.wav"],
-  ["success", "assets/sounds/success.wav"],
-  ["start", "assets/sounds/start.wav"],
-  ["timer", "assets/sounds/timer.wav"],
+  ["bell", "assets/sounds/bell.wav"],
+  ["tone", "assets/sounds/tone.wav"],
+  ["ring", "assets/sounds/ring.wav"],
 ])("plays registered sound %s through its extension URL", (soundId, path) => {
   const { player: subject, getUrl, createAudio } = player();
   subject.handleMessage({ type: "PLAY_SOUND", target: "offscreen", soundId });

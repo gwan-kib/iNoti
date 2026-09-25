@@ -192,9 +192,9 @@ it("previews monitoring/window panel states and exercises the production questio
     "Default",
     "Bubble",
     "Pop",
-    "Success",
-    "Start",
-    "Timer",
+    "Bell",
+    "Tone",
+    "Ring",
   ]);
   expect(soundChoice.value).toBe("default");
   soundChoice.value = "bubble";
