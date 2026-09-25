@@ -44,19 +44,21 @@ Native notifications support alerting while another application is active. Keep 
 
 Injected overlays work inside a page; positioned browser windows are not equivalent to desktop toasts. Arbitrary desktop overlays may require a native companion. Custom positioning is a separate post-MVP decision.
 
-## D006: Offscreen audio only if testing supports it
+## D006: Offscreen audio for the bundled notification sound
 
-Status: proposed; validation required.
+Status: accepted and implemented at the owner's request; real background/minimized reliability still requires manual verification. Implemented alongside D017.
 
-Use an offscreen document with the `AUDIO_PLAYBACK` reason if it is the reliable choice for the bundled sound. Keep a small audio abstraction so a demonstrably simpler and equally reliable approach can replace it.
+Choice: play the notification sound through a Manifest V3 offscreen document created on demand with the `AUDIO_PLAYBACK` reason. Add only the `offscreen` permission. The worker never assumes the document persists: it checks `chrome.runtime.getContexts`, creates the document when absent, guards concurrent creation with one in-flight promise, and lets Chrome dispose it normally. The offscreen page resolves the file through `chrome.runtime.getURL` from the central `src/shared/sounds.ts` registry, stops any previous chime, and creates a fresh audio element per alert. `.wav`, `.mp3`, or any browser-supported file uses the same path. The `Audio`/URL boundary stays injectable so playback is unit-testable without real audio.
 
-Adding `offscreen`, selecting the minimum Chrome version, and claiming reliable audio require lifecycle/browser evidence. No audio mechanism or asset is implemented; current PiP alerts have no sound.
+Permissions: `offscreen` is required because a service worker cannot play audio directly and the alert must work with no page/opener. No `tabs`, `scripting`, `webRequest`, `<all_urls>`, or external audio is used. Chrome 123 (the existing minimum) supports `runtime.getContexts` and `offscreen.createDocument`, so the minimum is unchanged.
+
+Evidence: offscreen player, worker delivery, registry, and preference tests; build inspection confirms `offscreen/offscreen.js`, `offscreen/offscreen.html`, and the bundled sound asset. Actual playback while Chrome is backgrounded/minimized, OS audio routing, and discard behavior remain unverified in a real browser.
 
 ## D007: Minimum permissions and no default discard override
 
-Status: accepted constraints; current Phase 1 permissions are defined in D012. Storage and offscreen remain deferred.
+Status: accepted constraints; current Phase 1 permissions are defined in D012, D014, D016, and D017. Storage is implemented for local preferences; offscreen is implemented only for the bundled sound (D006).
 
-Request only currently needed access: D011 removed notifications; D012 adds webNavigation specifically for SPA observation. Storage and offscreen require later implemented uses. Do not default to `<all_urls>`, `tabs`, `scripting`, or `webRequest`; document a specific unmet capability before adding a permission.
+Request only currently needed access: D011 removed notifications; D012 adds webNavigation for SPA observation; D014 adds storage for local preferences; D006/D017 add offscreen for the bundled notification sound. Do not default to `<all_urls>`, `tabs`, `scripting`, or `webRequest`; document a specific unmet capability before adding a permission.
 
 Do not disable tab discarding by default. If evidence justifies an active-session-only override, record the resource tradeoff, required access, cleanup/restoration behavior, and tests before adding it. See [privacy](PRIVACY.md).
 
@@ -138,7 +140,7 @@ Evidence: [Chrome webNavigation documentation](https://developer.chrome.com/docs
 
 ## D013: User-started Document Picture-in-Picture monitoring
 
-Status: accepted and implemented at the owner's request; real Chrome/iClicker validation pending. Supersedes D011 delivery/build/lifecycle and D012's NEW_POLL delivery path. D009 route policy and D012 navigation filtering remain unchanged.
+Status: accepted and implemented at the owner's request; real Chrome/iClicker validation pending. Supersedes D011 delivery/build/lifecycle and D012's NEW_POLL delivery path. D009 route policy and D012 navigation filtering remain unchanged. Superseded in part by D017, which makes monitoring independent of the window and redefines closing PiP as closing only the visual surface.
 
 Context: a persistent small surface should show idle status and new questions while the student works in other tabs/applications. A normal popup window cannot provide the intended always-on-top behavior.
 
@@ -178,9 +180,27 @@ Choice: show Question Answered below Go to Question during an active question. T
 
 Consequences: the manual answer is local to the PiP session; it does not submit, grade, or otherwise interact with iClicker, and no answer content is read or sent. The worker, detection, permissions, and storage are unchanged. Layout and readability of the second button require the existing manual browser checks.
 
+## D017: Monitoring independent of the PiP window with one accepted new-question event
+
+Status: accepted and implemented at the owner's request. Supersedes D013's "closing PiP stops monitoring" semantics and refines D014/D016 around the same PiP surface.
+
+Context: the previous implementation treated opening PiP as starting monitoring and closing it as stopping monitoring, so no alerts (including sound) could occur while the window was closed. The product goal is the opposite: the window is an optional visual surface, and iNoti must keep listening for genuinely new questions whenever the extension is enabled and a supported iClicker session tab is open.
+
+Choice: monitoring is page-owned and route-derived in `src/content/monitor.ts`. A supported class route on a live, non-suspended page is monitored automatically; the notification window is not a monitoring gate. The PiP controller keeps only presentation state (CLOSED/OPEN_IDLE/QUESTION_ACTIVE/QUESTION_ENDED) and its `open`/`close` methods are pure window lifecycle. The panel button toggles the window and its copy states that monitoring is independent of the window. Monitoring stops only on session-ending conditions: leaving the class/session, an unsupported route, opener pagehide, tab close, or disabling the extension.
+
+Alert delivery has exactly one acceptance point: `isNewPoll` (same-class WAITING/QUESTION_CLOSED to QUESTION_ACTIVE). `createNewQuestionAlerts` fans that accepted event out to `requestNewQuestionSound()` and to the optional window. The sound request carries only `NEW_QUESTION_DETECTED`; the worker owns the enabled preference and the registered sound id and forwards only `PLAY_SOUND` with a registry id to the offscreen document. There is no separate sound dedupe, so one genuine question yields at most one sound request and at most one window transition. Baselines, waiting/ended transitions, duplicates, unsupported routes, leaving a class, opening/closing the window, and opening the window during an already-active question produce no sound.
+
+Preferences: local `soundEnabled` (default true) and `selectedSoundId` (default `DEFAULT_SOUND_ID`) in `chrome.storage.local`, with malformed/unknown values falling back safely. Disabling sound does not disable monitoring or visual alerts and does not create an offscreen document. A sound-picker UI is intentionally not added; the registry and `selectedSoundId` make it a later UI-only task.
+
+Alternatives: keeping the window as the monitoring switch (rejected — defeats the required behavior); a separate sound-specific dedupe path (rejected — risks sound and PiP disagreeing); native notifications or external audio (out of scope and privacy-negative); picking sounds from arbitrary user storage (rejected — paths must come only from the registry).
+
+Consequences: the panel now shows Open/Close notification window and monitoring-first copy. `minimum_chrome_version` stays 123 (getContexts/offscreen are supported). Sound while the iClicker tab is backgrounded or Chrome is minimized is an intended target but must be manually verified; a discarded/frozen page is a separate lifecycle concern and is not conflated with ordinary background tabs.
+
+Evidence: automated tests cover monitoring/window separation, the single acceptance point and duplicate suppression, registry and preference fallback, worker offscreen lifecycle and disabled-sound skip, and offscreen playback/replay/rejection. Live browser, background/minimized, and Memory Saver checks remain manual.
+
 ## Decisions still required
 
 - Per-question identity, cross-tab duplicate handling, and any future fingerprint policy.
 - Stale cross-tab event ordering, dedupe retention, and delivery retries.
 - Persistent preference defaults and the supported OS verification matrix.
-- Audio implementation and measured discard limitations.
+- Measured background/minimized audio, OS audio routing, and discard limitations.

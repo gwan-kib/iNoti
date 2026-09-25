@@ -10,7 +10,7 @@ Use Node 22.13+ within 22.x and npm 10 or 11; see [setup](../CONTRIBUTING.md).
 | `npm run lint` | Source, tests, configuration; excludes local nested .kilo worktrees |
 | `npm run typecheck` | Strict TypeScript and Chrome types |
 | `npm test` | Real Vitest tests under tests/ |
-| `npm run build` | Two-stage content/worker extension package |
+| `npm run build` | Five-stage extension package (content, worker, popup, tester, offscreen) plus copied sounds |
 | `npm run check` | Lint, type-check, tests, build |
 
 CI runs equivalent checks; hosted CI results remain separate from local verification.
@@ -19,13 +19,17 @@ CI runs equivalent checks; hosted CI results remain separate from local verifica
 
 - Unchanged pure route parser/transition matrix, initial active/refresh baseline, unsupported and cross-class safeguards.
 - History/fragment forwarding, top-frame/exact-origin filtering, document targeting, unsupported sanitization, private error handling.
-- Supported-route control visibility, synchronous user-action PiP request, duplicate-click guard, idle startup, same-window alert/idle transitions, local time rendering.
+- Supported-route control visibility, synchronous user-action PiP request, duplicate-click guard, idle startup, same-window alert/idle transitions, local time rendering, and the panel Open/Close window toggle.
 - Consecutive hashchange/webNavigation deduplication in both orders, malformed contracts, wrong-direction messages and untrusted navigation senders.
-- No automatic opening from question events, no alerts before start/after stop, close restoring Open notification window, class/session exit and opener pagehide/BFCache cleanup.
+- Monitoring/window separation: monitoring continues with the window closed, opening the window neither starts nor requires monitoring, closing it neither stops monitoring nor blocks later sounds, leaving the class stops the old session, and unsupported routes produce no alerts or sounds.
+- One accepted new question produces one sound request and at most one window transition; the window closed still requests exactly one sound; opening the window during an active question, reopening it, and closing it produce no sound; baselines, waiting/ended transitions, duplicates, and repeated active events stay silent.
+- Sound registry (default entry, strict/lenient resolution), local `soundEnabled`/`selectedSoundId` defaults/malformed fallback, and popup load/save/rollback.
+- Service worker sound delivery: malformed requests and untrusted senders ignored, enabled requests ensure/reuse the offscreen document, disabled requests create none, concurrent requests create once, registered/default id forwarded, unknown persisted ids fall back, and failures log safely.
+- Offscreen player: registered ids resolve to the expected extension URL, invalid messages/ids do not play, replay stops the previous chime, and rejected `play()` promises are handled.
 - Unsupported API, sync/async request failures with explicit retry, late pending-open cleanup, and stale close events.
 - Toolbar popup wiring to the extension-owned dev tester and manifest permission regression coverage.
 
-Small EventTarget/DOM fakes and injected window/view boundaries keep tests dependency-free. These do not emulate user activation enforcement, isolated-world API exposure, CSP, layout, browser size clamping, or always-on-top behavior. Removed NEW_POLL worker sender tests belonged to the deleted receiver; active worker-origin/navigation sender validation remains covered.
+Small EventTarget/DOM fakes and injected window/view boundaries keep tests dependency-free. These do not emulate user activation enforcement, isolated-world API exposure, CSP, layout, browser size clamping, always-on-top behavior, real audio output, or background/minimized execution. Removed NEW_POLL worker sender tests belonged to the deleted receiver; active worker-origin/navigation sender validation remains covered.
 
 ## Build inspection
 
@@ -33,7 +37,7 @@ After CSS sizing changes, check the popup, tester, PiP, and monitoring control a
 
 Confirm `dist/shared/brand-colors.css` exists for popup/tester stylesheet imports. After palette edits, rebuild and reload; check the popup, inline preview, real PiP, and on-page monitoring button for consistent colors and legible focus/disabled states.
 
-After building, dist must contain manifest.json, content.js, background.js, assets/inoti-logo.png, popup/{popup.html,popup.css,popup.js}, and dev-testing/{index.html,dev-testing.css,dev-testing.js}. Verify no legacy alert-window HTML/JS/CSS remains, including when building over an old dist. The first stage clears output. Verify only webNavigation and storage permissions, exact student-site content match, minimum_chrome_version 123, the toolbar popup includes the pulse preference and links to the extension-owned dev tester, and no remote scripts. PiP icons load the Google Fonts stylesheet and font. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
+After building, dist must contain manifest.json, content.js, background.js, assets/inoti-logo.png, assets/sounds/default-chime.wav, popup/{popup.html,popup.css,popup.js}, dev-testing/{index.html,dev-testing.css,dev-testing.js}, and offscreen/{offscreen.html,offscreen.js}. Verify no legacy alert-window HTML/JS/CSS or generation scripts remain, including when building over an old dist. The first stage clears output and copies the whole `assets/sounds/` directory. Verify only webNavigation, storage, and offscreen permissions, exact student-site content match, minimum_chrome_version 123, the toolbar popup includes the pulse and sound preferences and links to the extension-owned dev tester, and no remote scripts. PiP icons load the Google Fonts stylesheet and font; sound uses only the bundled local asset. Source and bundles must contain no Chrome window/native-notification alert path. dist remains ignored and untracked.
 
 ## Hot reload smoke check
 
@@ -63,7 +67,7 @@ On a real PiP active alert, click Question Answered (also test Tab then Enter/Sp
 
 ## Question ended screen checks
 
-In the tester, open PiP, choose New Question, then End Question. Verify the neutral background, Question Ended title, local Ended at time, and hidden elapsed timer. In a controlled class, check both active-to-waiting and active-to-results routes. Repeated end reports must retain the first end time. The next question must restore the active title, pulse preference, and fresh elapsed timer in the same window. Initial waiting/closed routes and monitoring started on an already-active question must not invent an ended alert. Leaving the class or closing PiP still stops monitoring.
+In the tester, open PiP, choose New Question, then End Question. Verify the neutral background, Question Ended title, local Ended at time, and hidden elapsed timer. In a controlled class, check both active-to-waiting and active-to-results routes. Repeated end reports must retain the first end time. The next question must restore the active title, pulse preference, and fresh elapsed timer in the same window. Initial waiting/closed routes and opening the window on an already-active question must not invent an ended alert. Leaving the class ends monitoring; closing the window does not.
 
 `npm run check` passed lint, type-check, all 96 tests, and all four builds. Automated controller, route integration, and view tests cover ended transitions and cleanup. Live iClicker and visual browser verification remain pending; no connected browser or authenticated class session is available in this session.
 
@@ -83,44 +87,49 @@ Automated preference tests cover defaults, malformed values, local live updates,
 
 Build, reload the extension in chrome://extensions, refresh the student tab, and record build revision, date, desktop Chrome version, OS, display scaling, and actual results. Use an authorized authenticated class/instructor session; synthetic route changes are not evidence of live poll compatibility. Never submit answers or retain identifiers for this test.
 
-All rows below are **pending for this PiP migration**.
+All rows below are **pending real-browser verification**.
 
 | Scenario | Expected result |
 | --- | --- |
-| Join supported waiting/closed/active class route | Small Open notification window control; keyboard accessible and does not cover important iClicker controls at normal/narrow widths |
-| Unsupported/home/quiz route | No monitoring control or question alert |
-| Click Open notification window / activate with keyboard | One PiP opens idle; the on-page button hides while PiP is open; no separate Chrome alert window |
-| Rapid repeat clicks during opening | Only one request/window; no duplicate monitor |
-| Idle content | Logo and iNoti, legible at browser-clamped size |
-| Switch Chrome tabs | PiP remains visible above windows |
-| Background/minimize Chrome with iClicker open | PiP remains visible; record any OS-specific difference |
-| Switch to another desktop application | PiP remains visible; record focus behavior |
-| Authorized instructor opens new poll from waiting | Existing PiP displays New iClicker Question and correct local detection time exactly once |
-| Duplicate hashchange and webNavigation reports | One alert update total |
-| Stay on same active poll | No repeat alert, new window, resize, or timer dismissal |
-| Poll ends/submitted/results route or waiting | Same PiP shows Question Ended and its local end-detection time; no pulse, timer, new window, or close |
-| Next closed/waiting to active transition | Same PiP alerts again once |
-| Initial load/refresh on active poll | Open notification window; no automatic PiP or fake new question after click |
-| Manually close PiP | Monitoring stops; Open notification window returns; later polls do not alert until another click |
-| Monitoring while PiP is open | Button stays hidden; the explanation remains centered and readable; close PiP from its title bar to stop monitoring |
-| Leave supported session/change class | PiP closes; new class requires a fresh click; unsupported pages hide the control |
-| Navigate away while PiP opening | Late opened window is closed; monitoring remains inactive |
-| Full refresh/close opener | PiP closes; no automatic reopening |
-| Back/forward cache restoration | Fresh baseline, inactive monitoring, no duplicate active alert |
-| Missing API (controlled unsupported environment) | Clear unavailable state; no page navigation or fallback |
-| Request denied/fails | Visible retry state; no active claim; another explicit click can retry |
-| Extension/worker restart | Worker listeners return without owning PiP/state; rebuild/reload requires student-page refresh |
-| Memory Saver, background freeze/discard, reconnect | Record missed updates/closure and recovery needs; no reliability guarantee or discard override |
+| Enable **Sound notification**, join a supported class, leave the window closed | Monitoring runs automatically; panel reads `iNoti is monitoring this class. Open the notification window for visual alerts.` |
+| Authorized instructor opens a new poll from waiting with the window closed | Exactly one sound plays; no window opens; no page navigation or fallback alert |
+| Open the window, then a new poll from waiting | Exactly one sound and one visual alert with the correct local detection time |
+| Duplicate hashchange + webNavigation reports for one transition | One sound and one alert update total |
+| Stay on the same active poll | No repeat sound, alert, window, resize, or timer dismissal |
+| Poll ends/submitted/results route or waiting | No sound; an open window shows Question Ended with its local end-detection time |
+| Next closed/waiting to active transition | Fresh sound and, if open, a fresh alert in the same window |
+| Initial load/refresh on an active poll | No sound and no fake new question; the panel offers Open notification window |
+| Open the window during an already-active question | No sound replay and no retroactive alert; the window starts idle |
+| Close the window (panel or title bar) | Only the window closes; monitoring continues; next new question still sounds |
+| Reopen the window | No sound merely because it opened |
+| Disable **Sound notification** while monitoring stays active | No sound; monitoring and visual alerts continue; no offscreen audio document is created |
+| Re-enable **Sound notification** | The next new question plays a sound again |
+| Unsupported/home/quiz route | No monitoring panel, question alert, or sound |
+| Leave supported session/change class | Old window closes; the old session stops alerting; unsupported pages hide the control |
+| Navigate away while the window is opening | Late opened window is closed |
+| Full refresh/close opener | Window closes; monitoring resumes automatically for a supported route after the page loads |
+| Back/forward cache restoration | Fresh route baseline, no duplicate active alert or sound |
+| Missing API (controlled unsupported environment) | Clear unavailable window state; monitoring and sound continue without a visual window |
+| Request denied/fails | Visible retry state; another explicit click can retry |
+| Extension/worker restart | Worker listeners return; offscreen audio is recreated on demand when the next sound is requested |
+| Switch Chrome tabs with iClicker in the background, then a new poll | Record whether exactly one sound plays; PiP (if open) remains visible |
+| Minimize Chrome, then a new poll | Record whether exactly one sound plays through the backgrounded tab |
+| Use another desktop application, then a new poll | Record whether exactly one sound plays |
+| Memory Saver, background freeze/discard, reconnect | Record missed updates/closure and whether a frozen/discarded page still alerts; no reliability guarantee or discard override |
+
+Also test Chrome Memory Saver/discard separately: a discarded or fully frozen iClicker page may not run the content script at all and must not be conflated with an ordinary background tab.
 
 Check both PiP states at normal and increased display scaling, keyboard focus, live-region announcement, and site CSP/style compatibility. PiP is a same-origin web-platform window accessed from the isolated content script: confirm requestWindow and DOM access in this exact extension context. Do not substitute a console call in the main world for this check.
 
 ## Diagnosis
 
-Enable Info logs in student-page and service-worker DevTools, filtered by [iNoti]. Expected stages: content loaded/baseline; worker history/fragment observed -> forwarding -> delivered; content navigation update with normalized states and eligibility; control shown -> start requested -> PiP opened -> monitoring started -> idle -> question active -> idle -> closed/stopped.
+Enable Info logs in student-page, service-worker, and offscreen DevTools, filtered by [iNoti]. Expected stages: content loaded/baseline; worker history/fragment observed -> forwarding -> delivered; content navigation update with normalized states and eligibility; on a new question `new question accepted` -> `sound requested` -> worker `new question accepted by content` -> `sound playback requested` (or `sound disabled`), with the offscreen document logging playback; panel control shown -> Open notification window -> PiP opened -> idle -> (if open) question active -> idle -> closed, while monitoring stays active throughout.
 
-A route candidate with inactive monitoring intentionally produces no alert. If PiP fails to open, inspect the safe failure category and browser API availability/user activation. If a route update is missing, check permission, exact top-frame origin, originating document target, and receiver acknowledgement. A successful mock, build, or forwarding acknowledgement does not establish visual rendering. No arbitrary exceptions, URLs, IDs, question text, or answers belong in shared evidence. DEBUG in the shared logger silences diagnostics on rebuild.
+A route candidate that is not a same-class waiting/closed-to-active transition intentionally produces no alert or sound. If the window fails to open, inspect the safe failure category and browser API availability/user activation. If sound is missing, check the popup `soundEnabled` value, worker `sound disabled`/`sound preference read failed`, offscreen creation, and `audio.play()` rejection. If a route update is missing, check permission, exact top-frame origin, originating document target, and receiver acknowledgement. A successful mock, build, or forwarding acknowledgement does not establish visual rendering or audible output. No arbitrary exceptions, URLs, IDs, question text, or answers belong in shared evidence. DEBUG in the shared logger silences diagnostics on rebuild.
 
 ## Verification status
+
+Monitoring/PiP separation + sound: `npm run check` passed lint, type-check, 132 tests across twelve files, and all five production builds. Artifact inspection confirmed `dist/offscreen/offscreen.{html,js}`, `dist/assets/sounds/default-chime.wav`, the three-permission manifest, and no source maps, generation scripts, or legacy alert delivery in source/bundles. Background/minimized audio, actual playback, Memory Saver/discard, and authenticated iClicker detection were not run: the environment has no connected browser or authenticated class session, and the development tester does not produce real audio output evidence. The intended background/minimized behavior has not been verified and must not be documented as reliable until it is.
 
 Pulse preference update: `npm run check` passed lint, type-check, all 92 tests across nine files, and all four production builds. Initial sandbox execution hit Vite `spawn EPERM`; the approved run with process access passed. Browser inventory exposed no connected browsers or native apps, so animation, reduced-motion, real popup/PiP synchronization, and authenticated iClicker checks were not run.
 
@@ -130,7 +139,7 @@ No real Chrome/iClicker PiP matrix rows were run in that implementation session.
 
 ## Deferred work
 
-Sound, other persistent settings, quiz support, cross-tab identity/deduplication, history, stacking, progress, auto-dismiss, positioning, session storage, telemetry, polling, DOM observation, and network interception remain absent. Recovery and full MVP release evidence remain future work.
+A user-facing sound picker/volume control, other persistent settings, quiz support, cross-tab identity/deduplication, history, stacking, progress, auto-dismiss, positioning, session storage, telemetry, polling, DOM observation, and network interception remain absent. Recovery, background/minimized audio verification, and full MVP release evidence remain future work.
 
 ## Compact PiP redesign
 
@@ -144,6 +153,6 @@ Tester controls: click Idle from both active and ended; both views should return
 
 Google Symbols check: inspect the PiP/preview HTML head for the Google Fonts stylesheet link, verify rounded schedule/hourglass glyphs load in both localhost and extension testers and live iClicker PiP, and check inherited CSP/network failures. Confirm times and controls remain usable if the font is unavailable. No browser is connected to verify remote font rendering in this session.
 
-Monitoring panel layout: verify a 15rem wide by 10rem tall panel vertically centered 5rem from the right edge on a supported iClicker route. Confirm the brand row is pinned to the top, the button is anchored to the bottom, and the explanation centers vertically in the remaining space across all copy lengths. Check Open notification window, opening, retry and unsupported labels and their matching explanation text, keyboard focus, and increased root font sizes. Confirm the button is hidden while PiP is open and returns when monitoring stops. Automated tests cover each explanation, its `data-state`, and the hidden button; confirm the copy carries no raw errors or page data. At widths at or below 21.5rem, confirm the 0.75rem right inset keeps it visible. Only the panel should intercept clicks. This placement still needs browser verification; no connected browser or authenticated session is available.
+Monitoring panel layout: verify a 15rem wide by 10rem tall panel vertically centered 5rem from the right edge on a supported iClicker route. Confirm the brand row is pinned to the top, the button is anchored to the bottom, and the explanation centers vertically in the remaining space across all copy lengths. Check Open/Close notification window, opening, retry, unsupported, and unmonitored labels and their matching explanation text, keyboard focus, and increased root font sizes. Confirm the button remains visible while the window is open and reads Close notification window. Automated tests cover each explanation and its `data-state`; confirm the copy carries no raw errors or page data. At widths at or below 21.5rem, confirm the 0.75rem right inset keeps it visible. Only the panel should intercept clicks. This placement still needs browser verification; no connected browser or authenticated session is available.
 
-Verify the panel reminder remains visible and does not itself toggle PiP when clicked. Route detection and the requirement to open PiP for visible notifications are unchanged.
+Verify the monitoring copy states that iNoti is monitoring independently and that the button only opens/closes the visual window. Route detection and the requirement to open the window for visual notifications are unchanged; sound does not require the window.

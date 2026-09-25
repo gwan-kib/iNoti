@@ -6,13 +6,21 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
-- Removed the monitoring panel's question-active state; a new question no longer changes the panel copy, which stays on the monitoring message while the PiP window carries the alert.
+- Monitoring is now page-owned and independent of the notification window: a supported class route is monitored automatically, and closing the window (or its title bar, or the panel) closes only the visual surface instead of stopping monitoring.
 
-- The monitoring panel now pins the brand row to the top, anchors the button to the bottom, and centers the explanation in the remaining space; the button hides while PiP is open and returns when monitoring stops.
+- Added sound alerts that play once per genuinely new question even when the notification window is closed, through an MV3 offscreen audio document. Sound is enabled by default and can be turned off in the popup; disabling sound keeps monitoring and visual alerts working and does not create the offscreen document.
 
-- Renamed the monitoring panel action to Open notification window and updated its explanations and tooltips to say notification window instead of Picture-in-Picture.
+- Added local sound preferences (`soundEnabled`, `selectedSoundId`) and a central sound registry; the bundled default chime lives at `assets/sounds/default-chime.wav`. There is no sound-picker UI yet.
 
-- The monitoring panel explanation reflects the current state (monitoring, question ended, opening, unsupported, failed) via a `data-state` hook; failure copy stays a normalized category with no raw errors.
+- The monitoring panel action is now an Open/Close notification window toggle with monitoring-first copy; the button is no longer hidden while the window is open.
+
+- Removed the monitoring panel's question-active state; a new question no longer changes the panel copy, which stays on the monitoring message while the notification window carries the alert.
+
+- The monitoring panel now pins the brand row to the top, anchors the button to the bottom, and centers the explanation in the remaining space.
+
+- Renamed the monitoring panel action to Open/Close notification window and updated its explanations and tooltips to say notification window instead of Picture-in-Picture.
+
+- The monitoring panel explanation reflects the current state (monitoring, opening, unsupported, failed) via a `data-state` hook; failure copy stays a normalized category with no raw errors.
 
 - Added a keep-iClicker-open reminder to the panel and relabeled its action.
 
@@ -35,7 +43,11 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Added
 
-- Dev tester Monitoring panel section that previews the real on-page control in a mock page and forces each of its states, while mirroring the live controller status.
+- Bundled `assets/sounds/default-chime.wav` with a build step that copies the whole sounds directory to `dist/assets/sounds/`, an `offscreen/` audio document build, and the `offscreen` permission.
+
+- Popup **Sound notification** setting alongside the pulse preference; it persists locally and defaults to on.
+
+- Dev tester Monitoring panel section that previews the real on-page control in a mock page and forces each of its states, while mirroring the live monitoring/window status.
 
 - Dev tester Idle button and session-only pulse toggle, applied to the inline preview and open PiP.
 

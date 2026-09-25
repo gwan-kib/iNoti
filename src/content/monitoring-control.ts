@@ -1,26 +1,34 @@
 import { createBrandLogo } from "../shared/brand-logo";
 import controlStyles from "./monitoring-control.css?inline";
-import type { MonitoringStatus } from "./pip-controller";
+import { type PipStatus } from "./pip-controller";
 import { logger } from "../shared/logging";
+
+export interface MonitoringPanelStatus {
+  // True while this page is observing a supported iClicker class/session. It is
+  // independent of the optional notification window.
+  monitoring: boolean;
+  // Notification-window presentation state only.
+  pip: PipStatus;
+}
 
 // Copy stays a normalized state/failure category: never surface arbitrary errors,
 // routes, or identifiers from the page.
-function explanationFor(status: MonitoringStatus, active: boolean): string {
-  if (status.issue === "unsupported") return "Notification window needs desktop Chrome 123 or newer.";
-  if (status.issue === "failed") return "The Notification window could not open. Click the button to try again.";
-  if (status.opening) return "Opening the Notification window…";
-  // An active question keeps the monitoring copy: the PiP window carries the
-  // per-question alert, so the panel does not react to a new question.
-  if (status.state === "MONITORING_QUESTION_ENDED") return "The question ended. Monitoring stays on for the next one.";
-  if (active) return "Monitoring is on. Keep this iClicker page open so iNoti can detect new questions.";
-  return "Monitoring is on. Keep this iClicker page open so iNoti can detect new questions.";
+function explanationFor({ monitoring, pip }: MonitoringPanelStatus): string {
+  if (pip.issue === "unsupported") return "Notification window needs desktop Chrome 123 or newer.";
+  if (pip.issue === "failed") return "The Notification window could not open. Click the button to try again.";
+  if (pip.opening) return "Opening the Notification window…";
+  if (!monitoring) return "Open a supported iClicker class to monitor for new questions.";
+  // Monitoring is deliberately not tied to the window: the copy states both.
+  if (pip.state === "CLOSED") return "iNoti is monitoring this class. Open the notification window for visual alerts.";
+  return "iNoti is monitoring this class. Visual alerts are open.";
 }
 
 // Lets the stylesheet target each state without separate elements.
-function stateKey(status: MonitoringStatus): string {
-  if (status.issue) return status.issue;
-  if (status.opening) return "opening";
-  return status.state.toLowerCase().replace("monitoring_", "").replace(/_/g, "-");
+function stateKey({ monitoring, pip }: MonitoringPanelStatus): string {
+  if (pip.issue) return pip.issue;
+  if (pip.opening) return "opening";
+  if (!monitoring) return "unmonitored";
+  return pip.state === "CLOSED" ? "monitoring" : "pip-open";
 }
 
 export function createMonitoringControl(document: Document, toggle: () => void) {
@@ -43,7 +51,7 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
   brand.append(createBrandLogo(document), brandText);
   const explanation = document.createElement("div");
   explanation.className = "monitoring-explanation";
-  explanation.textContent = "Keep this iClicker page open so iNoti can detect new questions.";
+  explanation.textContent = "Open a supported iClicker class to monitor for new questions.";
   const button = document.createElement("button");
   button.type = "button";
   const label = document.createElement("span");
@@ -52,6 +60,7 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
   button.addEventListener("click", toggle);
   panel.append(brand, explanation, button);
   root.append(style, panel);
+
   return {
     show() {
       if (!host.isConnected) {
@@ -62,32 +71,33 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
     hide() {
       host.remove();
     },
-    render(status: MonitoringStatus) {
-      const active = status.state !== "UNMONITORED";
-      // While PiP is open the panel only reports status; the window itself is
-      // closed from its title bar, so the toggle is removed from the layout.
-      button.hidden = active;
-      button.disabled = status.opening || status.issue === "unsupported";
+    render(status: MonitoringPanelStatus) {
+      const open = status.pip.state !== "CLOSED";
+      button.disabled = status.pip.opening || status.pip.issue === "unsupported";
       label.textContent =
-        status.issue === "unsupported"
+        status.pip.issue === "unsupported"
           ? "Document PiP unavailable"
-          : status.issue === "failed"
+          : status.pip.issue === "failed"
             ? "PiP failed - Try again"
-            : status.opening
+            : status.pip.opening
               ? "Opening notification window..."
-              : "Open notification window";
+              : open
+                ? "Close notification window"
+                : "Open notification window";
       button.title =
-        status.issue === "unsupported"
+        status.pip.issue === "unsupported"
           ? "Notification window needs desktop Chrome 123+."
-          : status.issue === "failed"
+          : status.pip.issue === "failed"
             ? "Could not open the Notification window. Click to try again."
-            : "Open on-screen notifications";
+            : open
+              ? "Close the notification window"
+              : "Open the notification window for visual alerts";
       button.setAttribute(
         "aria-label",
-        status.issue === "failed" ? "Could not open the Notification window. Try again" : label.textContent,
+        status.pip.issue === "failed" ? "Could not open the Notification window. Try again" : label.textContent,
       );
-      button.setAttribute("aria-pressed", String(active));
-      explanation.textContent = explanationFor(status, active);
+      button.setAttribute("aria-pressed", String(open));
+      explanation.textContent = explanationFor(status);
       explanation.setAttribute("data-state", stateKey(status));
     },
   };

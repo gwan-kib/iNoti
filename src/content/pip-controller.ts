@@ -6,9 +6,11 @@ import { createConfiguredPipView } from './configured-pip-view';
 export interface DocumentPip {
   requestWindow(options: { width: number; height: number }): Promise<Window>;
 }
-export type MonitoringState = 'UNMONITORED' | 'MONITORING_IDLE' | 'MONITORING_QUESTION_ACTIVE' | 'MONITORING_QUESTION_ENDED';
-export interface MonitoringStatus {
-  state: MonitoringState;
+// PiP presentation state only. Monitoring whether iClicker is observed lives in
+// monitor.ts; a closed window never stops monitoring.
+export type PipState = 'CLOSED' | 'OPEN_IDLE' | 'QUESTION_ACTIVE' | 'QUESTION_ENDED';
+export interface PipStatus {
+  state: PipState;
   opening: boolean;
   issue?: 'unsupported' | 'failed';
 }
@@ -20,55 +22,55 @@ export function documentPip(page: Window): DocumentPip | undefined {
 
 export function createPipController(
   api: DocumentPip | undefined,
-  changed: (status: MonitoringStatus) => void,
+  changed: (status: PipStatus) => void,
   makeView: (document: Document, answerQuestion: () => void) => PipView = createConfiguredPipView,
   rootFontSize: () => number = () => parseFloat(getComputedStyle(document.documentElement).fontSize),
 ) {
   const log = logger('pip');
-  let status: MonitoringStatus = { state: 'UNMONITORED', opening: false };
+  let status: PipStatus = { state: 'CLOSED', opening: false };
   let pip: Window | undefined;
   let view: PipView | undefined;
   let generation = 0;
-  const update = (next: MonitoringStatus) => { status = next; changed(status); };
-  const stop = () => {
-    // Invalidate pending opens too: navigation can leave the session before resolution.
+  const update = (next: PipStatus) => { status = next; changed(status); };
+  const close = () => {
+    // Invalidate pending opens too: leaving the session can race an in-flight request.
     generation++;
     const old = pip;
     pip = undefined;
     view = undefined;
-    update({ state: 'UNMONITORED', opening: false });
+    update({ state: 'CLOSED', opening: false });
     old?.close();
-    log('monitoring stopped');
+    log('notification window closed');
   };
   const answered = () => {
-    // Manual dismissal returns to idle while monitoring stays started; treating it
-    // as idle (not ended) keeps the next question detection eligible.
-    if (!pip || !view || status.state !== 'MONITORING_QUESTION_ACTIVE') return;
-    if (pip.closed) { stop(); return; }
+    // Manual dismissal returns the window to idle while monitoring stays on; the
+    // next detected question remains eligible.
+    if (!pip || !view || status.state !== 'QUESTION_ACTIVE') return;
+    if (pip.closed) { close(); return; }
     view.idle();
-    update({ state: 'MONITORING_IDLE', opening: false });
+    update({ state: 'OPEN_IDLE', opening: false });
     log('PiP -> idle after answer');
   };
   return {
-    stop,
+    close,
     answered,
     idle() {
       if (!pip || !view) return;
-      if (pip.closed) { stop(); return; }
+      if (pip.closed) { close(); return; }
       view.idle();
-      update({ state: 'MONITORING_IDLE', opening: false });
+      update({ state: 'OPEN_IDLE', opening: false });
       log('PiP -> idle');
     },
-    async start() {
-      if (status.opening || status.state !== 'UNMONITORED') return;
-      log('start monitoring requested');
+    async open() {
+      if (status.opening || status.state !== 'CLOSED') return;
+      log('open notification window requested');
       if (!api) {
         log('PiP support unavailable');
-        update({ state: 'UNMONITORED', opening: false, issue: 'unsupported' });
+        update({ state: 'CLOSED', opening: false, issue: 'unsupported' });
         return;
       }
       const request = ++generation;
-      update({ state: 'UNMONITORED', opening: true });
+      update({ state: 'CLOSED', opening: true });
       let opened: Window | undefined;
       try {
         // No await before this call: preserve the button's transient user activation.
@@ -78,36 +80,35 @@ export function createPipController(
         pip = opened;
         opened.addEventListener('pagehide', () => {
           if (pip !== opened) return;
-          log('PiP closed');
-          stop();
+          log('PiP window closed');
+          close();
         }, { once: true });
         view = makeView(opened.document, answered);
         view.idle();
-        update({ state: 'MONITORING_IDLE', opening: false });
+        update({ state: 'OPEN_IDLE', opening: false });
         log('PiP opened');
-        log('monitoring started');
-        log('PiP -> idle');
       } catch (error) {
         if (request !== generation) { opened?.close(); return; }
         pip = undefined;
         view = undefined;
         opened?.close();
         log('PiP opening failed', { reason: safeError(error) });
-        update({ state: 'UNMONITORED', opening: false, issue: 'failed' });
+        update({ state: 'CLOSED', opening: false, issue: 'failed' });
       }
     },
     question(detectedAt: number) {
-      if (!pip || !view || (status.state !== 'MONITORING_IDLE' && status.state !== 'MONITORING_QUESTION_ENDED')) return;
-      if (pip.closed) { stop(); return; }
+      // Optional surface: with no window open this is a no-op, not an error.
+      if (!pip || !view || (status.state !== 'OPEN_IDLE' && status.state !== 'QUESTION_ENDED')) return;
+      if (pip.closed) { close(); return; }
       view.question(detectedAt);
-      update({ state: 'MONITORING_QUESTION_ACTIVE', opening: false });
+      update({ state: 'QUESTION_ACTIVE', opening: false });
       log('PiP -> question active');
     },
     ended(endedAt: number) {
-      if (!pip || !view || status.state !== 'MONITORING_QUESTION_ACTIVE') return;
-      if (pip.closed) { stop(); return; }
+      if (!pip || !view || status.state !== 'QUESTION_ACTIVE') return;
+      if (pip.closed) { close(); return; }
       view.ended(endedAt);
-      update({ state: 'MONITORING_QUESTION_ENDED', opening: false });
+      update({ state: 'QUESTION_ENDED', opening: false });
       log('PiP -> question ended');
     },
   };

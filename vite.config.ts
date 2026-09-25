@@ -1,15 +1,20 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
 const path = (relative: string) => fileURLToPath(new URL(relative, import.meta.url));
+
+// Copy the whole sound directory so registering a new sound never needs a build change.
+const soundAssets = readdirSync(path('./assets/sounds')).map(
+  (name) => [`./assets/sounds/${name}`, `assets/sounds/${name}`] as const,
+);
 
 const builds = {
   content: {
     entry: './src/content/monitor.ts',
     name: 'iNotiContent',
     output: 'content.js',
-    assets: [['./manifest.json', 'manifest.json'], ['./assets/inoti-logo.png', 'assets/inoti-logo.png'], ['./src/shared/brand-colors.css', 'shared/brand-colors.css']],
+    assets: [['./manifest.json', 'manifest.json'], ['./assets/inoti-logo.png', 'assets/inoti-logo.png'], ['./src/shared/brand-colors.css', 'shared/brand-colors.css'], ...soundAssets],
   },
   background: {
     entry: './src/background/service-worker.ts',
@@ -29,12 +34,18 @@ const builds = {
     output: 'dev-testing/dev-testing.js',
     assets: [['./src/dev-testing/index.html', 'dev-testing/index.html'], ['./src/dev-testing/dev-testing.css', 'dev-testing/dev-testing.css']],
   },
+  offscreen: {
+    entry: './src/offscreen/offscreen.ts',
+    name: 'iNotiOffscreen',
+    output: 'offscreen/offscreen.js',
+    assets: [['./src/offscreen/offscreen.html', 'offscreen/offscreen.html']],
+  },
 } as const;
 
 type BuildTarget = keyof typeof builds;
 
 function targetForMode(mode: string): BuildTarget {
-  if (mode === 'background' || mode === 'popup' || mode === 'dev-testing') return mode;
+  if (mode === 'background' || mode === 'popup' || mode === 'dev-testing' || mode === 'offscreen') return mode;
   return 'content';
 }
 

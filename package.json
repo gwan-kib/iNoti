@@ -13,7 +13,7 @@
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "build": "vite build && vite build --mode background && vite build --mode popup && vite build --mode dev-testing",
+    "build": "vite build && vite build --mode background && vite build --mode popup && vite build --mode dev-testing && vite build --mode offscreen",
     "check": "npm run lint && npm run typecheck && npm test && npm run build"
   },
   "devDependencies": {

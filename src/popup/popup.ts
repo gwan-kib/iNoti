@@ -1,10 +1,19 @@
 import { PULSE_KEY, preferenceStorage, pulsePreference, type PreferenceStorage } from '../shared/alert-preference';
+import { SOUND_ENABLED_KEY, soundEnabled } from '../shared/sound-preference';
 
-export async function bindPulseSetting(input: HTMLInputElement, status: HTMLElement, storage: PreferenceStorage) {
+type BooleanReader = (value: unknown) => boolean;
+
+async function bindBooleanSetting(
+  input: HTMLInputElement,
+  status: HTMLElement,
+  storage: PreferenceStorage,
+  key: string,
+  read: BooleanReader,
+) {
   let saved = true;
   input.disabled = true;
   try {
-    saved = pulsePreference((await storage.local.get(PULSE_KEY))[PULSE_KEY]);
+    saved = read((await storage.local.get(key))[key]);
     input.checked = saved;
     input.disabled = false;
   } catch {
@@ -16,7 +25,7 @@ export async function bindPulseSetting(input: HTMLInputElement, status: HTMLElem
     const next = input.checked;
     status.textContent = '';
     try {
-      await storage.local.set({ [PULSE_KEY]: next });
+      await storage.local.set({ [key]: next });
       saved = next;
     } catch {
       input.checked = saved;
@@ -27,6 +36,14 @@ export async function bindPulseSetting(input: HTMLInputElement, status: HTMLElem
   });
 }
 
+export function bindPulseSetting(input: HTMLInputElement, status: HTMLElement, storage: PreferenceStorage) {
+  return bindBooleanSetting(input, status, storage, PULSE_KEY, pulsePreference);
+}
+
+export function bindSoundSetting(input: HTMLInputElement, status: HTMLElement, storage: PreferenceStorage) {
+  return bindBooleanSetting(input, status, storage, SOUND_ENABLED_KEY, soundEnabled);
+}
+
 export type TabCreator = (properties: { url: string }) => unknown;
 export type UrlResolver = (path: string) => string;
 
@@ -35,10 +52,12 @@ export function openDevTestingTab(createTab: TabCreator, getUrl: UrlResolver) {
 }
 
 function initPopup() {
-  const input = document.querySelector<HTMLInputElement>('#pulse-alerts');
   const status = document.querySelector<HTMLElement>('#preference-status');
   const storage = preferenceStorage();
-  if (input && status && storage) void bindPulseSetting(input, status, storage);
+  const pulseInput = document.querySelector<HTMLInputElement>('#pulse-alerts');
+  if (pulseInput && status && storage) void bindPulseSetting(pulseInput, status, storage);
+  const soundInput = document.querySelector<HTMLInputElement>('#sound-alerts');
+  if (soundInput && status && storage) void bindSoundSetting(soundInput, status, storage);
   const button = document.querySelector<HTMLButtonElement>('#open-dev-tester');
   if (!button) return;
   button.addEventListener('click', () => {

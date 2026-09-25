@@ -28,37 +28,37 @@ function fixture(rootFontSize = () => 16) {
   const controller = createPipController({ requestWindow }, changed, () => view, rootFontSize);
   return { pip, requestWindow, changed, view, controller };
 }
-it('discards pending opens after stop without claiming monitoring started', async () => {
+it('discards pending opens after close without claiming the window opened', async () => {
   const f = fixture();
   let resolve!: (pip: Window) => void;
   f.requestWindow.mockReturnValue(new Promise(done => { resolve = done; }));
-  const pending = f.controller.start();
-  f.controller.stop();
+  const pending = f.controller.open();
+  f.controller.close();
   resolve(f.pip as unknown as Window);
   await pending;
   expect(f.pip.close).toHaveBeenCalledOnce();
   expect(f.view.idle).not.toHaveBeenCalled();
-  expect(f.changed).toHaveBeenLastCalledWith({ state: 'UNMONITORED', opening: false });
+  expect(f.changed).toHaveBeenLastCalledWith({ state: 'CLOSED', opening: false });
 });
 it.each(['sync', 'async'])('handles %s request failures privately and permits explicit retry', async kind => {
   const log = vi.spyOn(console, 'info').mockImplementation(() => {});
   const f = fixture();
   if (kind === 'sync') f.requestWindow.mockImplementation(() => { throw new Error('private URL'); });
   else f.requestWindow.mockRejectedValue(new Error('private URL'));
-  await f.controller.start();
-  expect(f.changed).toHaveBeenLastCalledWith({ state: 'UNMONITORED', opening: false, issue: 'failed' });
+  await f.controller.open();
+  expect(f.changed).toHaveBeenLastCalledWith({ state: 'CLOSED', opening: false, issue: 'failed' });
   expect(JSON.stringify(log.mock.calls)).not.toContain('private URL');
   f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
-  await f.controller.start();
+  await f.controller.open();
   expect(f.view.idle).toHaveBeenCalledOnce();
 });
 it('ignores a late close from an old PiP after a new monitoring session starts', async () => {
   const f = fixture();
   f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
-  await f.controller.start(); f.controller.stop();
+  await f.controller.open(); f.controller.close();
   const next = Object.assign(new EventTarget(), { document: {} as Document, closed: false, close: vi.fn() });
   f.requestWindow.mockResolvedValue(next as unknown as Window);
-  await f.controller.start();
+  await f.controller.open();
   f.pip.dispatchEvent(new Event('pagehide'));
   f.controller.question(123);
   expect(f.view.question).toHaveBeenCalledExactlyOnceWith(123);
@@ -66,7 +66,7 @@ it('ignores a late close from an old PiP after a new monitoring session starts',
 it('stays idle if a question transition occurs while opening', async () => {
   const f = fixture();
   f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
-  const pending = f.controller.start();
+  const pending = f.controller.open();
   f.controller.question(123);
   await pending;
   expect(f.view.question).not.toHaveBeenCalled();
@@ -96,21 +96,21 @@ it('cleans up when rendering fails, even if close emits pagehide synchronously',
   pip.close.mockImplementation(() => pip.dispatchEvent(new Event('pagehide')));
   const changed = vi.fn();
   const controller = createPipController({ requestWindow: async () => pip as unknown as Window }, changed, () => { throw new Error('private'); }, () => 16);
-  await controller.start();
+  await controller.open();
   expect(pip.close).toHaveBeenCalledOnce();
-  expect(changed).toHaveBeenLastCalledWith({ state: 'UNMONITORED', opening: false, issue: 'failed' });
+  expect(changed).toHaveBeenLastCalledWith({ state: 'CLOSED', opening: false, issue: 'failed' });
 });
 
 it('converts rem dimensions synchronously on each user-started open', async () => {
   let fontSize = 16;
   const f = fixture(() => fontSize);
   f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
-  const first = f.controller.start();
+  const first = f.controller.open();
   expect(f.requestWindow).toHaveBeenLastCalledWith({ width: 288, height: 128 });
   await first;
-  f.controller.stop();
+  f.controller.close();
   fontSize = 20;
-  const second = f.controller.start();
+  const second = f.controller.open();
   expect(f.requestWindow).toHaveBeenLastCalledWith({ width: 360, height: 160 });
   await second;
 });
@@ -170,17 +170,17 @@ it('only ends a detected active question once and accepts the next question', as
   const f = fixture();
   f.controller.ended(1);
   f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
-  await f.controller.start();
+  await f.controller.open();
   f.controller.ended(2);
   expect(f.view.ended).not.toHaveBeenCalled();
   f.controller.question(3);
   f.controller.ended(4);
   f.controller.ended(5);
   expect(f.view.ended).toHaveBeenCalledExactlyOnceWith(4);
-  expect(f.changed).toHaveBeenLastCalledWith({ state: 'MONITORING_QUESTION_ENDED', opening: false });
+  expect(f.changed).toHaveBeenLastCalledWith({ state: 'QUESTION_ENDED', opening: false });
   f.controller.question(6);
   expect(f.view.question).toHaveBeenLastCalledWith(6);
-  f.controller.stop();
+  f.controller.close();
   f.controller.ended(7);
   expect(f.view.ended).toHaveBeenCalledOnce();
 });
@@ -274,11 +274,11 @@ it('returns to idle after an answer and keeps the next question eligible', async
   const view = { idle: vi.fn(), question: vi.fn(), ended: vi.fn() };
   let onAnswered!: () => void;
   const controller = createPipController({ requestWindow: async () => pip as unknown as Window }, changed, (_document, answer) => { onAnswered = answer; return view; }, () => 16);
-  await controller.start();
+  await controller.open();
   controller.question(100);
   onAnswered();
   expect(view.idle).toHaveBeenCalledTimes(2);
-  expect(changed).toHaveBeenLastCalledWith({ state: 'MONITORING_IDLE', opening: false });
+  expect(changed).toHaveBeenLastCalledWith({ state: 'OPEN_IDLE', opening: false });
   controller.question(200);
   expect(view.question).toHaveBeenLastCalledWith(200);
 });
@@ -289,10 +289,10 @@ it('ignores an answer when no question is active', async () => {
   const view = { idle: vi.fn(), question: vi.fn(), ended: vi.fn() };
   let onAnswered!: () => void;
   const controller = createPipController({ requestWindow: async () => pip as unknown as Window }, changed, (_document, answer) => { onAnswered = answer; return view; }, () => 16);
-  await controller.start();
+  await controller.open();
   onAnswered();
   expect(view.idle).toHaveBeenCalledOnce();
-  expect(changed).toHaveBeenLastCalledWith({ state: 'MONITORING_IDLE', opening: false });
+  expect(changed).toHaveBeenLastCalledWith({ state: 'OPEN_IDLE', opening: false });
 });
 
 it('wires the configured view to focus the opener synchronously without closing PiP', () => {

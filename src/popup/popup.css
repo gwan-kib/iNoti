@@ -14,10 +14,10 @@ button:focus-visible { outline: 0.1875rem solid var(--inoti-focus); outline-offs
 
 .brand { display: flex; align-items: center; gap: 0.5rem; }
 .brand-logo { width: 1.75rem; height: 1.75rem; object-fit: contain; flex-shrink: 0; }
-.pulse-setting { display: flex; align-items: center; gap: 0.5rem; margin: 0.875rem 0 0.5rem; }
-.pulse-setting input { accent-color: var(--inoti-brand); width: 1rem; height: 1rem; margin: 0; }
-.pulse-setting input:focus-visible { outline: 0.1875rem solid var(--inoti-focus); outline-offset: 0.125rem; }
-.pulse-label { font-size: 0.875rem; font-weight: 600; }
+.toggle-setting { display: flex; align-items: center; gap: 0.5rem; margin: 0.875rem 0 0.5rem; }
+.toggle-setting input { accent-color: var(--inoti-brand); width: 1rem; height: 1rem; margin: 0; }
+.toggle-setting input:focus-visible { outline: 0.1875rem solid var(--inoti-focus); outline-offset: 0.125rem; }
+.toggle-label { font-size: 0.875rem; font-weight: 600; }
 .tools-title { margin: 1rem 0 0.5rem; font-size: inherit; }
 .tools-title-text { font-size: 1rem; }
 .preference-status:empty { display: none; }

@@ -80,9 +80,6 @@ button:disabled {
   cursor: default;
   background: var(--inoti-text-secondary);
 }
-button[hidden] {
-  display: none;
-}
 .brand-logo {
   width: 1.5rem;
   height: 1.5rem;

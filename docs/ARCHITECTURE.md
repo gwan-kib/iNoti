@@ -2,35 +2,44 @@
 
 ## Implemented Phase 1
 
-A TypeScript/Vite MV3 extension with no framework or runtime dependencies. Route parsing is unchanged. Monitoring is page-owned and requires a user click; a supported route alone does not enable monitoring.
+A TypeScript/Vite MV3 extension with no framework or runtime dependencies. Route parsing is unchanged. Monitoring is page-owned and automatic: while a supported class route is observed, the page keeps evaluating new questions whether or not the optional notification window is open.
 
 | Component | Responsibility |
 | --- | --- |
-| `manifest.json` | Chrome 123 minimum, exact student-site match, webNavigation and storage permissions, classic worker, local icon |
+| `manifest.json` | Chrome 123 minimum, exact student-site match, webNavigation/storage/offscreen permissions, classic worker, local icon |
 | `src/content/detector.ts` | Pure route parser and same-class transition decision |
-| `src/content/monitor.ts` | Per-page baseline, shared hashchange/navigation evaluation, monitoring coordination, opener lifecycle |
-| `src/content/monitoring-control.ts` | Namespaced 15rem wide by 10rem tall monitoring panel in a closed shadow root, status and accessible stop/retry controls |
-| `src/content/pip-controller.ts` | API detection, user-gesture request, pending-open guard, PiP reference, state, close and cleanup |
+| `src/content/monitor.ts` | Per-page route baseline, shared hashchange/navigation evaluation, monitoring lifecycle, and the single new-question acceptance point |
+| `src/content/monitoring-control.ts` | Namespaced 15rem wide by 10rem tall panel in a closed shadow root; reports monitoring plus window state and toggles only the window |
+| `src/content/pip-controller.ts` | Optional-window API detection, user-gesture request, pending-open guard, PiP reference, window state, close and cleanup. It never decides monitoring |
 | `src/content/pip-view.ts` and `pip-view.css` | Generic idle/alert DOM and local time rendering, with a separate stylesheet bundled for injection into the dynamic PiP document |
-| `src/shared/messages.ts` | Validated NAVIGATION_CHANGED contract |
-| `src/shared/logging.ts` | Privacy-safe content/worker/pip diagnostics |
-| `src/background/service-worker.ts` | Filtered navigation forwarding only; no session state or alert creation |
-| `src/popup/popup.ts` | Alert-animation preference and link to the extension-owned tester tab |
-| `src/dev-testing/dev-testing.ts` | Development-only PiP state simulator and local event log; reuses the production PiP controller/view |
+| `src/shared/new-question.ts` | The one accepted-new-question fan-out to sound and the optional PiP window |
+| `src/shared/messages.ts` | Validated NAVIGATION_CHANGED, NEW_QUESTION_DETECTED, and PLAY_SOUND contracts |
+| `src/shared/sounds.ts` | Central sound registry; the only source of sound file paths and ids |
+| `src/shared/sound-preference.ts` | Local `soundEnabled`/`selectedSoundId` schema and lenient fallback |
+| `src/shared/sound-request.ts` | Content/tester → worker sound request; sends no path or user data |
+| `src/shared/logging.ts` | Privacy-safe content/worker/pip/offscreen diagnostics |
+| `src/background/service-worker.ts` | Filtered navigation forwarding plus new-question sound delivery through the offscreen document; no session state |
+| `src/offscreen/offscreen.ts` | Plays a validated registered sound id through `chrome.runtime.getURL` |
+| `src/popup/popup.ts` | Alert-animation and sound preferences, plus a link to the extension-owned tester tab |
+| `src/dev-testing/dev-testing.ts` | Development-only PiP state simulator and local event log; reuses the production PiP controller/view and the production sound request |
 
 ## Event flow and lifecycle
 
-1. At document_start the content script reads a baseline. Initial active routes never alert. The control mounts after body exists (DOMContentLoaded if needed), only on supported class routes.
+1. At document_start the content script reads a route baseline. Initial active routes never alert. Monitoring is active whenever the current route is a supported class and the page is not suspended; the control mounts after body exists (DOMContentLoaded if needed), only on supported class routes.
 2. The worker synchronously registers history/fragment listeners with a student-host filter. Before logging or forwarding it checks top frame, tab target, and exact HTTPS student origin. It forwards a supported hash or an empty unsupported marker to the originating document when available. No full URLs, arbitrary route content, or history are retained.
 3. The content receiver validates the contract and worker sender. It shares one evaluation function with hashchange event URLs. Previous state advances before rendering, preserving consecutive duplicate suppression in either source order.
-4. The button directly calls the controller's start method, which calls requestWindow before its first await. Only this user action opens PiP. An in-flight guard suppresses repeated clicks. Successful initialization always begins idle; events before completion are not replayed.
-5. Same-class WAITING/QUESTION_CLOSED to QUESTION_ACTIVE changes an already-open idle PiP to the alert with Date.now(). Repeated active events do nothing. Closed/results/waiting after an alerted question changes the same window to Question Ended with the local end-detection time. Duplicate end reports retain the original time; initial waiting/closed routes remain idle.
-6. PiP pagehide, the active button, leaving supported routes, changing class, or opener pagehide stops monitoring and clears references. A generation token closes stale pending opens after session exit. A late old-window close cannot stop a newer session. BFCache restoration establishes a fresh baseline without reopening PiP.
-7. Unsupported API or opening failure leaves monitoring inactive with a clear control state. Failure can be retried only by another click. No worker NEW_POLL contract or notification fallback remains.
+4. The panel button opens or closes only the optional window. `open()` calls requestWindow before its first await; only this user action opens PiP, and an in-flight guard suppresses repeated clicks. Successful initialization begins idle; events before completion are not replayed. Closing the window (via the title bar, the panel, pagehide, a class change, or the unsupported route) never stops monitoring.
+5. The single acceptance point is a same-class WAITING/QUESTION_CLOSED to QUESTION_ACTIVE transition (`isNewPoll`). `createNewQuestionAlerts` fans it out exactly once: `requestNewQuestionSound()` asks the worker for the configured sound, and `controller.question(detectedAt)` updates the window only if it is open. Repeated active events, duplicate hashchange/webNavigation reports, waiting/closed transitions, and initial baselines never reach the acceptance point.
+6. With the window open, the accepted question changes it to the alert with Date.now(); closed/results/waiting after an alerted question changes the same window to Question Ended with the local end-detection time. Duplicate end reports retain the original time. A manual answer returns the window to idle without affecting monitoring.
+7. Leaving the class/session, changing class, an unsupported route, or opener pagehide closes the window and clears references. A generation token closes stale pending opens after session exit; a late old-window close cannot affect a newer window. BFCache restoration re-establishes the route baseline without reopening the window. Unsupported Document PiP or an opening failure shows a clear panel state while monitoring and sound continue; failure can be retried only by another click.
 
-The toolbar popup saves the alert-animation preference and links to the development-only `dev-testing/` extension page. The popup opens `dev-testing/index.html`; that page can render the shared PiP view in an inline preview, open the real Document PiP surface from a user click, and manually drive idle/question/stop states. It also mounts the real `monitoring-control.ts` control inside an iframe mock page, mirrors the controller status into it, and offers forced-state buttons for the unobserved unsupported/failed/opening states. Once opened, the preview follows the actual PiP content viewport via a development-only resize listener, removed when monitoring stops. It never sends synthetic events into the content script or worker, so it cannot change or falsely validate iClicker detection.
+The toolbar popup saves the alert-animation and sound preferences and links to the development-only `dev-testing/` extension page. The popup opens `dev-testing/index.html`; that page can render the shared PiP view in an inline preview, open the real Document PiP surface from a user click, and manually drive idle/question/close states. **New Question** runs the real `createNewQuestionAlerts` path, so it requests the production sound and updates the real window if open. The tester also mounts the real `monitoring-control.ts` control inside an iframe mock page, mirrors the window/monitoring state into it, and offers forced-state buttons for the unobserved unmonitored/opening/unsupported/failed states. Once opened, the preview follows the actual PiP content viewport via a development-only resize listener, removed when the window closes. It never sends synthetic route events into the content script, so it cannot change or falsely validate iClicker detection.
 
-Monitoring state is UNMONITORED -> MONITORING_IDLE -> MONITORING_QUESTION_ACTIVE -> MONITORING_QUESTION_ENDED -> MONITORING_QUESTION_ACTIVE, with any session-ending event returning to UNMONITORED. A manual answer returns MONITORING_QUESTION_ACTIVE -> MONITORING_IDLE. Opening is a transient guard, not active monitoring. Detection continues while unmonitored so enabling monitoring does not invent a question transition.
+Monitoring is route-derived: supported class route + live page = monitoring. The PiP window has its own presentation state CLOSED -> OPEN_IDLE -> QUESTION_ACTIVE -> QUESTION_ENDED, with any close returning to CLOSED. The two are independent: the window can be CLOSED while monitoring is active, and a question accepted in that state still requests a sound without opening a window.
+
+## Sound alerts
+
+Sound is enabled by default (`soundEnabled`) and is requested after the same acceptance decision that feeds the window, so there is no separate sound dedupe. The content script or dev tester sends a generic `NEW_QUESTION_DETECTED` message; the worker reads the local preference, resolves the registered `selectedSoundId` (falling back to `DEFAULT_SOUND_ID`), and ensures the offscreen audio document exists. Only then does it send `PLAY_SOUND` with a registered id. The offscreen document resolves the file with `chrome.runtime.getURL`, stops any previous chime, and creates a fresh audio element per alert. No path, question text, route, class id, or student data crosses a message boundary, and no external audio is loaded. Disabling sound skips offscreen creation entirely while monitoring and the visual window keep working. Adding a selectable sound later only needs the file under `assets/sounds/` plus one registry entry in `src/shared/sounds.ts`; a future popup picker can write `selectedSoundId` without playback changes.
 
 ## Alert appearance preference
 
@@ -56,7 +65,7 @@ Static surface styles use `rem` lengths, converted at a default 16px root size, 
 
 Request the footprint from `PIP_DIMENSIONS_REM` in `src/shared/pip-dimensions.ts` once. The development preview initially uses those same rem dimensions for its content area. Chrome controls placement, chrome, and size clamping. Idle content is the logo and iNoti; active content adds the question title, local detection time, and elapsed time. The shared view refreshes elapsed time once per second from Date.now() minus the detection timestamp, so delayed ticks catch up instead of drifting. Idle, question end, and PiP pagehide clear the interval; each new alert resets it. The timer uses aria-live=off to avoid announcing every tick. This is a display timer only, not detection polling. No resize calls, screen coordinates, history, auto-dismiss, sound, or stacking. PiP cannot outlive its opener. It is same-origin with the student page, not a separate extension-origin security boundary, so it contains no sensitive data.
 
-Four standalone Vite IIFE builds emit content, worker, toolbar-popup, and dev-tester code. The content build clears dist and copies the manifest/icon; later builds preserve output and copy their local HTML/CSS. Production PiP DOM/CSS is still bundled into content.js; the dev tester bundles the same PiP controller/view code for isolated testing.
+Five standalone Vite IIFE builds emit content, worker, toolbar-popup, dev-tester, and offscreen code. The content build clears dist and copies the manifest/icon and the entire `assets/sounds/` directory (so a new registered sound needs no build-config edit); later builds preserve output and copy their local HTML/CSS. Production PiP DOM/CSS is still bundled into content.js; the dev tester bundles the same PiP controller/view code for isolated testing.
 
 ```text
 dist/
@@ -64,6 +73,7 @@ dist/
   content.js
   background.js
   assets/inoti-logo.png
+  assets/sounds/default-chime.wav
   popup/
     popup.html
     popup.css
@@ -72,16 +82,19 @@ dist/
     index.html
     dev-testing.css
     dev-testing.js
+  offscreen/
+    offscreen.html
+    offscreen.js
 ```
 
 ## Diagnostics and limits
 
-DEBUG enables `[iNoti][content]`, `[iNoti][worker]`, and `[iNoti][pip]` logs. The development tester additionally emits `[iNoti][dev]` events and shows the same safe event summary on-page. Only event names, normalized states, boolean decisions, and safe error categories are logged. No raw routes, IDs, payloads, arbitrary exceptions, or page content.
+DEBUG enables `[iNoti][content]`, `[iNoti][worker]`, `[iNoti][pip]`, and `[iNoti][offscreen]` logs. The development tester additionally emits `[iNoti][dev]` events and shows the same safe event summary on-page. Only event names, normalized states, boolean decisions, and safe error categories are logged. No raw routes, IDs, payloads, arbitrary exceptions, or page content.
 
-The worker remains disposable. Failed navigation delivery is not replayed; no DOM observation, polling, history patching, or network interception is added. Always-on-top is an API property, not evidence of tested background detection or this build's UI compatibility. See [testing](TESTING.md), [privacy](PRIVACY.md), and D013 in [decisions](DECISIONS.md).
+The worker remains disposable. Failed navigation delivery is not replayed; no DOM observation, polling, history patching, or network interception is added. The offscreen audio document is created on demand and never assumed to persist. Always-on-top is an API property, not evidence of tested background detection or this build's UI compatibility. See [testing](TESTING.md), [privacy](PRIVACY.md), and D013 in [decisions](DECISIONS.md).
 
 The compact PiP requests a 18rem by 8rem landscape viewport (288 by 128 CSS pixels at a 16px opener root), subject to Chrome clamping. Idle, active, and ended states share the brand/status header pinned to the top row, keeping its identity-left, badge-right spacing. The title, timing pair, detail text, and side-by-side actions form one group centered vertically in the space below the brand. Active alerts pair local detection time with elapsed time in one centered row. Google Material Symbols Rounded are loaded through a Google Fonts stylesheet `<link>` in each generated PiP/preview HTML head, subset to schedule and hourglass_empty. Decorative CSS ligatures use that font. The link suppresses the referrer. Icons require access to Google Fonts and permission from the inherited page CSP; there is no bundled SVG fallback.
 
-The on-page monitoring panel contains branding, a state-specific explanation, and a semantic Open notification window button, sized 15rem by 10rem, vertically centered and inset 5rem from the right viewport edge. Its static positioning and appearance live in `monitoring-control.css`. The brand row stays pinned at the top, the button is anchored to the bottom, and the explanation fills and centers in the remaining space. While PiP is open the button is hidden (`hidden`), so the panel reports status only and PiP is closed from its own title bar; the button returns when monitoring stops. The explanation changes per state (not monitoring, opening, monitoring, question ended, unsupported, failed) and carries a `data-state` hook for styling. A new question does not change the panel copy; the PiP window carries the per-question alert, so an active question shows the monitoring explanation. Failure copy is a normalized category only; it never surfaces raw errors, routes, question content, or identifiers. On viewports at or below 21.5rem wide, the right inset becomes 0.75rem to keep it reachable. Viewport maximum dimensions constrain it on very small screens.
+The on-page monitoring panel contains branding, a state-specific explanation, and a semantic Open/Close notification window button, sized 15rem by 10rem, vertically centered and inset 5rem from the right viewport edge. Its static positioning and appearance live in `monitoring-control.css`. The brand row stays pinned at the top, the button is anchored to the bottom, and the explanation fills and centers in the remaining space. The button toggles only the optional window: while the window is open it reads Close notification window, and closing it leaves monitoring active. The explanation combines the two independent concerns: with the window closed it reads "iNoti is monitoring this class. Open the notification window for visual alerts."; with the window open it reads "iNoti is monitoring this class. Visual alerts are open."; unmonitored, opening, unsupported, and failed states have their own normalized copy. A new question does not change the panel copy; the window carries the per-question alert. Failure copy never surfaces raw errors, routes, question content, or identifiers, and each state carries a `data-state` hook. On viewports at or below 21.5rem wide, the right inset becomes 0.75rem to keep it reachable. Viewport maximum dimensions constrain it on very small screens.
 
-The on-page action label describes opening PiP rather than starting/stopping route detection: route evaluation already runs while the page is loaded, but visible alerts still require an open, user-started PiP. Closing PiP (including its title bar) stops monitoring and restores the button.
+The on-page button describes opening or closing the visual window, never starting or stopping route detection: monitoring runs whenever a supported class route is observed, independent of the window.
