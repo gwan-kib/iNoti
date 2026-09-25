@@ -9,8 +9,8 @@ function explanationFor(status: MonitoringStatus, active: boolean): string {
   if (status.issue === "unsupported") return "Notification window needs desktop Chrome 123 or newer.";
   if (status.issue === "failed") return "The Notification window could not open. Click the button to try again.";
   if (status.opening) return "Opening the Notification window…";
-  if (status.state === "MONITORING_QUESTION_ACTIVE")
-    return "A new question is active in the Notification window.";
+  // An active question keeps the monitoring copy: the PiP window carries the
+  // per-question alert, so the panel does not react to a new question.
   if (status.state === "MONITORING_QUESTION_ENDED") return "The question ended. Monitoring stays on for the next one.";
   if (active) return "Monitoring is on. Keep this iClicker page open so iNoti can detect new questions.";
   return "Monitoring is on. Keep this iClicker page open so iNoti can detect new questions.";
@@ -64,6 +64,9 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
     },
     render(status: MonitoringStatus) {
       const active = status.state !== "UNMONITORED";
+      // While PiP is open the panel only reports status; the window itself is
+      // closed from its title bar, so the toggle is removed from the layout.
+      button.hidden = active;
       button.disabled = status.opening || status.issue === "unsupported";
       label.textContent =
         status.issue === "unsupported"
@@ -72,20 +75,16 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
             ? "PiP failed - Try again"
             : status.opening
               ? "Opening notification window..."
-              : active
-                ? "Close notification window"
-                : "Open notification window";
+              : "Open notification window";
       button.title =
         status.issue === "unsupported"
-          ? "Picture-in-Picture requires desktop Chrome 123+."
+          ? "Notification window needs desktop Chrome 123+."
           : status.issue === "failed"
-            ? "Could not open Picture-in-Picture. Click to try again."
-            : active
-              ? "Close on-screen notifications"
-              : "Open on-screen notifications";
+            ? "Could not open the Notification window. Click to try again."
+            : "Open on-screen notifications";
       button.setAttribute(
         "aria-label",
-        status.issue === "failed" ? "Could not open Picture-in-Picture. Try again" : label.textContent,
+        status.issue === "failed" ? "Could not open the Notification window. Try again" : label.textContent,
       );
       button.setAttribute("aria-pressed", String(active));
       explanation.textContent = explanationFor(status, active);

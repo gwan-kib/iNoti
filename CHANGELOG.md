@@ -6,9 +6,13 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
-- Renamed the monitoring panel action to Open/Close notification window and updated its explanations and tooltips to say notification window instead of Picture-in-Picture.
+- Removed the monitoring panel's question-active state; a new question no longer changes the panel copy, which stays on the monitoring message while the PiP window carries the alert.
 
-- The monitoring panel explanation now reflects the current state (monitoring, question active/ended, opening, unsupported, failed) via a `data-state` hook; failure copy stays a normalized category with no raw errors.
+- The monitoring panel now pins the brand row to the top, anchors the button to the bottom, and centers the explanation in the remaining space; the button hides while PiP is open and returns when monitoring stops.
+
+- Renamed the monitoring panel action to Open notification window and updated its explanations and tooltips to say notification window instead of Picture-in-Picture.
+
+- The monitoring panel explanation reflects the current state (monitoring, question ended, opening, unsupported, failed) via a `data-state` hook; failure copy stays a normalized category with no raw errors.
 
 - Added a keep-iClicker-open reminder to the panel and relabeled its action.
 

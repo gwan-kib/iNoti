@@ -10,7 +10,7 @@ This is an unpacked development version, not a Chrome Web Store release. Use des
 2. Open one iClicker student tab and join a supported class.
 3. Click **Open notification window** in the panel on the right side of the page to open PiP. Keep the iClicker page open so iNoti can detect new questions. PiP starts with a Monitoring badge and a waiting status.
 4. Keep PiP open. A new supported poll transition displays the alert; closing/results or waiting after a detected question shows **Question ended** with an **Ended at** time. This is when iNoti detected the end, not the instructor's exact end time. The screen stays until the next detected question or monitoring stops.
-5. Close PiP or click **Close notification window** to stop on-screen notifications. Leaving the class also stops monitoring. After refreshing, click Open notification window again.
+5. Close PiP to stop on-screen notifications; leaving the class also stops monitoring. While PiP is open the panel shows status only (the Open notification window button returns once PiP closes). After refreshing, click **Open notification window** again.
 
 **Go to Question** appears during an active alert. Click it to focus the original iClicker tab while PiP stays open; the elapsed timer and monitoring continue. **Answered** appears beside it and returns PiP to its idle monitoring screen once you have answered; monitoring stays started and the next detected question alerts as usual.
 

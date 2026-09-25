@@ -9,7 +9,7 @@ This folder is for local testing evidence and notes that should not become produ
 3. Click **Open Dev Tester**.
 4. Use the inline preview for quick visual state checks.
 5. Click **Open PiP** to test the real shared Document Picture-in-Picture view, then drive **New Question**, **Return to Idle**, and **Stop PiP** manually.
-6. Use the **Monitoring panel** section to check the on-page control in a mock page and force each state (Not monitoring, Monitoring, Question active, Opening, Unsupported, Failed).
+6. Use the **Monitoring panel** section to check the on-page control in a mock page and force each state (Not monitoring, Monitoring, Opening, Unsupported, Failed).
 
 The tester does not talk to the iClicker content script or service worker, so it cannot prove live route detection, background delivery, reconnect handling, or class compatibility.
 

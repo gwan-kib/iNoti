@@ -143,8 +143,6 @@ function initDevTester() {
     showPanelState({ state: 'UNMONITORED', opening: false }, 'not monitoring'));
   required<HTMLButtonElement>('panel-idle').addEventListener('click', () =>
     showPanelState({ state: 'MONITORING_IDLE', opening: false }, 'monitoring'));
-  required<HTMLButtonElement>('panel-question').addEventListener('click', () =>
-    showPanelState({ state: 'MONITORING_QUESTION_ACTIVE', opening: false }, 'question active'));
   required<HTMLButtonElement>('panel-opening').addEventListener('click', () =>
     showPanelState({ state: 'UNMONITORED', opening: true }, 'opening'));
   required<HTMLButtonElement>('panel-unsupported').addEventListener('click', () =>
