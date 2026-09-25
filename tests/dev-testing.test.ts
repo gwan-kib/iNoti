@@ -191,10 +191,10 @@ it("previews monitoring/window panel states and exercises the production questio
   expect(soundChoice.children.map((option) => option.textContent)).toEqual([
     "Default",
     "Bubble",
-    "Pop",
-    "Bell",
-    "Tone",
-    "Ring",
+    "Locked",
+    "Motion detected",
+    "Chime",
+    "Aura",
   ]);
   expect(soundChoice.value).toBe("default");
   soundChoice.value = "bubble";

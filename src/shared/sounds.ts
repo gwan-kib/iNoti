@@ -17,10 +17,10 @@ export interface SoundOption {
 export const SOUND_OPTIONS: readonly SoundOption[] = [
   { id: "default", label: "Default", path: "assets/sounds/default.wav" },
   { id: "bubble", label: "Bubble", path: "assets/sounds/bubble.wav" },
-  { id: "pop", label: "Pop", path: "assets/sounds/pop.wav" },
-  { id: "bell", label: "Bell", path: "assets/sounds/bell.wav" },
-  { id: "tone", label: "Tone", path: "assets/sounds/tone.wav" },
-  { id: "ring", label: "Ring", path: "assets/sounds/ring.wav" },
+  { id: "pop", label: "Locked", path: "assets/sounds/pop.wav" },
+  { id: "bell", label: "Motion detected", path: "assets/sounds/bell.wav" },
+  { id: "ring", label: "Chime", path: "assets/sounds/ring.wav" },
+  { id: "tone", label: "Aura", path: "assets/sounds/tone.wav" },
 ];
 
 export const DEFAULT_SOUND_ID: SoundId = SOUND_OPTIONS[0]!.id;

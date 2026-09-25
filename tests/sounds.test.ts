@@ -21,16 +21,16 @@ it("registers the bundled selectable sounds with unique ids and paths", () => {
     },
     {
       id: "pop",
-      label: "Pop",
+      label: "Locked",
       path: "assets/sounds/pop.wav",
     },
     {
       id: "bell",
-      label: "Bell",
+      label: "Motion detected",
       path: "assets/sounds/bell.wav",
     },
-    { id: "tone", label: "Tone", path: "assets/sounds/tone.wav" },
-    { id: "ring", label: "Ring", path: "assets/sounds/ring.wav" },
+    { id: "ring", label: "Chime", path: "assets/sounds/ring.wav" },
+    { id: "tone", label: "Aura", path: "assets/sounds/tone.wav" },
   ]);
   expect(new Set(SOUND_OPTIONS.map((option) => option.id)).size).toBe(
     SOUND_OPTIONS.length,

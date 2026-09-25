@@ -6,6 +6,8 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
+- Renamed the five non-default sound choices to Bubble, Locked, Motion detected, Chime, and Aura in popup order. Their stored ids and audio files remain the same.
+
 - Switched Default to the former Start tone and renamed the remaining choices with sound-based names: Bubble, Pop, Bell, Tone, and Ring. Previous Start, Success, and Timer selections resolve to the matching sounds.
 
 - Replaced the four bundled chimes with six recently downloaded WAV alerts: Default, Bubble, Pop, Bell, Tone, and Ring. Previously saved sound selections fall back to Default.
