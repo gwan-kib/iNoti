@@ -4,6 +4,16 @@ export interface NavigationChangedMessage {
   hash: string;
 }
 
+export interface OpenSettingsMessage {
+  type: 'OPEN_SETTINGS';
+}
+
+export function isOpenSettingsMessage(value: unknown): value is OpenSettingsMessage {
+  if (typeof value !== 'object' || value === null) return false;
+  const message = value as Record<string, unknown>;
+  return Object.keys(message).length === 1 && message['type'] === 'OPEN_SETTINGS';
+}
+
 export function isNavigationChangedMessage(value: unknown): value is NavigationChangedMessage {
   if (typeof value !== 'object' || value === null) return false;
   const message = value as Record<string, unknown>;

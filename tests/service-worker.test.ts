@@ -8,6 +8,7 @@ const runtimeSendMessage = vi.fn();
 const getContexts = vi.fn();
 const createDocument = vi.fn();
 const storageGet = vi.fn();
+const openPopup = vi.fn();
 const getURL = vi.fn((path: string) => `chrome-extension://test-extension/${path}`);
 
 const contentSender = { id: 'test-extension', tab: { id: 7 } };
@@ -28,7 +29,9 @@ beforeEach(async () => {
   createDocument.mockReset().mockResolvedValue(undefined);
   storageGet.mockReset().mockResolvedValue({});
   getURL.mockClear();
+  openPopup.mockReset().mockResolvedValue(undefined);
   vi.stubGlobal('chrome', {
+    action: { openPopup },
     runtime: {
       id: 'test-extension',
       onMessage: { addListener },
@@ -173,3 +176,48 @@ it('logs preference read failures without leaking details or playing audio', asy
 });
 
 afterEach(() => vi.unstubAllGlobals());
+
+const settingsSender = { id: 'test-extension', frameId: 0, url: 'https://student.iclicker.com/', tab: { id: 7, windowId: 3 } };
+
+it('opens settings in the requesting window and acknowledges completion', async () => {
+  const respond = vi.fn();
+  expect(messageListener()({ type: 'OPEN_SETTINGS' }, settingsSender, respond)).toBe(true);
+  await vi.waitFor(() => expect(respond).toHaveBeenCalledWith({ ok: true }));
+  expect(openPopup).toHaveBeenCalledExactlyOnceWith({ windowId: 3 });
+  expect(createDocument).not.toHaveBeenCalled();
+});
+
+it('reports a popup failure without leaking the browser error', async () => {
+  openPopup.mockRejectedValue(new Error('private browser error'));
+  const respond = vi.fn();
+  messageListener()({ type: 'OPEN_SETTINGS' }, settingsSender, respond);
+  await vi.waitFor(() => expect(respond).toHaveBeenCalledWith({ ok: false }));
+});
+
+it.each([
+  { ...settingsSender, id: 'other-extension' },
+  { ...settingsSender, frameId: 1 },
+  { ...settingsSender, url: 'https://student.iclicker.com.example.com/' },
+  { ...settingsSender, url: 'invalid' },
+  { ...settingsSender, tab: undefined },
+])('rejects untrusted settings senders', (sender) => {
+  expect(messageListener()({ type: 'OPEN_SETTINGS' }, sender, vi.fn())).toBe(false);
+  expect(openPopup).not.toHaveBeenCalled();
+});
+
+it('rejects settings messages carrying extra data', () => {
+  expect(messageListener()({ type: 'OPEN_SETTINGS', extra: 'data' }, settingsSender, vi.fn())).toBe(false);
+  expect(openPopup).not.toHaveBeenCalled();
+});
+
+it('does not reopen or report failure when settings is already open or dismissing', async () => {
+  getContexts.mockResolvedValue([{ contextType: 'POPUP' }]);
+  const respond = vi.fn();
+  messageListener()({ type: 'OPEN_SETTINGS' }, settingsSender, respond);
+  await vi.waitFor(() => expect(respond).toHaveBeenCalledWith({ ok: true }));
+  expect(getContexts).toHaveBeenCalledExactlyOnceWith({
+    contextTypes: ['POPUP'], windowIds: [3],
+    documentUrls: ['chrome-extension://test-extension/popup/popup.html'],
+  });
+  expect(openPopup).not.toHaveBeenCalled();
+});

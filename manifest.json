@@ -3,7 +3,7 @@
   "minimum_chrome_version": "123",
   "name": "iNoti",
   "version": "0.1.0",
-  "description": "Desktop alerts when a supported iClicker class route enters a live poll.",
+  "description": "Visual/audio notifications for iClicker questions.",
   "permissions": [
     "webNavigation",
     "storage",

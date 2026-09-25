@@ -2,6 +2,7 @@ import { PULSE_KEY, preferenceStorage, pulsePreference, type PreferenceStorage }
 import { SELECTED_SOUND_KEY, SOUND_ENABLED_KEY, soundEnabled } from '../shared/sound-preference';
 import { DEFAULT_SOUND_ID, SOUND_OPTIONS, resolveSoundId } from '../shared/sounds';
 import { requestSoundPreview } from '../shared/sound-request';
+import { DEV_TESTING_ENABLED } from '../shared/dev-settings';
 
 type BooleanReader = (value: unknown) => boolean;
 
@@ -91,6 +92,21 @@ export function openDevTestingTab(createTab: TabCreator, getUrl: UrlResolver) {
   createTab({ url: getUrl('dev-testing/index.html') });
 }
 
+// Gates the dev tester entry by the DEV_TESTING_ENABLED build flag. When off the
+// button is removed from the DOM so it cannot exist or be focused.
+export function bindDevTestingButton(
+  button: HTMLButtonElement | null,
+  enabled: boolean,
+  onClick: () => void,
+) {
+  if (!button) return;
+  if (!enabled) {
+    button.remove();
+    return;
+  }
+  button.addEventListener('click', onClick);
+}
+
 function initPopup() {
   const status = document.querySelector<HTMLElement>('#preference-status');
   const storage = preferenceStorage();
@@ -105,9 +121,7 @@ function initPopup() {
   }
   const testSound = document.querySelector<HTMLButtonElement>('#test-sound');
   if (testSound) testSound.addEventListener('click', () => requestSoundPreview());
-  const button = document.querySelector<HTMLButtonElement>('#open-dev-tester');
-  if (!button) return;
-  button.addEventListener('click', () => {
+  bindDevTestingButton(document.querySelector<HTMLButtonElement>('#open-dev-tester'), DEV_TESTING_ENABLED, () => {
     openDevTestingTab(
       (properties) => chrome.tabs.create(properties),
       (path) => chrome.runtime.getURL(path),

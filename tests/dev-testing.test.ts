@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, expect, it, vi } from 'vitest';
-import { openDevTestingTab } from '../src/popup/popup';
+import { bindDevTestingButton, openDevTestingTab } from '../src/popup/popup';
+import { DEV_TESTING_ENABLED } from '../src/shared/dev-settings';
+import { ElementFake } from './dom-fake';
 
 it('opens the extension-owned dev tester path', () => {
   const createTab = vi.fn();
@@ -8,6 +10,30 @@ it('opens the extension-owned dev tester path', () => {
   openDevTestingTab(createTab, getUrl);
   expect(getUrl).toHaveBeenCalledExactlyOnceWith('dev-testing/index.html');
   expect(createTab).toHaveBeenCalledExactlyOnceWith({ url: 'chrome-extension://test/dev-testing/index.html' });
+});
+
+it('ships the dev tester button enabled by default', () => {
+  expect(DEV_TESTING_ENABLED).toBe(true);
+});
+
+it('removes the dev tester button entirely when the build flag is off', () => {
+  const button = new ElementFake();
+  const remove = vi.spyOn(button, 'remove');
+  const onClick = vi.fn();
+  bindDevTestingButton(button as unknown as HTMLButtonElement, false, onClick);
+  expect(remove).toHaveBeenCalledOnce();
+  button.dispatchEvent(new Event('click'));
+  expect(onClick).not.toHaveBeenCalled();
+});
+
+it('wires the dev tester button when the build flag is on', () => {
+  const button = new ElementFake();
+  const remove = vi.spyOn(button, 'remove');
+  const onClick = vi.fn();
+  bindDevTestingButton(button as unknown as HTMLButtonElement, true, onClick);
+  expect(remove).not.toHaveBeenCalled();
+  button.dispatchEvent(new Event('click'));
+  expect(onClick).toHaveBeenCalledOnce();
 });
 
 it('wires the toolbar popup with only navigation, storage, and offscreen permissions', () => {

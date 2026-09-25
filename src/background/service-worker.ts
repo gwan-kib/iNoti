@@ -3,6 +3,7 @@ import { parseRoute } from '../content/detector';
 import {
   isNewQuestionDetectedMessage,
   isPreviewSoundMessage,
+  isOpenSettingsMessage,
   type NavigationChangedMessage,
   type PlaySoundMessage,
 } from '../shared/messages';
@@ -127,7 +128,47 @@ async function playSelectedSoundPreview(): Promise<void> {
   await playRegisteredSound(preferences.soundId);
 }
 
-chrome.runtime.onMessage.addListener((message: unknown, sender) => {
+async function settingsPopupIsOpen(windowId: number): Promise<boolean> {
+  const contexts = await chrome.runtime.getContexts({
+    contextTypes: ['POPUP'],
+    windowIds: [windowId],
+    documentUrls: [chrome.runtime.getURL('popup/popup.html')],
+  });
+  return contexts.length > 0;
+}
+
+chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
+  if (isOpenSettingsMessage(message)) {
+    // Only our top-frame student content script or extension tester may open
+    // the toolbar popup, and always in the requesting browser window.
+    let trusted = false;
+    try {
+      trusted = sender.id === chrome.runtime.id && sender.frameId === 0
+        && typeof sender.tab?.windowId === 'number'
+        && (new URL(sender.url ?? '').origin === 'https://student.iclicker.com'
+          || sender.url === chrome.runtime.getURL('dev-testing/index.html'));
+    } catch { /* Malformed sender URLs are not trusted. */ }
+    if (!trusted) return false;
+    // Chrome 123-126 may expose the method but reject it for unpacked installs.
+    void (async () => {
+      try {
+        const windowId = sender.tab!.windowId;
+        // Clicking back onto the page dismisses Chrome's popup. Do not issue a
+        // second open request while that popup still exists or is dismissing.
+        // Query live contexts rather than caching popup state in this worker.
+        if (await settingsPopupIsOpen(windowId)) {
+          respond({ ok: true });
+          return;
+        }
+        await chrome.action.openPopup({ windowId });
+        respond({ ok: true });
+      } catch {
+        log('settings popup unavailable');
+        respond({ ok: false });
+      }
+    })();
+    return true;
+  }
   if (isPreviewSoundMessage(message)) {
     if (!isTrustedSoundSender(sender)) {
       log('rejected sound request');

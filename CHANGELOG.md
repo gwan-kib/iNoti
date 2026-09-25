@@ -6,6 +6,20 @@ No version has been released. The development manifest version 0.1.0 is for unpa
 
 ### Changed
 
+- Added `DEV_TESTING_ENABLED` in `src/shared/dev-settings.ts` to gate the toolbar popup's **Dev tester** button; when it is `false` the button is removed from the DOM instead of hidden.
+
+- Replaced the toolbar popup's on/off switches with plain checkboxes; the pulse and sound preferences both default to on.
+
+- Removed the toolbar popup's "Alert Preferences" title, centered the brand row, and centered the Preview sound / Dev tester buttons as a group.
+
+- Added a close button to dismiss settings failure guidance; the Settings gear has no tooltip.
+
+- Replaced the monitoring panel's Settings text with the rounded settings symbol, retaining a Settings accessible label without a tooltip.
+
+- Settings now checks for an existing toolbar popup before requesting another, avoiding a redundant open request during dismissal; failure guidance no longer assumes an older Chrome version.
+
+- Added a right-aligned Settings badge to the monitoring panel that opens the toolbar popup on Chrome 127+, with toolbar-icon guidance if unavailable.
+
 - Restyled the toolbar popup with lavender preference cards, icon tiles, switches, short toggle descriptions, and stacked Preview sound / Dev tester buttons; removed the sound-dropdown helper text.
 
 - Monitoring is now page-owned and independent of the notification window: a supported class route is monitored automatically, and closing the window (or its title bar, or the panel) closes only the visual surface instead of stopping monitoring.

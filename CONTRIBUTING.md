@@ -54,7 +54,7 @@ This local tester uses the shared production PiP view/controller but does not lo
 2. Open `chrome://extensions` in Chrome and enable **Developer mode**.
 3. Choose **Load unpacked** and select this checkout's `dist/` directory.
 4. Confirm the updated build has `webNavigation`, `storage`, and `offscreen` permissions enabled, check the iNoti card for errors, and inspect the service worker for startup errors.
-5. For UI-only testing, click the iNoti toolbar icon and choose **Open Dev Tester**. The extension-owned tab can preview idle/question states, open the same Document PiP surface, and exercise the production sound request without an iClicker class.
+5. For UI-only testing, click the iNoti toolbar icon and choose **Dev tester**. The extension-owned tab can preview idle/question states, open the same Document PiP surface, and exercise the production sound request without an iClicker class. That popup button is gated by `DEV_TESTING_ENABLED` in `src/shared/dev-settings.ts`; set it to `false` to remove the button from the popup entirely.
 6. For live detection testing, open or refresh `https://student.iclicker.com/` so the static content script starts. Use a single tab and join a supported class page; monitoring starts automatically and sound is played on each new question. The notification window is optional and does not control monitoring.
 7. After code changes, rebuild, reload iNoti on the extensions page, and refresh any student or dev-tester tabs. Loading while already on a poll intentionally produces no alert.
 

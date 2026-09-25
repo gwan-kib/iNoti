@@ -2,6 +2,7 @@ import { createBrandLogo } from "../shared/brand-logo";
 import controlStyles from "./monitoring-control.css?inline";
 import { type PipStatus } from "./pip-controller";
 import { logger } from "../shared/logging";
+import { requestSettingsPopup } from "../shared/settings-request";
 
 export interface MonitoringPanelStatus {
   // True while this page is observing a supported iClicker class/session. It is
@@ -31,12 +32,21 @@ function stateKey({ monitoring, pip }: MonitoringPanelStatus): string {
   return pip.state === "CLOSED" ? "monitoring" : "pip-open";
 }
 
-export function createMonitoringControl(document: Document, toggle: () => void) {
+export function createMonitoringControl(document: Document, toggle: () => void, openSettings = requestSettingsPopup) {
   const host = document.createElement("div");
   host.id = "inoti-monitoring-control";
   // Keep the panel and its positioning isolated in the shadow stylesheet.
   // Only the panel captures input; there is no page-sized overlay.
   const root = host.attachShadow({ mode: "closed" });
+  // Font faces must load in the owner document; the shadow stylesheet supplies
+  // the isolated glyph styling without depending on iClicker's styles.
+  const symbols = document.createElement("link");
+  symbols.setAttribute("rel", "stylesheet");
+  symbols.setAttribute(
+    "href",
+    "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=close,settings&display=block",
+  );
+  symbols.setAttribute("referrerpolicy", "no-referrer");
   const style = document.createElement("style");
   // The closed shadow root needs its own copy of the shared palette and styles.
   style.textContent = controlStyles;
@@ -49,6 +59,52 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
   brandText.className = "monitoring-brand-text";
   brandText.textContent = "iNoti";
   brand.append(createBrandLogo(document), brandText);
+  const settings = document.createElement("button");
+  settings.type = "button";
+  settings.className = "monitoring-settings";
+  settings.setAttribute("aria-label", "Settings");
+  const settingsLabel = document.createElement("span");
+  settingsLabel.className = "material-symbols-rounded monitoring-settings-icon";
+  settingsLabel.textContent = "settings";
+  settingsLabel.setAttribute("aria-hidden", "true");
+  settings.append(settingsLabel);
+  brand.append(settings);
+  const settingsStatus = document.createElement("div");
+  settingsStatus.className = "monitoring-settings-status";
+  settingsStatus.setAttribute("role", "status");
+  const settingsNotice = document.createElement("div");
+  settingsNotice.className = "monitoring-settings-notice";
+  settingsNotice.hidden = true;
+  const dismiss = document.createElement("button");
+  dismiss.type = "button";
+  dismiss.className = "monitoring-settings-dismiss";
+  dismiss.setAttribute("aria-label", "Dismiss settings message");
+  const dismissIcon = document.createElement("span");
+  dismissIcon.className = "material-symbols-rounded monitoring-settings-icon";
+  dismissIcon.textContent = "close";
+  dismissIcon.setAttribute("aria-hidden", "true");
+  dismiss.append(dismissIcon);
+  settingsNotice.append(settingsStatus, dismiss);
+  const clearSettingsNotice = () => {
+    settingsStatus.textContent = "";
+    settingsNotice.hidden = true;
+  };
+  dismiss.addEventListener("click", () => {
+    clearSettingsNotice();
+    settings.focus();
+  });
+  settings.addEventListener("click", async () => {
+    settings.disabled = true;
+    clearSettingsNotice();
+    try {
+      if (!(await openSettings())) settingsStatus.textContent = "Couldn't open settings, use toolbar icon.";
+    } catch {
+      settingsStatus.textContent = "Couldn't open settings, use toolbar icon.";
+    } finally {
+      settingsNotice.hidden = !settingsStatus.textContent;
+      settings.disabled = false;
+    }
+  });
   const explanation = document.createElement("div");
   explanation.className = "monitoring-explanation";
   explanation.textContent = "Open a supported iClicker class to monitor for new questions.";
@@ -59,17 +115,20 @@ export function createMonitoringControl(document: Document, toggle: () => void) 
   button.append(label);
   button.addEventListener("click", toggle);
   panel.append(brand, explanation, button);
+  panel.append(settingsNotice);
   root.append(style, panel);
 
   return {
     show() {
       if (!host.isConnected) {
+        document.head.append(symbols);
         document.body.append(host);
         logger("content")("monitoring control shown");
       }
     },
     hide() {
       host.remove();
+      symbols.remove();
     },
     render(status: MonitoringPanelStatus) {
       const open = status.pip.state !== "CLOSED";

@@ -5,10 +5,10 @@
   display: block;
   position: fixed;
   top: 50%;
-  right: 5rem;
+  right: 3rem;
   transform: translateY(-50%);
-  width: 15rem;
-  height: 10rem;
+  width: 16rem;
+  height: 12rem;
   max-width: calc(100vw - 1.5rem);
   max-height: calc(100vh - 1.5rem);
   border: 0.2rem solid var(--inoti-monitor-surface);
@@ -35,13 +35,48 @@
 .monitoring-brand {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.375rem;
 }
 .monitoring-brand-text {
   font-size: 0.875rem;
   font-weight: 750;
   color: var(--inoti-brand);
+}
+.monitoring-settings {
+  display: grid;
+  place-items: center;
+  margin: 0 0 0 auto;
+  padding: 0.25rem;
+  border-radius: 2rem;
+  background: var(--inoti-status-monitoring-surface);
+  color: var(--inoti-brand);
+}
+.monitoring-settings-icon {
+  font-family: "Material Symbols Rounded";
+  font-size: 1.125rem;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+.monitoring-settings:hover { filter: brightness(0.96); }
+.monitoring-settings-status { font-size: 0.6875rem; color: var(--inoti-text-secondary); }
+.monitoring-settings-notice { display: flex; align-items: flex-start; gap: 0.25rem; }
+.monitoring-settings-notice[hidden] { display: none; }
+.monitoring-settings-dismiss {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0.125rem;
+  background: var(--inoti-surface);
+  color: var(--inoti-text-secondary);
 }
 .monitoring-explanation {
   /* Fill the space between the brand row and the bottom-anchored button so the
@@ -76,6 +111,7 @@ button:focus-visible {
   outline: 0.1875rem solid var(--inoti-monitor-focus);
   outline-offset: 0.1875rem;
 }
+button:not(:disabled):hover { filter: brightness(0.96); }
 button:disabled {
   cursor: default;
   background: var(--inoti-text-secondary);

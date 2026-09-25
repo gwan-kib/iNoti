@@ -1,49 +1,82 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="../assets/inoti-logo.png">
-  <title>iNoti</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=blur_circular,volume_up,music_note,expand_more,play_arrow,open_in_new&display=block" referrerpolicy="no-referrer">
-  <link rel="stylesheet" href="./popup.css">
-</head>
-<body>
-  <main>
-    <div class="brand"><img class="brand-logo" src="../assets/inoti-logo.png" alt=""><span class="brand-text">iNoti</span></div>
-    <h1 class="popup-title"><span class="popup-title-text">Alert Preferences</span></h1>
-    <div class="settings">
-      <div class="setting-card">
-        <span class="setting-icon" aria-hidden="true"><span class="material-symbols-rounded">blur_circular</span></span>
-        <div class="setting-copy">
-          <label class="toggle-label" for="pulse-alerts"><span>Pulse iNoti background</span></label>
-          <p id="pulse-description" class="setting-description"><span>When a new iClicker question is detected</span></p>
-        </div>
-        <input class="setting-switch" id="pulse-alerts" type="checkbox" role="switch" disabled aria-describedby="pulse-description">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="../assets/inoti-logo.png" />
+    <title>iNoti</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=blur_circular,volume_up,music_note,expand_more,play_arrow,open_in_new&display=block"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <main>
+      <div class="brand">
+        <img class="brand-logo" src="../assets/inoti-logo.png" alt="" /><span class="brand-text">iNoti</span>
       </div>
-      <div class="setting-card">
-        <span class="setting-icon" aria-hidden="true"><span class="material-symbols-rounded">volume_up</span></span>
-        <div class="setting-copy">
-          <label class="toggle-label" for="sound-alerts"><span>Play sound</span></label>
-          <p id="sound-description" class="setting-description"><span>When a new iClicker question is detected</span></p>
+      <div class="settings">
+        <div class="setting-card">
+          <span class="setting-icon" aria-hidden="true"
+            ><span class="material-symbols-rounded">blur_circular</span></span
+          >
+          <div class="setting-copy">
+            <label class="toggle-label" for="pulse-alerts"><span>Pulse iNoti background</span></label>
+            <p id="pulse-description" class="setting-description">
+              <span>When a new iClicker question is detected</span>
+            </p>
+          </div>
+          <input
+            class="setting-checkbox"
+            id="pulse-alerts"
+            type="checkbox"
+            checked
+            disabled
+            aria-describedby="pulse-description"
+          />
         </div>
-        <input class="setting-switch" id="sound-alerts" type="checkbox" role="switch" disabled aria-describedby="sound-description">
-      </div>
-      <div class="setting-card sound-choice">
-        <span class="setting-icon" aria-hidden="true"><span class="material-symbols-rounded">music_note</span></span>
-        <label class="sound-choice-label" for="sound-choice"><span class="sound-choice-label-text">Sound</span></label>
-        <div class="select-wrap">
-          <select id="sound-choice" disabled></select>
-          <span class="material-symbols-rounded select-chevron" aria-hidden="true">expand_more</span>
+        <div class="setting-card">
+          <span class="setting-icon" aria-hidden="true"><span class="material-symbols-rounded">volume_up</span></span>
+          <div class="setting-copy">
+            <label class="toggle-label" for="sound-alerts"><span>Play sound</span></label>
+            <p id="sound-description" class="setting-description">
+              <span>When a new iClicker question is detected</span>
+            </p>
+          </div>
+          <input
+            class="setting-checkbox"
+            id="sound-alerts"
+            type="checkbox"
+            checked
+            disabled
+            aria-describedby="sound-description"
+          />
+        </div>
+        <div class="setting-card sound-choice">
+          <span class="setting-icon" aria-hidden="true"><span class="material-symbols-rounded">music_note</span></span>
+          <label class="sound-choice-label" for="sound-choice"
+            ><span class="sound-choice-label-text">Sound</span></label
+          >
+          <div class="select-wrap">
+            <select id="sound-choice" disabled></select>
+            <span class="material-symbols-rounded select-chevron" aria-hidden="true">expand_more</span>
+          </div>
         </div>
       </div>
-    </div>
-    <p id="preference-status" class="preference-status" role="status"></p>
-    <div class="popup-actions">
-      <button id="test-sound" class="sound-test" type="button"><span class="material-symbols-rounded button-icon" aria-hidden="true">play_arrow</span><span class="button-text">Preview sound</span></button>
-      <button id="open-dev-tester" type="button"><span class="material-symbols-rounded button-icon" aria-hidden="true">open_in_new</span><span class="button-text">Dev tester</span></button>
-    </div>
-  </main>
-  <script src="./popup.js"></script>
-</body>
+      <p id="preference-status" class="preference-status" role="status"></p>
+      <div class="popup-actions">
+        <button id="test-sound" class="sound-test" type="button">
+          <span class="material-symbols-rounded button-icon" aria-hidden="true">play_arrow</span
+          ><span class="button-text">Test sound</span>
+        </button>
+        <button id="open-dev-tester" type="button">
+          <span class="material-symbols-rounded button-icon" aria-hidden="true">open_in_new</span
+          ><span class="button-text">Dev testing</span>
+        </button>
+      </div>
+    </main>
+    <script src="./popup.js"></script>
+  </body>
 </html>
