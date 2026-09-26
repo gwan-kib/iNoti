@@ -192,16 +192,17 @@ body[data-question-active="true"] .status-badge {
   position: fixed;
   left: 50%;
   top: 50%;
-  width: 50rem;
-  height: 50rem;
+  width: 70rem;
+  height: 70rem;
   border-radius: 50%;
   translate: -50% -50%;
   z-index: -1;
   pointer-events: none;
+  filter: blur(3rem);
   background: radial-gradient(
     circle at center,
     var(--inoti-alert-pulse),
-    transparent 100%
+    transparent 150%
   );
   transform: scale(0);
   opacity: 0;
@@ -211,8 +212,8 @@ body[data-question-active="true"][data-pulse="true"] .question-title::before {
 }
 @keyframes question-pulse {
   0% {
-    transform: scale(0.05);
-    opacity: 0.95;
+    transform: scale(0);
+    opacity: 1;
   }
   100% {
     transform: scale(1);

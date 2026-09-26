@@ -62,7 +62,7 @@ export function createPipView(
   title.className = "question-title";
   const titleText = document.createElement("span");
   titleText.className = "question-title-text";
-  titleText.textContent = "iClicker question detected";
+  titleText.textContent = "New iClicker question!";
   title.append(titleText);
   const time = document.createElement("p");
   time.className = "detection-time";
@@ -142,16 +142,13 @@ export function createPipView(
       time.hidden = elapsed.hidden = true;
       timeText.textContent = "";
       elapsedText.textContent = "";
-      main.setAttribute(
-        "aria-label",
-        "iNoti monitoring: waiting for a new question",
-      );
+      main.setAttribute("aria-label", "iNoti monitoring: waiting for a new question");
     },
     question(detectedAt) {
       goToQuestion.hidden = false;
       answered.hidden = false;
       stopTimer();
-      titleText.textContent = "iClicker question detected";
+      titleText.textContent = "New iClicker question!";
       document.body.setAttribute("data-question-active", "true");
       title.hidden = time.hidden = elapsed.hidden = false;
       badge.textContent = "New Question";
@@ -161,10 +158,7 @@ export function createPipView(
       time.setAttribute("aria-label", `Detected at ${timeText.textContent}`);
       const updateElapsed = () => {
         // Recompute from the detection timestamp so delayed background ticks catch up.
-        const seconds = Math.max(
-          0,
-          Math.floor((Date.now() - detectedAt) / 1000),
-        );
+        const seconds = Math.max(0, Math.floor((Date.now() - detectedAt) / 1000));
         const minutes = Math.floor(seconds / 60);
         const clock =
           minutes < 60

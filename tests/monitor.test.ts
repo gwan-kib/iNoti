@@ -155,7 +155,7 @@ it.each([base, closed])("shows the question end time in the same PiP: %s", async
   expect(main.children[1]!.children[1]!.textContent).toBe(endedText);
   app.navigate(`${base}/poll`);
   expect(app.active()).toBe(true);
-  expect(main.children[1]!.children[0]!.textContent).toBe("iClicker question detected");
+  expect(main.children[1]!.children[0]!.textContent).toBe("New iClicker question!");
   expect(app.requestWindow).toHaveBeenCalledTimes(1);
   expect(app.pip.close).not.toHaveBeenCalled();
   // One accepted question per transition: the replay of the poll route is silent.

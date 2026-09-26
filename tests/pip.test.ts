@@ -1,9 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import {
-  createPipController,
-  documentPip,
-  QUESTION_END_IDLE_MS,
-} from "../src/content/pip-controller";
+import { createPipController, documentPip, QUESTION_END_IDLE_MS } from "../src/content/pip-controller";
 import { createPipView } from "../src/content/pip-view";
 import { createConfiguredPipView } from "../src/content/configured-pip-view";
 import { DocumentFake } from "./dom-fake";
@@ -37,12 +33,7 @@ function fixture(rootFontSize = () => 16) {
   const requestWindow = vi.fn<() => Promise<Window>>();
   const changed = vi.fn();
   const view = { idle: vi.fn(), question: vi.fn(), ended: vi.fn() };
-  const controller = createPipController(
-    { requestWindow },
-    changed,
-    () => view,
-    rootFontSize,
-  );
+  const controller = createPipController({ requestWindow }, changed, () => view, rootFontSize);
   return { pip, requestWindow, changed, view, controller };
 }
 it("discards pending opens after close without claiming the window opened", async () => {
@@ -64,28 +55,25 @@ it("discards pending opens after close without claiming the window opened", asyn
     opening: false,
   });
 });
-it.each(["sync", "async"])(
-  "handles %s request failures privately and permits explicit retry",
-  async (kind) => {
-    const log = vi.spyOn(console, "info").mockImplementation(() => {});
-    const f = fixture();
-    if (kind === "sync")
-      f.requestWindow.mockImplementation(() => {
-        throw new Error("private URL");
-      });
-    else f.requestWindow.mockRejectedValue(new Error("private URL"));
-    await f.controller.open();
-    expect(f.changed).toHaveBeenLastCalledWith({
-      state: "CLOSED",
-      opening: false,
-      issue: "failed",
+it.each(["sync", "async"])("handles %s request failures privately and permits explicit retry", async (kind) => {
+  const log = vi.spyOn(console, "info").mockImplementation(() => {});
+  const f = fixture();
+  if (kind === "sync")
+    f.requestWindow.mockImplementation(() => {
+      throw new Error("private URL");
     });
-    expect(JSON.stringify(log.mock.calls)).not.toContain("private URL");
-    f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
-    await f.controller.open();
-    expect(f.view.idle).toHaveBeenCalledOnce();
-  },
-);
+  else f.requestWindow.mockRejectedValue(new Error("private URL"));
+  await f.controller.open();
+  expect(f.changed).toHaveBeenLastCalledWith({
+    state: "CLOSED",
+    opening: false,
+    issue: "failed",
+  });
+  expect(JSON.stringify(log.mock.calls)).not.toContain("private URL");
+  f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
+  await f.controller.open();
+  expect(f.view.idle).toHaveBeenCalledOnce();
+});
 it("ignores a late close from an old PiP after a new monitoring session starts", async () => {
   const f = fixture();
   f.requestWindow.mockResolvedValue(f.pip as unknown as Window);
@@ -112,9 +100,7 @@ it("stays idle if a question transition occurs while opening", async () => {
   expect(f.view.idle).toHaveBeenCalledOnce();
 });
 it("feature-detects a callable requestWindow", () => {
-  expect(
-    documentPip({ documentPictureInPicture: {} } as unknown as Window),
-  ).toBeUndefined();
+  expect(documentPip({ documentPictureInPicture: {} } as unknown as Window)).toBeUndefined();
 });
 it("renders minimal idle content and local detection time without HTML insertion", () => {
   const document = new DocumentFake();
@@ -124,13 +110,11 @@ it("renders minimal idle content and local detection time without HTML insertion
   expect(p.brand.textContent).toBe("iNotiMonitoring");
   expect(p.title.textContent).toBe("Waiting for a question");
   view.question(1_700_000_000_000);
-  expect(p.title.children[0]!.textContent).toBe("iClicker question detected");
+  expect(p.title.children[0]!.textContent).toBe("New iClicker question!");
   expect(p.title.hidden).toBe(false);
   expect(p.brand.textContent).toBe("iNotiNew Question");
   expect(p.detail.hidden).toBe(true);
-  expect(p.time.children[0]!.textContent).toBe(
-    new Date(1_700_000_000_000).toLocaleTimeString(),
-  );
+  expect(p.time.children[0]!.textContent).toBe(new Date(1_700_000_000_000).toLocaleTimeString());
   view.idle();
   expect(p.time.children[0]!.textContent).toBe("");
 });
@@ -267,13 +251,11 @@ it("stops the elapsed timer and pulse on end, then restores the next alert", () 
   expect(p.title.textContent).toBe("Question ended");
   expect(p.brand.textContent).toBe("iNotiMonitoring");
   expect(p.detail.hidden).toBe(false);
-  expect(p.time.textContent).toBe(
-    `Ended at ${new Date(1_700_000_000_000).toLocaleTimeString()}`,
-  );
+  expect(p.time.textContent).toBe(`Ended at ${new Date(1_700_000_000_000).toLocaleTimeString()}`);
   expect(p.elapsed.hidden).toBe(true);
   expect(p.elapsed.textContent).toBe("");
   view.question(Date.now());
-  expect(p.title.textContent).toBe("iClicker question detected");
+  expect(p.title.textContent).toBe("New iClicker question!");
   expect(p.elapsed.hidden).toBe(false);
   expect(document.body.attributes.get("data-question-active")).toBe("true");
   expect(page.setInterval).toHaveBeenCalledTimes(2);
@@ -310,11 +292,7 @@ it("shows Go to Question only for active alerts and focuses without altering the
 it("shows Question Answered only for active alerts and reports the click", () => {
   const document = new DocumentFake();
   const answered = vi.fn();
-  const view = createPipView(
-    document as unknown as Document,
-    () => {},
-    answered,
-  );
+  const view = createPipView(document as unknown as Document, () => {}, answered);
   const button = parts(document).answered;
   expect(button.textContent).toBe("Answered");
   view.idle();
@@ -335,10 +313,7 @@ it("forwards the answered control through the configured view", () => {
   vi.stubGlobal("chrome", undefined);
   const document = new DocumentFake();
   const answered = vi.fn();
-  const view = createConfiguredPipView(
-    document as unknown as Document,
-    answered,
-  );
+  const view = createConfiguredPipView(document as unknown as Document, answered);
   view.question(Date.now());
   parts(document).answered.dispatchEvent(new Event("click"));
   expect(answered).toHaveBeenCalledOnce();
