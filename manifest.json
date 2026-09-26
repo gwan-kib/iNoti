@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "minimum_chrome_version": "123",
-  "name": "iNoti",
+  "name": "iNoti — iClicker Notifications",
   "version": "0.1.0",
   "description": "Visual & audio notifications for iClicker questions.",
   "permissions": ["webNavigation", "storage", "offscreen"],
